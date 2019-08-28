@@ -6,18 +6,6 @@ To install all required ROS packages, dependencies and python packages. Please r
 ```bat
 ./setup.sh
 ```
-User also needs to make two modifications to the swarm-primitive-dp submodule to make the code base built.
-- Modification 1
-  - Open **swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/package.xml** using your favorite editor.
-  - Modify line 50 from **<exec_depend>message_runtime</exec_depend>** to **<run_depend>message_runtime</run_depend>**
-- Modification 2
-  - Open **swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/CMakeLists.txt** using your favorite editor.
-  - Comment out lines from 60 to 62.
-  ```bat
-  #  add_message_files(
-  #    FILES
-  #  )
-  ```
 Add following commands to the end of **~/.bashrc**. Please modify **${path-to-heterogeneous-sampling}** according to the actual path.
 ```bat
 source ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/devel/setup.sh
