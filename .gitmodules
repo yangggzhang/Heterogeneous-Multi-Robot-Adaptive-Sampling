@@ -1,0 +1,3 @@
+[submodule "src/jackal"]
+	path = src/jackal
+	url = https://github.com/jackal/jackal.git
