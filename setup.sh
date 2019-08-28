@@ -12,3 +12,4 @@ cd build
 cmake ..
 make
 cd ../../../../../../..
+pip install pyspread openpyxl scipy cvxopt --user
