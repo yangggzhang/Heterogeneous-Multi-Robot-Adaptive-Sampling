@@ -1,3 +1,6 @@
 [submodule "src/jackal"]
 	path = src/jackal
 	url = https://github.com/jackal/jackal.git
+[submodule "src/swarm-primitive-dp"]
+	path = src/swarm-primitive-dp
+	url = https://github.com/zyyyyyyyyy/swarm-primitive-dp.git
