@@ -5,3 +5,4 @@ source devel/setup.bash
 cd ../../..
 catkin_make
 source devel/setup.bash
+exec bash
