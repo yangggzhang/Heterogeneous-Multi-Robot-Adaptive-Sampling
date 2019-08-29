@@ -8,16 +8,9 @@ To install all additional ROS packages, dependencies and python packages. Please
 ./setup.sh
 ```
 # Build the project
-Please also modify the path on line 14 and 41 in  <br /> 
-**swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/load_data.h**  <br />
-to the actual file path, etc  <br />
-**${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/*.txt** <br />
-Then run the command in terminal
-```bat
-./build.sh
-```
 Add following commands to the end of **~/.bashrc**. Please modify **${path-to-heterogeneous-sampling}** according to the actual path.
 ```bat
+source ${path-to-heterogeneous-sampling}/devel/setup.sh
 source ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/devel/setup.sh
 alias killgazebo='killall -9 gazebo & killall -9 gzserver & killall -9 gzclient'
 alias killros='killall -9 roscore & killall -9 rosmaster'
@@ -27,9 +20,13 @@ export SWARM_WS=${path-to-heterogeneous-sampling}/src/swarm-primitive-dp
 alias swarm_ck='export ck_dir=`pwd`; cd ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator; catkin_make; cd $ck_dir'
 alias swarm_run='export ck_dir=`pwd`; cd ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/scripts; ./run.sh; cd $ck_dir'
 ```
-Then source the modification by running
-```bash
-source ~/.bashrc
+Please also modify the path on line 14 and 41 in  <br /> 
+**swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/load_data.h**  <br />
+to the actual file path, etc  <br />
+**${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/*.txt** <br />
+Then run the command in terminal
+```bat
+./build.sh
 ```
 # Run the project
 ```bat
