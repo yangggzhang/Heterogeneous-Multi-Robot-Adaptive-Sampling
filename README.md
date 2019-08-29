@@ -2,9 +2,19 @@
 This is ROS workspace for CMU MRSD 2018 Team G's capstone project - Hetegeneous Multi-Robot Sampling. <br />
 The detailed descriptions for this project can be found via https://mrsdprojects.ri.cmu.edu/2018teamg/
 # Installation
-To install all required ROS packages, dependencies and python packages. Please run the following command in terminal first.
+First install **Full-Desktop** ROS Kinetic by following the instructions : http://wiki.ros.org/kinetic/Installation/Ubuntu. <br />
+To install all additional ROS packages, dependencies and python packages. Please run the following command in terminal first.
 ```bat
 ./setup.sh
+```
+# Build the project
+Please also modify the path on line 14 and 41 in  <br /> 
+**swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/load_data.h**  <br />
+to the actual file path, etc  <br />
+**${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/*.txt** <br />
+Then run the command in terminal
+```bat
+./build.sh
 ```
 Add following commands to the end of **~/.bashrc**. Please modify **${path-to-heterogeneous-sampling}** according to the actual path.
 ```bat
@@ -17,10 +27,10 @@ export SWARM_WS=${path-to-heterogeneous-sampling}/src/swarm-primitive-dp
 alias swarm_ck='export ck_dir=`pwd`; cd ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator; catkin_make; cd $ck_dir'
 alias swarm_run='export ck_dir=`pwd`; cd ${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/scripts; ./run.sh; cd $ck_dir'
 ```
-Please also modify the path on line 14 and 41 in  <br /> 
-**swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/load_data.h**  <br />
-to the actual file path, etc  <br />
-**${path-to-heterogeneous-sampling}/src/swarm-primitive-dp/swarm_simulator/src/cmuswarm_swarm/include/*.txt**
+Then source the modification by running
+```bash
+source ~/.bashrc
+```
 # Run the project
 ```bat
 swarm_run
