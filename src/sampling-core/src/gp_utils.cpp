@@ -14,4 +14,22 @@ bool distance_2d(const Eigen::MatrixXd &location_1,
   }
   return true;
 }
+
+bool closest_index(const Eigen::MatrixXd &robots_location,
+                   const Eigen::MatrixXd &cell_location,
+                   std::vector<std::vector<size_t>> &closest_cell) {
+  closest_cell.clear();
+  /// robots_location.rows == number of robots
+  closest_cell.resize(robots_location.rows());
+  Eigen::MatrixXd distance;
+  if (!distance_2d(robots_location, cell_location, distance)) {
+    return false;
+  }
+  Eigen::MatrixXd::Index min_index;
+  for (int i = 0; i < distance.columns(); i++) {
+    distance.col(i).minCoeff(&min_index);
+    closest_cell[(int)min_index].push_back(i);
+  }
+  return true;
 }
+}  // namespace sampling
