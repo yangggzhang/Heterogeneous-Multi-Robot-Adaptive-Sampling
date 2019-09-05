@@ -1,0 +1,13 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~base_depth_gain" : \b [int] Gain min: 16, default: 16, max: 248
+- \b "~base_depth_enable_auto_exposure" : \b [bool] Enable Auto Exposure min: False, default: True, max: True
+- \b "~base_depth_visual_preset" : \b [int] D400 Visual Presets min: 0, default: 0, max: 5
+- \b "~base_depth_frames_queue_size" : \b [int] Frames Queue Size min: 0, default: 16, max: 32
+- \b "~base_depth_error_polling_enabled" : \b [bool] Error Polling Enabled min: False, default: False, max: True
+- \b "~base_depth_output_trigger_enabled" : \b [bool] Output Trigger Enabled min: False, default: False, max: True
+- \b "~base_depth_units" : \b [double] Depth Units min: 0.001, default: 0.001, max: 0.001
+- \b "~base_JSON_file_path" : \b [str] JSON_file_path min: , default: , max: 
+

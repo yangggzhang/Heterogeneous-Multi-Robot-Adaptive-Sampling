@@ -1,0 +1,8 @@
+prefix=/home/administrator/catkin_ws/devel
+
+Name: jackal_tutorials
+Description: Description of jackal_tutorials
+Version: 0.5.4
+Cflags: 
+Libs: -L/home/administrator/catkin_ws/devel/lib 
+Requires: 

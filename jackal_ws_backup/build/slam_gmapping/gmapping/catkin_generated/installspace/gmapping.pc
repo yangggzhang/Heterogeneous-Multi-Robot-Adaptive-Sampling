@@ -1,0 +1,8 @@
+prefix=/home/administrator/catkin_ws/install
+
+Name: gmapping
+Description: Description of gmapping
+Version: 1.3.10
+Cflags: 
+Libs: -L/home/administrator/catkin_ws/install/lib 
+Requires: 

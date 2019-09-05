@@ -1,0 +1,6 @@
+set(reach_rs_driver_SETUP_PY_VERSION "0.0.1")
+set(reach_rs_driver_SETUP_PY_SCRIPTS "")
+set(reach_rs_driver_SETUP_PY_PACKAGES "enway_reach_rs_driver")
+set(reach_rs_driver_SETUP_PY_PACKAGE_DIRS "src/enway_reach_rs_driver")
+set(reach_rs_driver_SETUP_PY_MODULES "")
+set(reach_rs_driver_SETUP_PY_MODULE_DIRS "")

@@ -1,0 +1,33 @@
+\subsubsection usage Usage
+\verbatim
+<node name="realsense2_camera" pkg="realsense2_camera" type="realsense2_camera">
+  <param name="rs415_depth_gain" type="int" value="16" />
+  <param name="rs415_depth_enable_auto_exposure" type="bool" value="True" />
+  <param name="rs415_depth_visual_preset" type="int" value="0" />
+  <param name="rs415_depth_frames_queue_size" type="int" value="16" />
+  <param name="rs415_depth_error_polling_enabled" type="bool" value="False" />
+  <param name="rs415_depth_output_trigger_enabled" type="bool" value="False" />
+  <param name="rs415_depth_units" type="double" value="0.001" />
+  <param name="rs415_JSON_file_path" type="str" value="" />
+  <param name="rs415_depth_enable_auto_white_balance" type="bool" value="False" />
+  <param name="rs415_depth_exposure" type="int" value="1650" />
+  <param name="rs415_depth_laser_power" type="double" value="12.5" />
+  <param name="rs415_depth_emitter_enabled" type="int" value="1" />
+  <param name="rs415_color_backlight_compensation" type="bool" value="False" />
+  <param name="rs415_color_brightness" type="int" value="0" />
+  <param name="rs415_color_contrast" type="int" value="50" />
+  <param name="rs415_color_exposure" type="int" value="166" />
+  <param name="rs415_color_gain" type="int" value="64" />
+  <param name="rs415_color_gamma" type="int" value="300" />
+  <param name="rs415_color_hue" type="int" value="0" />
+  <param name="rs415_color_saturation" type="int" value="64" />
+  <param name="rs415_color_sharpness" type="int" value="50" />
+  <param name="rs415_color_white_balance" type="int" value="460" />
+  <param name="rs415_color_enable_auto_exposure" type="bool" value="True" />
+  <param name="rs415_color_enable_auto_white_balance" type="bool" value="True" />
+  <param name="rs415_color_frames_queue_size" type="int" value="16" />
+  <param name="rs415_color_power_line_frequency" type="int" value="3" />
+  <param name="rs415_color_auto_exposure_priority" type="bool" value="False" />
+</node>
+\endverbatim
+
