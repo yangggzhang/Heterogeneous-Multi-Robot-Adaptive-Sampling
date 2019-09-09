@@ -1,0 +1,8 @@
+prefix=/home/administrator/catkin_ws/install
+
+Name: reach_rs_driver
+Description: Description of reach_rs_driver
+Version: 0.0.1
+Cflags: 
+Libs: -L/home/administrator/catkin_ws/install/lib 
+Requires: 

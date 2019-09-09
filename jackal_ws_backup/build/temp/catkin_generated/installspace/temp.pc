@@ -1,0 +1,8 @@
+prefix=/home/administrator/catkin_ws/install
+
+Name: temp
+Description: Description of temp
+Version: 0.0.0
+Cflags: -I/home/administrator/catkin_ws/install/include
+Libs: -L/home/administrator/catkin_ws/install/lib 
+Requires: 

@@ -1,0 +1,7 @@
+<launch>
+<node pkg="temp" type="temper.py" name="node_temper" output="screen">
+</node>
+<node pkg="temp" type="odom_temp_sub.py" name="node_temper_odom_sub" output="screen">
+</node>
+</launch>
+

@@ -1,0 +1,8 @@
+prefix=/home/administrator/catkin_ws/devel
+
+Name: rospy_tutorials
+Description: Description of rospy_tutorials
+Version: 0.5.5
+Cflags: -I/home/administrator/catkin_ws/devel/include
+Libs: -L/home/administrator/catkin_ws/devel/lib 
+Requires: message_runtime std_msgs
