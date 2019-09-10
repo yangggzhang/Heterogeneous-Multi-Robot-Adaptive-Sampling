@@ -140,81 +140,43 @@ bool loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
   return true;
 }
 
-bool expectation(const Eigen::MatrixXd &data, const Model &gp_model,
-                 Eigen::MatrixXd &likelyhood_table, double &exp) {
-  Eigen::MatrixXd mu = gp_model.mu;
-  Eigen::MatrixXd sigma = gp_model.sigma;
-  Eigen::MatrixXd w = gp_model.w;
-
-  int d = X.rows();
-  int n = X.cols();
-  int k = mu.cols();
+void expectation(const Eigen::MatrixXd &data, const Model &gp_model, double &exp) {
+  int d = data.rows();
+  int n = data.cols();
+  int k = gp_model.mu.cols();
 
   for (int i = 0; i < k; i++) {
-    if (!loggausspdf(data, mu.col(i), Sigma.block<1, 1>(0, i), R.col(i))) {
+    if (!loggausspdf(data,  gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i), gp_model.R.col(i))) {
       return false;
     }
   }
-  // cout<<"after 1: "<<R<<endl;
 
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < k; j++) {
-      R(i, j) = R(i, j) + w.array().log()(0, j); // w: 1 x k
-    }
+  for (int j = 0; j < k; j++)
+  {
+      gp_model.R.col(j).array() +=  gp_model.w.array().log()(0,j);
   }
-  // cout<<"after 2: "<<R<<endl;
 
-  Eigen::MatrixXd T = R.array().exp().rowwise().sum().log(); // T: n x 1
-  double llh_iter = T.sum() / n;
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < k; j++) {
-      R(i, j) = R(i, j) - T(i, 0); // w: 1 x k
-    }
+  Eigen::MatrixXd T = gp_model.R.array().exp().rowwise().sum().log(); // T: n x 1
+  exp = T.sum() / (double) n;
+  for(int i = 0; i < n; i++){
+    gp_model.R.row(i).array() -= T(i,0);
   }
-  // cout<<"after 3: "<<R<<endl;
-
-  R = R.array().exp();
-  // cout<<"after: "<<R<<endl;
-
-  return llh_iter;
+  gp_model.R = gp_model.R.array().exp();
 }
 
-void maximization(const Eigen::MatrixXd &X, Model &gpModel,
-                  const Eigen::MatrixXd &R) {
-  int d = X.rows();            // d : utility dimension
-  int n = X.cols();            // n : number of samples
-  int k = gpModel.numGaussian; // k : number of gaussian
-
-  Eigen::MatrixXd nk = R.colwise().sum();
-  Eigen::MatrixXd w = nk / n;
-  Eigen::MatrixXd temp = X * R;
-  Eigen::MatrixXd mu(d, k);
-
-  for (int i = 0; i < d; i++) {
-    for (int j = 0; j < k; j++) {
-      mu(j) = temp(i, j) / nk(i, j);
+void maximization(const Eigen::MatrixXd data, Model& gp_model){
+    double n = (double) data.cols();
+    Eigen::MatrixXd nk = gp_model.R.colwise().sum();
+    model.w = nk/n;
+    model.mu = data * gp_model.R /nk.array();    
+    Eigen::MatrixXd r = R.array().sqrt();
+    Eigen::VectorXd x_vector(Eigen::Map<Eigen::VectorXd>(X.data(), X.cols()*X.rows()));
+    for (int i = 0 ; i < gp_model.numGaussian; i++)
+    {
+        Eigen::VectorXd Xo = x_vector.array() - mu(i);;
+        Xo = Xo.array() * r.col(i).array();
+        model.Sigma(i) = Xo.dot(Xo) / nk(i);
     }
-  }
-
-  Eigen::MatrixXd Sigma =
-      Eigen::MatrixXd::Zero(d, d * k); // use block to construct a 3D matrix,
-                                       // leftCols(d) as a first element
-  Eigen::MatrixXd r = R.array().sqrt();
-  for (int m = 0; m < k; m++) {
-    Eigen::MatrixXd Xo(d, n);
-    for (int i = 0; i < d; i++) {
-      for (int j = 0; j < n; j++) {
-        Xo(i, j) = X(i, j) - mu(i, m);
-      }
-    }
-    Xo = Xo.array() * r.col(m).transpose().array();
-    Sigma.block<1, 1>(0, m) =
-        Xo * Xo.transpose() / nk(m) + Eigen::MatrixXd::Identity(d, d) * (1e-20);
-  }
-
-  gpModel.mu = mu;
-  gpModel.Sigma = Sigma;
-  gpModel.w = w;
 }
 
 vector<int> sort_indexes(Eigen::MatrixXd &v) {

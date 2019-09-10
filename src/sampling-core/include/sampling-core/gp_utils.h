@@ -23,6 +23,13 @@ namespace sampling {
 
 const DefaultMaxMapSize = 400;
 
+struct Model{
+    Eigen::MatrixXd mu;
+    Eigen::MatrixXd Sigma;
+    Eigen::MatrixXd w;
+    Eigen::MatrixXd R;
+};
+
 struct EigenHash {
   int operator()(const Eigen::MatrixXd &m) const {
     int row = m(0, 0);
@@ -78,11 +85,9 @@ Eigen::MatrixXd compute_utility_center(const int &robot_id,
 Eigen::MatrixXd loggausspdf(Eigen::MatrixXd X, Eigen::MatrixXd mu,
                             Eigen::MatrixXd Sigma);
 
-double expectation(const Eigen::MatrixXd &X, Model &gpModel,
-                   Eigen::MatrixXd &R);
+void expectation(const Eigen::MatrixXd &data, const Model &gp_model, double &exp);
 
-void maximization(const Eigen::MatrixXd &X, Model &gpModel,
-                  const Eigen::MatrixXd &R);
+void maximization(const Eigen::MatrixXd data, Model& gp_model);
 
 vector<int> sort_indexes(Eigen::MatrixXd &v);
 
