@@ -8,26 +8,27 @@
 #define JC_VORONOI_IMPLEMENTATION
 #include "jc_voronoi.h"
 
-#include "load_data.h"
-#include <Eigen/Dense>
 #include <cmuswarm_msgs/BehaviourRequest.h>
 #include <cmuswarm_msgs/ObjectCoverageLocation.h>
 #include <cmuswarm_msgs/ObjectCoverageLocations.h>
-#include <cstdlib>
-#include <fstream>
 #include <std_srvs/Trigger.h>
 #include <stdlib.h>
+#include <Eigen/Dense>
+#include <cstdlib>
+#include <fstream>
 #include <string>
+#include "load_data.h"
 
 namespace sampling {
 
 const DefaultMaxMapSize = 400;
 
-struct Model{
-    Eigen::MatrixXd mu;
-    Eigen::MatrixXd Sigma;
-    Eigen::MatrixXd w;
-    Eigen::MatrixXd R;
+struct Model {
+  int numGaussian;
+  Eigen::MatrixXd mu;
+  Eigen::MatrixXd Sigma;
+  Eigen::MatrixXd w;
+  Eigen::MatrixXd R;
 };
 
 struct EigenHash {
@@ -82,58 +83,21 @@ Eigen::MatrixXd compute_utility_center(const int &robot_id,
                                        const Eigen::MatrixXd &Xss,
                                        const Eigen::MatrixXd &phi);
 
+vector<int> sort_indexes(Eigen::MatrixXd &v);
+
 Eigen::MatrixXd loggausspdf(Eigen::MatrixXd X, Eigen::MatrixXd mu,
                             Eigen::MatrixXd Sigma);
 
-void expectation(const Eigen::MatrixXd &data, const Model &gp_model, double &exp);
+void expectation(const Eigen::MatrixXd &data, const Model &gp_model,
+                 double &exp);
 
-void maximization(const Eigen::MatrixXd data, Model& gp_model);
+void maximization(const Eigen::MatrixXd data, Model &gp_model);
 
-vector<int> sort_indexes(Eigen::MatrixXd &v);
+void expectation_maximization(const Eigen::MatrixXd &data,
+                              const int &max_interation,
+                              const double &tolerance, Model &gp_model);
 
-void CentralizedController::MixGaussEm_gmm() {
-  /*Perform EM algorithm for fitting the Gaussian mixture model
-   *Output: label: 1 x 945 cluster label
-   * model: trained model structure
-   * llh:loglikelihood
-   */
-  // bool break_flag = false;
-
-  double inf = numeric_limits<double>::infinity();
-  double last_llh = 0;
-  double current_llh = 0;
-
-  Eigen::MatrixXd::Index max_index;
-  Fss.transposeInPlace();
-  for (int iter = 0; iter < EM_MAX_ITER; iter++) {
-    maximization(Fss, gpModel, R);
-    current_llh = expectation(Fss, gpModel, R); // update llh[iter] and R
-    // cout<<"last llh "<<last_llh<<endl;
-    // cout<<"current llh "<<current_llh<<endl;
-
-    if (abs(current_llh - last_llh) < EM_TOL * abs(current_llh))
-      break;
-    last_llh = current_llh;
-  }
-
-  Fss.transposeInPlace();
-}
-
-void CentralizedController::MixGaussPred_gmm() {
-  /* Predict label and responsibility for Gaussian mixture model.
-   *Input:
-   *     X: d x n data matrix
-   *     model: trained model structure outputted by the EM algorithm
-   *Output:
-   *     label: 1 x n cluster label
-   *     R: k x n responsibility
-   */
-  Eigen::MatrixXd::Index max_index;
-  for (int i = 0; i < R.rows(); i++) {
-    R.row(i).maxCoeff(&max_index);
-    label(i) = max_index; // Eigen::VectorXd label(X.cols());
-  }
-}
+void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label);
 
 Eigen::VectorXi sort_unique(Eigen::VectorXi a) {
   sort(a.data(), a.data() + a.size(),
@@ -141,8 +105,7 @@ Eigen::VectorXi sort_unique(Eigen::VectorXi a) {
 
   vector<int> vec;
   vec.clear();
-  for (int i = 0; i < a.size(); i++)
-    vec.push_back(a(i));
+  for (int i = 0; i < a.size(); i++) vec.push_back(a(i));
   vector<int>::iterator it;
   it = unique(vec.begin(), vec.end());
   vec.erase(it, vec.end());
@@ -201,7 +164,7 @@ void gpml_rms(Eigen::VectorXi &ind_train, const Eigen::MatrixXd &Xs,
   Fs_train = extract_rows(Fs, ind_train);
 
   Eigen::MatrixXd Fs_train_mtz;
-  Fs_train_mtz = Fs_train.array() - Fs_train.mean(); // mean value equals to 0
+  Fs_train_mtz = Fs_train.array() - Fs_train.mean();  // mean value equals to 0
   gp_compute(Xs_train, Fs_train_mtz, Xtest_new, mu, s2);
   mu = mu.array() + Fs_train.mean();
 }
@@ -268,11 +231,11 @@ Eigen::MatrixXd gt_pred(Eigen::MatrixXd Xs, Eigen::MatrixXd R,
       PP_out:   standard normalize with + and - (sum is 1)
       PP:   raw data of gp predicted probability (sum maybe close to 1)
 */
-  int K = R.cols();           // get number of models, 3
-  int N = Xs.rows();          // 10
-  int n_test = X_test.rows(); // 202
+  int K = R.cols();            // get number of models, 3
+  int N = Xs.rows();           // 10
+  int n_test = X_test.rows();  // 202
 
-  Eigen::MatrixXd PP = Eigen::MatrixXd::Zero(n_test, K); // 202 x 3
+  Eigen::MatrixXd PP = Eigen::MatrixXd::Zero(n_test, K);  // 202 x 3
 
   Eigen::VectorXi ind_train(N);
   for (int i = 0; i < N; i++) {
@@ -308,9 +271,9 @@ void CentralizedController::gmm_pred_cen(Eigen::VectorXd &pred_h,
   // cout << "label is " << label << endl;
 
   Eigen::MatrixXd mu = Eigen::MatrixXd::Zero(
-      All_Xss.rows(), gpModel.numGaussian); // Sample_size x 3
+      All_Xss.rows(), gpModel.numGaussian);  // Sample_size x 3
   Eigen::MatrixXd s2 = Eigen::MatrixXd::Zero(
-      All_Xss.rows(), gpModel.numGaussian); // Sample_size x 3
+      All_Xss.rows(), gpModel.numGaussian);  // Sample_size x 3
 
   for (int ijk = 0; ijk < gpModel.numGaussian; ijk++) {
     // cout << "I start getting labels." << endl;
@@ -333,7 +296,7 @@ void CentralizedController::gmm_pred_cen(Eigen::VectorXd &pred_h,
    *start to filter infeasible component
    */
 
-  Eigen::MatrixXd pred_mu_mat = mu; // 202 x 3
+  Eigen::MatrixXd pred_mu_mat = mu;  // 202 x 3
   Eigen::MatrixXd pred_mu_mat_tmp(mu.rows(), mu.cols());
   for (int i = 0; i < PP_out.rows(); i++) {
     for (int j = 0; j < PP_out.cols(); j++) {
@@ -347,18 +310,18 @@ void CentralizedController::gmm_pred_cen(Eigen::VectorXd &pred_h,
     norm_PP_out.row(i) = PP_out_tmp.row(i).array() / PP_out_tmp.row(i).sum();
   }
 
-  pred_mu_mat = set_NaN_tz(pred_mu_mat); // set NaN elements to 0
-                                         /*
-                                          * end of filtering
-                                          */
+  pred_mu_mat = set_NaN_tz(pred_mu_mat);  // set NaN elements to 0
+                                          /*
+                                           * end of filtering
+                                           */
   // Eigen::MatrixXd pred_h = (norm_PP_out.array() *
   // pred_mu_mat.array()).rowwise().sum();//202 x 1
   pred_h =
-      (norm_PP_out.array() * pred_mu_mat.array()).rowwise().sum(); // 202 x 1
+      (norm_PP_out.array() * pred_mu_mat.array()).rowwise().sum();  // 202 x 1
 
   Eigen::MatrixXd pred_s2_mat = s2;
 
-  Eigen::MatrixXd muu_pp_rep = repmat(pred_h, gpModel.numGaussian); // 202 x 3
+  Eigen::MatrixXd muu_pp_rep = repmat(pred_h, gpModel.numGaussian);  // 202 x 3
   pred_s2_mat =
       (pred_mu_mat - muu_pp_rep).array() * (pred_mu_mat - muu_pp_rep).array();
   pred_s2_mat = pred_s2_mat + s2;
@@ -395,7 +358,7 @@ void CentralizedController::sample_cb(const cmuswarm_msgs::Sample &msg) {
   // for now grab tempterature from ground truth
   double utility = this->gt_data.gtSamples[position];
 
-  if (collectedSamples.count(position)) // position collected before
+  if (collectedSamples.count(position))  // position collected before
   {
     int pos_id = collectedSamples[position];
     Fss(id, 0) = utility;
@@ -429,8 +392,7 @@ void CentralizedController::sample_cb(const cmuswarm_msgs::Sample &msg) {
   }
 
   this->UpdateCount++;
-  if (this->UpdateCount >= this->EMUpdateRate)
-    this->updateFlag = 1;
+  if (this->UpdateCount >= this->EMUpdateRate) this->updateFlag = 1;
   // double uti = msg.utility;
   stringstream ss;
   ss << "Master listened: Robot id : " << msg.robot_id
@@ -460,7 +422,7 @@ bool CentralizedController::assign_target(
         res.x = req.current_x;
         res.y = req.current_y;
       }
-      this->total_request_count++; // might be a problem
+      this->total_request_count++;  // might be a problem
     }
     this->target_positions[id] = make_pair(res.x, res.y);
   }
@@ -473,8 +435,7 @@ bool CentralizedController::assign_target(
 
 bool CentralizedController::check_reception() {
   for (int i = 0; i < numBots; i++) {
-    if (!position_received_v[i])
-      return false;
+    if (!position_received_v[i]) return false;
   }
   return true;
 }
@@ -502,8 +463,7 @@ void CentralizedController::update_targets() {
   request_positions();
   while (true) {
     ros::spinOnce();
-    if (check_reception())
-      break;
+    if (check_reception()) break;
   }
   // cout<<"Received all positions!"<<endl;
   // Collected all robots' locations
@@ -518,10 +478,9 @@ void CentralizedController::update_targets() {
                        less<pair<double, int>>>();
 
     Eigen::MatrixXd close_Xss =
-        extract_rows(this->All_Xss, q[i]); // closes points
+        extract_rows(this->All_Xss, q[i]);  // closes points
 
     for (int j = 0; j < q[i].size(); j++) {
-
       robot_targets[i].push(make_pair(this->phi(q[i][j]), q[i][j]));
     }
     cout << "Finish update targets" << endl;
@@ -648,12 +607,12 @@ void CentralizedController::start() {
 
       // run EM;
       cout << "Start update EM" << endl;
-      MixGaussEm_gmm(); // update EM
+      MixGaussEm_gmm();  // update EM
       cout << "Finish EM" << endl;
-      MixGaussPred_gmm(); // update label
+      MixGaussPred_gmm();  // update label
       cout << "Finish Predict" << endl;
 
-      gmm_pred_cen(this->pred_h, this->pred_Var); // update phi function
+      gmm_pred_cen(this->pred_h, this->pred_Var);  // update phi function
       cout << "Finish GP" << endl;
       // cout<<"max: "<<this->pred_h.maxCoeff()<<" min:
       // "<<this->pred_h.minCoeff()<<endl;
@@ -761,4 +720,4 @@ bool load_ground_truth_data(const std::string &location_data_path,
                             const std::string &temperature_data_path,
                             Eigen::MatrixXd &location,
                             Eigen::MatrixXd &temperature);
-} // namespace sampling
+}  // namespace sampling
