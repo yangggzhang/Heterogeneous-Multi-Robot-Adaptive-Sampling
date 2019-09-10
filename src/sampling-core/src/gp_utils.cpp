@@ -1,5 +1,64 @@
 #include "gp_utils.h"
 namespace sampling {
+  
+bool loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
+                 const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood) {
+  if (data.rows() != mu.rows()) {
+    return false;
+  }
+
+  Eigen::MatrixXd mu_matrix = mu.colwise.replicate(1, data.cols());
+  Eigen::MatrixXd unbiased_data = data - mu_matrix;
+  Eigen::MatrixXd U = Sigma.llt().matrixL();
+  Eigen::MatrixXd Q = U.inverse() * unbiased_data;
+  Eigen::MatrixXd q = Q.array() * Q.array();
+
+  double c = d * log(2 * M_PI) + 2 * U.diagonal().array().log().sum();
+
+  Eigen::MatrixXd log_likelyhood = -1 * (c + q.array()) / 2;
+  log_likelyhood = log_likelyhood.transpose();
+  return true;
+}
+
+void expectation(const Eigen::MatrixXd &data, const Model &gp_model, double &exp) {
+  int d = data.rows();
+  int n = data.cols();
+  int k = gp_model.mu.cols();
+
+  for (int i = 0; i < k; i++) {
+    if (!loggausspdf(data,  gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i), gp_model.R.col(i))) {
+      return false;
+    }
+  }
+
+  for (int j = 0; j < k; j++)
+  {
+      gp_model.R.col(j).array() +=  gp_model.w.array().log()(0,j);
+  }
+
+  Eigen::MatrixXd T = gp_model.R.array().exp().rowwise().sum().log(); // T: n x 1
+  exp = T.sum() / (double) n;
+  for(int i = 0; i < n; i++){
+    gp_model.R.row(i).array() -= T(i,0);
+  }
+  gp_model.R = gp_model.R.array().exp();
+}
+
+void maximization(const Eigen::MatrixXd data, Model& gp_model){
+    double n = (double) data.cols();
+    Eigen::MatrixXd nk = gp_model.R.colwise().sum();
+    model.w = nk/n;
+    model.mu = data * gp_model.R /nk.array();    
+    Eigen::MatrixXd r = R.array().sqrt();
+    Eigen::VectorXd x_vector(Eigen::Map<Eigen::VectorXd>(X.data(), X.cols()*X.rows()));
+    for (int i = 0 ; i < gp_model.numGaussian; i++)
+    {
+        Eigen::VectorXd Xo = x_vector.array() - mu(i);;
+        Xo = Xo.array() * r.col(i).array();
+        model.Sigma(i) = Xo.dot(Xo) / nk(i);
+    }
+}
+
 
 bool distance_2d(const Eigen::MatrixXd &location_1,
                  const Eigen::MatrixXd &location_2, Eigen::MatrixXd &distance) {
@@ -119,64 +178,6 @@ Eigen::MatrixXd compute_utility_center(const int &robot_id,
   v_center(0, 1) = c_qy / c_q;
 
   return v_center;
-}
-
-bool loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
-                 const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood) {
-  if (data.rows() != mu.rows()) {
-    return false;
-  }
-
-  Eigen::MatrixXd mu_matrix = mu.colwise.replicate(1, data.cols());
-  Eigen::MatrixXd unbiased_data = data - mu_matrix;
-  Eigen::MatrixXd U = Sigma.llt().matrixL();
-  Eigen::MatrixXd Q = U.inverse() * unbiased_data;
-  Eigen::MatrixXd q = Q.array() * Q.array();
-
-  double c = d * log(2 * M_PI) + 2 * U.diagonal().array().log().sum();
-
-  Eigen::MatrixXd log_likelyhood = -1 * (c + q.array()) / 2;
-  log_likelyhood = log_likelyhood.transpose();
-  return true;
-}
-
-void expectation(const Eigen::MatrixXd &data, const Model &gp_model, double &exp) {
-  int d = data.rows();
-  int n = data.cols();
-  int k = gp_model.mu.cols();
-
-  for (int i = 0; i < k; i++) {
-    if (!loggausspdf(data,  gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i), gp_model.R.col(i))) {
-      return false;
-    }
-  }
-
-  for (int j = 0; j < k; j++)
-  {
-      gp_model.R.col(j).array() +=  gp_model.w.array().log()(0,j);
-  }
-
-  Eigen::MatrixXd T = gp_model.R.array().exp().rowwise().sum().log(); // T: n x 1
-  exp = T.sum() / (double) n;
-  for(int i = 0; i < n; i++){
-    gp_model.R.row(i).array() -= T(i,0);
-  }
-  gp_model.R = gp_model.R.array().exp();
-}
-
-void maximization(const Eigen::MatrixXd data, Model& gp_model){
-    double n = (double) data.cols();
-    Eigen::MatrixXd nk = gp_model.R.colwise().sum();
-    model.w = nk/n;
-    model.mu = data * gp_model.R /nk.array();    
-    Eigen::MatrixXd r = R.array().sqrt();
-    Eigen::VectorXd x_vector(Eigen::Map<Eigen::VectorXd>(X.data(), X.cols()*X.rows()));
-    for (int i = 0 ; i < gp_model.numGaussian; i++)
-    {
-        Eigen::VectorXd Xo = x_vector.array() - mu(i);;
-        Xo = Xo.array() * r.col(i).array();
-        model.Sigma(i) = Xo.dot(Xo) / nk(i);
-    }
 }
 
 vector<int> sort_indexes(Eigen::MatrixXd &v) {
