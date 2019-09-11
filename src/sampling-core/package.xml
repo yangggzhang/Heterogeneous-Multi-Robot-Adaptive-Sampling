@@ -49,25 +49,13 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cmuswarm_core</build_depend>
-  <build_depend>cmuswarm_msgs</build_depend>
-  <build_depend>cmuswarm_swarm</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_export_depend>cmuswarm_core</build_export_depend>
-  <build_export_depend>cmuswarm_msgs</build_export_depend>
-  <build_export_depend>cmuswarm_swarm</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
-  <exec_depend>cmuswarm_core</exec_depend>
-  <exec_depend>cmuswarm_msgs</exec_depend>
-  <exec_depend>cmuswarm_swarm</exec_depend>
-  <exec_depend>roscpp</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-
+  <depend>cmuswarm_core</depend>
+  <depend>cmuswarm_msgs</depend>
+  <depend>cmuswarm_swarm</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>message_runtime</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "gp.h"
+#include "gp_utils.h"
 #include <Eigen/Dense>
 #include <cstdlib>
 #include <stdlib.h>
@@ -23,11 +25,12 @@ struct Model {
 
 Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n);
 
-bool loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
+Eigen::MatrixXd repmat(const Eigen::MatrixXd &x, const int &n);
+
+void loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
                  const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood);
 
-void expectation(const Eigen::MatrixXd &data, const Model &gp_model,
-                 double &exp);
+void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp);
 
 void maximization(const Eigen::MatrixXd data, Model &gp_model);
 
@@ -59,7 +62,7 @@ void GaussianProcess_prediction(
 
 void fill_nan(const double &num, Eigen::MatrixXd &matrix);
 
-void boolen_mask(const Eigen::MatrixXd &matrix, Eigen::MatrixX &mask);
+void boolen_mask(const Eigen::MatrixXd &matrix, Eigen::MatrixXd &mask);
 
 void normalize_matrix(const bool &row, Eigen::MatrixXd &matrix);
 

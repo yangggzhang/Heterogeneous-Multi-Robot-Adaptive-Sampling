@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "sampling-core/utils.h"
 #include <Eigen/Dense>
 #include <fstream>
 #include <iostream>
@@ -11,24 +11,24 @@ bool load_ground_truth_data(const std::string &location_data_path,
                             const std::string &temperature_data_path,
                             Eigen::MatrixXd &location,
                             Eigen::MatrixXd &temperature) {
-  ifstream finFss(temperature_data_path);
+  std::ifstream finFss(temperature_data_path.c_str(), std::ifstream::in);
 
   if (!finFss.is_open()) {
-    cout << "open Fss File: Error opening file" << endl;
+    std::cout << "open Fss File: Error opening file" << std::endl;
     return false;
   }
 
-  vector<double> Fss_vec;
-  string line;
+  std::vector<double> Fss_vec;
+  std::string line;
 
   while (getline(finFss, line)) {
-    istringstream sin(line);
+    std::istringstream sin(line);
 
-    string field;
+    std::string field;
     double a;
 
     while (getline(sin, field, ',')) {
-      a = stod(field);
+      a = std::stod(field);
       Fss_vec.push_back(a);
     }
   }
@@ -37,26 +37,26 @@ bool load_ground_truth_data(const std::string &location_data_path,
     temperature(i, 0) = Fss_vec[i];
   }
 
-  ifstream finXss(location_data_path);
+  std::ifstream finXss(location_data_path.c_str(), std::ifstream::in);
 
   if (!finXss.is_open()) {
-    cout << "open Xss File: Error opening file" << endl;
+    std::cout << "open Xss File: Error opening file" << std::endl;
     return false;
   }
 
-  vector<double> Xss_x;
-  vector<double> Xss_y;
-  string line1;
+  std::vector<double> Xss_x;
+  std::vector<double> Xss_y;
+  std::string line1;
 
   while (getline(finXss, line1)) {
-    istringstream sin(line1);
+    std::istringstream sin(line1);
 
-    string field;
+    std::string field;
     double a;
     int n = 0;
 
     while (getline(sin, field, ',')) {
-      a = stod(field);
+      a = std::stod(field);
       if (n == 0) {
         Xss_x.push_back(a);
         n = n + 1;

@@ -1,4 +1,5 @@
-#include "gp_utils.h"
+#include "sampling-core/gmm_utils.h"
+#include <ros/ros.h>
 
 namespace sampling {
 
@@ -14,47 +15,51 @@ Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n) {
   return Y;
 }
 
-bool loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
-                 const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood) {
-  if (data.rows() != mu.rows()) {
-    return false;
-  }
+Eigen::MatrixXd repmat(const Eigen::MatrixXd &x, const int &n) {
+  Eigen::VectorXd vector_data = x.col(0);
+  return repmat(vector_data, n);
+}
 
-  Eigen::MatrixXd mu_matrix = mu.colwise.replicate(1, data.cols());
+void loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
+                 const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood) {
+  // if (data.rows() != mu.rows()) {
+  //   return false;
+  // }
+
+  Eigen::MatrixXd mu_matrix = repmat(mu, data.cols());
   Eigen::MatrixXd unbiased_data = data - mu_matrix;
-  Eigen::MatrixXd U = Sigma.llt().matrixL();
+  Eigen::MatrixXd U = sigma.llt().matrixL();
   Eigen::MatrixXd Q = U.inverse() * unbiased_data;
   Eigen::MatrixXd q = Q.array() * Q.array();
 
+  double d = (double)data.rows();
+
   double c = d * log(2 * M_PI) + 2 * U.diagonal().array().log().sum();
 
-  Eigen::MatrixXd log_likelyhood = -1 * (c + q.array()) / 2;
+  log_likelyhood = -1 * (c + q.array()) / 2;
   log_likelyhood = log_likelyhood.transpose();
-  return true;
 }
 
-void expectation(const Eigen::MatrixXd &data, const Model &gp_model,
-                 double &exp) {
+void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp) {
   int d = data.rows();
   int n = data.cols();
   int k = gp_model.mu.cols();
 
   for (int i = 0; i < k; i++) {
-    if (!loggausspdf(data, gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i),
-                     gp_model.R.col(i))) {
-      return false;
-    }
+    loggausspdf(data, gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i),
+                gp_model.R.col(i));
   }
 
   for (int j = 0; j < k; j++) {
-    gp_model.R.col(j).array() += gp_model.w.array().log()(0, j);
+    gp_model.R.col(j) =
+        gp_model.R.col(j).array() + gp_model.w.array().log()(0, j);
   }
 
   Eigen::MatrixXd T =
       gp_model.R.array().exp().rowwise().sum().log(); // T: n x 1
   exp = T.sum() / (double)n;
   for (int i = 0; i < n; i++) {
-    gp_model.R.row(i).array() -= T(i, 0);
+    gp_model.R.row(i) = gp_model.R.row(i).array() - T(i, 0);
   }
   gp_model.R = gp_model.R.array().exp();
 }
@@ -62,16 +67,14 @@ void expectation(const Eigen::MatrixXd &data, const Model &gp_model,
 void maximization(const Eigen::MatrixXd data, Model &gp_model) {
   double n = (double)data.cols();
   Eigen::MatrixXd nk = gp_model.R.colwise().sum();
-  model.w = nk / n;
-  model.mu = data * gp_model.R / nk.array();
-  Eigen::MatrixXd r = R.array().sqrt();
-  Eigen::VectorXd x_vector(
-      Eigen::Map<Eigen::VectorXd>(X.data(), X.cols() * X.rows()));
+  gp_model.w = nk / n;
+  gp_model.mu = data * gp_model.R;
+  gp_model.mu = gp_model.mu.array() / nk.array();
+  Eigen::MatrixXd r = gp_model.R.array().sqrt();
   for (int i = 0; i < gp_model.numGaussian; i++) {
-    Eigen::VectorXd Xo = x_vector.array() - mu(i);
-    ;
+    Eigen::VectorXd Xo = data.array() - gp_model.mu(i);
     Xo = Xo.array() * r.col(i).array();
-    model.Sigma(i) = Xo.dot(Xo) / nk(i);
+    gp_model.Sigma(i) = Xo.dot(Xo) / nk(i);
   }
 }
 
@@ -79,7 +82,7 @@ void expectation_maximization(const Eigen::MatrixXd &data,
                               const int &max_iteration, const double &tolerance,
                               Model &gp_model) {
   double last_llh, current_llh;
-  data.transposeInPlace();
+  Eigen::MatrixXd transpose_data = data.transpose();
   for (int iter = 0; iter < max_iteration; iter++) {
     maximization(data, gp_model);
     expectation(data, gp_model, current_llh);
@@ -107,7 +110,7 @@ void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label) {
 void gp_compute(const Eigen::MatrixXd &X, const Eigen::MatrixXd &Y,
                 const Eigen::MatrixXd &X_test, Eigen::MatrixXd &mu,
                 Eigen::MatrixXd &s2) {
-  GaussianProcess gp(2, "CovSum ( CovSEiso, CovNoise)");
+  libgp::GaussianProcess gp(2, "CovSum ( CovSEiso, CovNoise)");
   Eigen::VectorXd params(3);
   params << 0.5, 0.5, -2.0;
   gp.covf().set_loghyper(params);
@@ -181,7 +184,7 @@ bool prepare_MixtureGaussianProcessd_data(
     for (int j = 0; j < index[i].size(); j++) {
       training_location[i].row(j) = location.row(index[i][j]);
       training_data[i].row(j) = data.row(index[i][j]);
-      probability[i].row(j) = gp_model.R(index[i][j], i);
+      probability[i].row(j) = gp_model.R.row(index[i][j]);
     }
   }
   return true;
@@ -206,7 +209,6 @@ void GaussianProcess_prediction(
     const std::vector<Eigen::MatrixXd> &training_data,
     const Eigen::MatrixXd &test_data, Eigen::MatrixXd &prediction) {
   int numGaussian = training_location.size(); // get number of models, 3
-  int N = training_data.rows();               // 10
   int numTest = test_data.rows();
 
   Eigen::MatrixXd naive_prediction =
@@ -214,8 +216,9 @@ void GaussianProcess_prediction(
 
   for (int i = 0; i < numGaussian; i++) {
     Eigen::MatrixXd var(numTest, 1);
-    gpml_rms(training_location[i], training_data[i], test_data,
-             naive_prediction.col(i), var);
+    Eigen::MatrixXd mu(numTest, 1);
+    gpml_rms(training_location[i], training_data[i], test_data, mu, var);
+    naive_prediction.col(i) = mu;
   }
 
   prediction.resize(numTest, numGaussian);
@@ -229,7 +232,7 @@ void GaussianProcess_prediction(
 void fill_nan(const double &num, Eigen::MatrixXd &matrix) {
   for (int i = 0; i < matrix.rows(); i++) {
     for (int j = 0; j < matrix.cols(); j++) {
-      if (isnan(matrix(i, j))) {
+      if (std::isnan(matrix(i, j))) {
         matrix(i, j) = num;
       }
     }
@@ -237,11 +240,11 @@ void fill_nan(const double &num, Eigen::MatrixXd &matrix) {
 }
 
 /// mask for nan
-void boolen_mask(const Eigen::MatrixXd &matrix, Eigen::MatrixX &mask) {
+void boolen_mask(const Eigen::MatrixXd &matrix, Eigen::MatrixXd &mask) {
   mask = matrix;
   for (int i = 0; i < matrix.rows(); i++) {
     for (int j = 0; j < matrix.cols(); j++) {
-      mask(i, j) = (double)isnan(matrix(i, j));
+      mask(i, j) = (double)std::isnan(matrix(i, j));
     }
   }
 }
@@ -274,13 +277,17 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
   }
 
   Eigen::MatrixXd mu = Eigen::MatrixXd::Zero(
-      location_test.rows(), gpModel.numGaussian); // Sample_size x 3
+      location_test.rows(), gp_model.numGaussian); // Sample_size x 3
   Eigen::MatrixXd s2 = Eigen::MatrixXd::Zero(
-      location_test.rows(), gpModel.numGaussian); // Sample_size x 3
+      location_test.rows(), gp_model.numGaussian); // Sample_size x 3
 
-  for (int i = 0; i < gpModel.numGaussian; i++) {
-    gpml_rms(training_location[i], training_data[i], location_test, mu.col(i),
-             s2.col(i));
+  for (int i = 0; i < gp_model.numGaussian; i++) {
+    Eigen::MatrixXd local_mu(location_test.rows(), 1);
+    Eigen::MatrixXd local_s2(location_test.rows(), 1);
+    gpml_rms(training_location[i], training_data[i], location_test, local_mu,
+             local_s2);
+    mu.col(i) = local_mu;
+    s2.col(i) = local_s2;
   }
 
   Eigen::MatrixXd mu_mask;
@@ -292,7 +299,7 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
 
   /// calculate mean value
   Eigen::MatrixXd normalized_prediction =
-      gp_prediction.array() * boolen_mask.array();
+      gp_prediction.array() * mu_mask.array();
   normalize_matrix(true, normalized_prediction);
   fill_nan(0.0, mu);
   pred_mu = (normalized_prediction.array() * mu.array()).rowwise().sum();
