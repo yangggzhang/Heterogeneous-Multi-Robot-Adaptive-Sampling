@@ -6,10 +6,10 @@ sudo apt-get install libignition-math3* libsdformat5 gazebo8 libgazebo8* ros-kin
 git submodule update --init --recursive
 cd src/swarm-primitive-dp/
 mkdir generated_launch
-cd swarm_simulator/src/cmuswarm_swarm/libgp
+cd ../sampling-core/libgp
 mkdir build
 cd build
 cmake ..
 make
-cd ../../../../../../..
+cd ../../../../..
 pip install pyspread openpyxl scipy cvxopt --user
