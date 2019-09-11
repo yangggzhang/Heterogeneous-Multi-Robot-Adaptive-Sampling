@@ -71,6 +71,8 @@ bool load_ground_truth_data(const std::string &location_data_path,
     location(i, 0) = Xss_x[i];
     location(i, 1) = Xss_y[i];
   }
+  location.transposeInPlace();
+  temperature.transposeInPlace();
   return true;
 }
 }

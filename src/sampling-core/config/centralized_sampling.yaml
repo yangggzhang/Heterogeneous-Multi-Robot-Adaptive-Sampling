@@ -3,8 +3,15 @@
 ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling-core/data/Xss.txt"
 ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling-core/data/Fss.txt"
 
-convergence_threshold: 0.01
 ugv_max_speed: 10
 ugv_goal_channel: "test"
 uav_max_speed: 10
 uav_goal_channel: "test"
+
+# ground truth model information
+ground_truth_num_gaussian: 3
+
+# learning criteria
+convergence_threshold: 0.0001
+max_iteration: 100
+
