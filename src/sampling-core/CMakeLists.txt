@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -38,6 +39,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/gmm_utils.cpp
   src/utils.cpp
+  src/sampling_visualization.cpp
 )
 
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)

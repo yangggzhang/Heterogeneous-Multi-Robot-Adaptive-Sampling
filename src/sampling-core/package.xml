@@ -56,6 +56,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>message_runtime</depend>
+  <depend>visualization_msgs</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

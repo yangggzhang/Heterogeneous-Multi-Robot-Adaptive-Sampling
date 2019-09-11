@@ -1,5 +1,5 @@
 #include "sampling-core/gmm_utils.h"
-// #include "sampling-core/sampling_visualization.h"
+#include "sampling-core/sampling_visualization.h"
 #include <ros/ros.h>
 #include <string>
 
