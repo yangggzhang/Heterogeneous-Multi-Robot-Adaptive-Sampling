@@ -1,11 +1,11 @@
-#include "sampling-core/gmm_utils.h"
-#include "sampling-core/sampling_visualization.h"
 #include <ros/ros.h>
 #include <string>
+#include "sampling-core/gmm_utils.h"
+#include "sampling-core/sampling_visualization.h"
 
 namespace sampling {
 class CentralizedSamplingNode {
-public:
+ public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
     load_parameter();
@@ -50,7 +50,7 @@ public:
     return true;
   }
 
-private:
+ private:
   ros::NodeHandle nh_, rh_;
   std::string ground_truth_data_path_;
   // GroundTruthData ground_truth_data_;
@@ -61,7 +61,7 @@ private:
   double uav_max_speed_;
   std::string uav_goal_channel_;
 };
-}
+}  // namespace sampling
 
 int main() {
   ros::NodeHandle nh, rh("~");

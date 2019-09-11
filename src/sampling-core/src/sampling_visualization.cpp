@@ -5,7 +5,7 @@ namespace sampling {
 
 // this function gets the color for each pixel given the normalized value of the
 // pixel
-void getHeatMapColor(float norm, float &r, float &g, float &b) {
+void getHeatMapColor(float norm, float& r, float& g, float& b) {
   const int NUM_COLORS = 5;
   static float color[NUM_COLORS][3] = {
       {0, 0, 1}, {0, 1, 1}, {1, 1, 0}, {1, 0, 0}, {0.6, 0, 0}};
@@ -30,30 +30,27 @@ void getHeatMapColor(float norm, float &r, float &g, float &b) {
 
 // This function is used to generate the rviz visualization of the robot
 // positions, corresponding voronoi edges, and heat map
-void rb_visualization(const Eigen::MatrixXd& Fss,const Eigen::VectorXd& pred_h,
-                      const Eigen::VectorXd& pred_Var, visualization_msgs::Marker& seed_point,
-                      visualization_msgs::Marker& heat_map_pred, visualization_msgs::Marker& heat_map_Var,
+void rb_visualization(const Eigen::MatrixXd& Fss, const Eigen::VectorXd& pred_h,
+                      const Eigen::VectorXd& pred_Var,
+                      visualization_msgs::Marker& seed_point,
+                      visualization_msgs::Marker& heat_map_pred,
+                      visualization_msgs::Marker& heat_map_Var,
                       visualization_msgs::Marker& heat_map_truth) {
-
   // initializing stuff for the marker msg
   visualization_msgs::Marker empty_marker;
   seed_point = heat_map_pred = heat_map_truth = heat_map_Var = empty_marker;
 
-  seed_point.header.frame_id =
-      heat_map_pred.header.frame_id = heat_map_Var.header.frame_id =
-          heat_map_truth.header.frame_id =
-                      "/map";
-  seed_point.header.stamp =
-      heat_map_pred.header.stamp = heat_map_Var.header.stamp =
-          heat_map_truth.header.stamp =
-                      ros::Time::now();
-  seed_point.ns = heat_map_pred.ns = heat_map_Var.ns =
-      heat_map_truth.ns = "testVor";
-  seed_point.pose.orientation.w =
-      heat_map_pred.pose.orientation.w = heat_map_Var.pose.orientation.w =
-          heat_map_truth.pose.orientation.w = 0.0;
-  seed_point.action = heat_map_pred.action =
-      heat_map_Var.action = heat_map_truth.action = visualization_msgs::Marker::ADD;
+  seed_point.header.frame_id = heat_map_pred.header.frame_id =
+      heat_map_Var.header.frame_id = heat_map_truth.header.frame_id = "/map";
+  seed_point.header.stamp = heat_map_pred.header.stamp =
+      heat_map_Var.header.stamp = heat_map_truth.header.stamp =
+          ros::Time::now();
+  seed_point.ns = heat_map_pred.ns = heat_map_Var.ns = heat_map_truth.ns =
+      "testVor";
+  seed_point.pose.orientation.w = heat_map_pred.pose.orientation.w =
+      heat_map_Var.pose.orientation.w = heat_map_truth.pose.orientation.w = 0.0;
+  seed_point.action = heat_map_pred.action = heat_map_Var.action =
+      heat_map_truth.action = visualization_msgs::Marker::ADD;
 
   // to keep the points from accidentally interfering with one to the other
   seed_point.id = 11;
@@ -93,11 +90,11 @@ void rb_visualization(const Eigen::MatrixXd& Fss,const Eigen::VectorXd& pred_h,
   double max = Fss.maxCoeff();
   double min = Fss.minCoeff();
 
-  double max_p = pred_h.maxCoeff(); // 12.9;
-  double min_p = pred_h.minCoeff(); // 4.9;
+  double max_p = pred_h.maxCoeff();  // 12.9;
+  double min_p = pred_h.minCoeff();  // 4.9;
 
-  double max_v = pred_Var.maxCoeff(); // 12.9;
-  double min_v = pred_Var.minCoeff(); // 4.9;
+  double max_v = pred_Var.maxCoeff();  // 12.9;
+  double min_v = pred_Var.minCoeff();  // 4.9;
 
   // using the temperature data from Fss create the heat map visuals. Red are
   int count = 0;
@@ -210,4 +207,4 @@ void rb_visualization(const Eigen::MatrixXd& Fss,const Eigen::VectorXd& pred_h,
     }
   }
 }
-}
+}  // namespace sampling

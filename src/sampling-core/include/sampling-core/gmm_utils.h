@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "gp.h"
-#include "gp_utils.h"
+#include <stdlib.h>
 #include <Eigen/Dense>
 #include <cstdlib>
-#include <stdlib.h>
 #include <string>
 #include <vector>
+#include "gp.h"
+#include "gp_utils.h"
 
 namespace sampling {
 
@@ -73,4 +73,4 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
                                        Eigen::VectorXd &pred_mu,
                                        Eigen::VectorXd &pred_var);
 
-} // namespace sampling
+}  // namespace sampling
