@@ -59,7 +59,6 @@ void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp) {
   gp_model.R = gp_model.R.array().exp();
 }
 
-
 void maximization(const Eigen::MatrixXd data, Model &gp_model) {
   double n = (double)data.cols();
   Eigen::MatrixXd nk = gp_model.R.colwise().sum();
@@ -101,6 +100,9 @@ void expectation_maximization(const Eigen::MatrixXd &data,
 
 void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label) {
   Eigen::MatrixXd::Index max_index;
+  label.resize(gp_model.R.rows());
+  ROS_INFO_STREAM("R size : " << gp_model.R.rows() << " " << gp_model.R.cols());
+  ROS_INFO_STREAM("R " << gp_model.R);
   for (int i = 0; i < gp_model.R.rows(); i++) {
     gp_model.R.row(i).maxCoeff(&max_index);
     label(i) = max_index;  // Eigen::VectorXd label(X.cols());
@@ -158,6 +160,8 @@ bool prepare_MixtureGaussianProcessd_data(
     std::vector<Eigen::MatrixXd> &training_location,
     std::vector<Eigen::MatrixXd> &training_data,
     std::vector<Eigen::MatrixXd> &probability) {
+  ROS_INFO_STREAM("P - 0");
+
   if (label.size() != location.rows() || label.size() != data.rows()) {
     ROS_INFO_STREAM("Prediction size is not consistant with data size!");
     return false;
@@ -166,8 +170,10 @@ bool prepare_MixtureGaussianProcessd_data(
   std::vector<std::vector<int>> index;
   index.resize(gp_model.numGaussian);
   for (size_t i = 0; i < label.size(); i++) {
+    // ROS_INFO_STREAM("label " << label[i]);
     index[label[i]].push_back(i);
   }
+  ROS_INFO_STREAM("P - 1");
 
   training_location.clear();
   training_data.clear();
@@ -176,16 +182,22 @@ bool prepare_MixtureGaussianProcessd_data(
   training_location.resize(gp_model.numGaussian);
   training_data.resize(gp_model.numGaussian);
   probability.resize(gp_model.numGaussian);
+  ROS_INFO_STREAM("P - 2");
 
   for (int i = 0; i < gp_model.numGaussian; i++) {
+    ROS_INFO_STREAM("P - 3");
+
     training_location[i].resize(index[i].size(), data.cols());
     training_data[i].resize(index[i].size(), data.cols());
     probability[i].resize(index[i].size(), data.cols());
+    ROS_INFO_STREAM("P - 4");
     for (int j = 0; j < index[i].size(); j++) {
+      ROS_INFO_STREAM("size : " << index[i].size());
       training_location[i].row(j) = location.row(index[i][j]);
       training_data[i].row(j) = data.row(index[i][j]);
       probability[i].row(j) = gp_model.R.row(index[i][j]);
     }
+    ROS_INFO_STREAM("P - 5");
   }
   return true;
 }
@@ -268,18 +280,21 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
                                        Eigen::VectorXd &pred_mu,
                                        Eigen::VectorXd &pred_var) {
   Eigen::VectorXi prediction_label;
+  ROS_INFO_STREAM("0");
   GaussianMixture_prediction(gp_model, prediction_label);
+  ROS_INFO_STREAM("1");
   std::vector<Eigen::MatrixXd> training_location, training_data, probability;
   if (!prepare_MixtureGaussianProcessd_data(gp_model, prediction_label,
                                             location, data, training_location,
                                             training_data, probability)) {
     ROS_INFO_STREAM("Can not prepare training data");
   }
-
+  ROS_INFO_STREAM("2");
   Eigen::MatrixXd mu = Eigen::MatrixXd::Zero(
       location_test.rows(), gp_model.numGaussian);  // Sample_size x 3
   Eigen::MatrixXd s2 = Eigen::MatrixXd::Zero(
       location_test.rows(), gp_model.numGaussian);  // Sample_size x 3
+  ROS_INFO_STREAM("3");
 
   for (int i = 0; i < gp_model.numGaussian; i++) {
     Eigen::MatrixXd local_mu(location_test.rows(), 1);
@@ -289,13 +304,16 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
     mu.col(i) = local_mu;
     s2.col(i) = local_s2;
   }
+  ROS_INFO_STREAM("4");
 
   Eigen::MatrixXd mu_mask;
   boolen_mask(mu, mu_mask);
+  ROS_INFO_STREAM("5");
 
   Eigen::MatrixXd gp_prediction;
   GaussianProcess_prediction(training_location, probability, location_test,
                              gp_prediction);
+  ROS_INFO_STREAM("6");
 
   /// calculate mean value
   Eigen::MatrixXd normalized_prediction =
@@ -303,11 +321,13 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
   normalize_matrix(true, normalized_prediction);
   fill_nan(0.0, mu);
   pred_mu = (normalized_prediction.array() * mu.array()).rowwise().sum();
+  ROS_INFO_STREAM("7");
 
   /// calculate
   Eigen::MatrixXd mu_mat = repmat(pred_mu, gp_model.numGaussian);
   Eigen::MatrixXd pred_s2_mat = (mu - mu_mat).array() * (mu - mu_mat).array();
   pred_s2_mat += s2;
   pred_var = (gp_prediction.array() * pred_s2_mat.array()).rowwise().sum();
+  ROS_INFO_STREAM("8");
 }
 }  // namespace sampling

@@ -12,17 +12,26 @@ class CentralizedSamplingNode {
     load_parameter();
   }
 
-  void fit_ground_truth_data(){
+  void fit_ground_truth_data() {
     gt_model_.numGaussian = ground_truth_num_gaussian_;
     // gt_model_.mu.resize(1, ground_truth_num_gaussian_);
     // gt_model_.Sigma.resize(1, ground_truth_num_gaussian_);
     // gt_model_.w.resize(1, ground_truth_num_gaussian_);
-    gt_model_.R =  Eigen::MatrixXd::Random(ground_truth_temperature_.cols(), ground_truth_num_gaussian_);
+    gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.cols(),
+                                          ground_truth_num_gaussian_);
     gt_model_.R = gt_model_.R.array().abs();
-    expectation_maximization(ground_truth_temperature_, max_iteration_, convergence_threshold_, gt_model_);
+    expectation_maximization(ground_truth_temperature_, max_iteration_,
+                             convergence_threshold_, gt_model_);
     ROS_INFO_STREAM("Finish Ground truth fitting!");
+    Eigen::VectorXd pred_mu, pred_var;
+    ground_truth_location_.transposeInPlace();
+    ground_truth_temperature_.transposeInPlace();
+    if (MixtureGaussianProcess_prediction(
+            gt_model_, ground_truth_location_, ground_truth_temperature_,
+            ground_truth_location_, pred_mu, pred_var)) {
+      ROS_INFO_STREAM("GP prediction works!");
+    }
   }
-    
 
   bool load_parameter() {
     std::string ground_truth_location_path, ground_truth_temperature_path;
@@ -54,12 +63,14 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("max_iteration", max_iteration_)) {
       ROS_INFO_STREAM("Error! Missing EM maximum iteration!");
       return false;
-    } 
-  
-    if (!rh_.getParam("ground_truth_num_gaussian", ground_truth_num_gaussian_)) {
-      ROS_INFO_STREAM("Error! Missing ground truth data number of gaussian process!");
+    }
+
+    if (!rh_.getParam("ground_truth_num_gaussian",
+                      ground_truth_num_gaussian_)) {
+      ROS_INFO_STREAM(
+          "Error! Missing ground truth data number of gaussian process!");
       return false;
-    } 
+    }
 
     if (!rh_.getParam("ugv_max_speed", ugv_max_speed_)) {
       ROS_INFO_STREAM("Error! Missing ugv maximum speed!");
@@ -109,14 +120,13 @@ class CentralizedSamplingNode {
 };
 }  // namespace sampling
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
   ros::Rate r(10);
   sampling::CentralizedSamplingNode node(nh, rh);
   node.fit_ground_truth_data();
-  while (ros::ok())
-  {
+  while (ros::ok()) {
     ros::spinOnce();
     r.sleep();
   }
