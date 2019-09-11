@@ -1,12 +1,12 @@
-#include "gp_utils.h"
-#include "sampling_visualization.h"
+#include "sampling-core/gmm_utils.h"
+// #include "sampling-core/sampling_visualization.h"
 #include <ros/ros.h>
 #include <string>
 
 namespace sampling {
 class CentralizedSamplingNode {
 public:
-  CentralizedSamplingNode(const ros::NodeHandle &nh, cosnt ros::NodeHandle &rh)
+  CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
     load_parameter();
   }
@@ -47,14 +47,13 @@ public:
     }
 
     /// todo subscribe pelican goal channel
-    if ()
-      return true;
+    return true;
   }
 
 private:
   ros::NodeHandle nh_, rh_;
   std::string ground_truth_data_path_;
-  GroundTruthData ground_truth_data_;
+  // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
 
   double ugv_max_speed_;
