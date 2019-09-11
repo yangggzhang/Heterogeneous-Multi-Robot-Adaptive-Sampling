@@ -2,6 +2,7 @@
 #include <string>
 #include "sampling-core/gmm_utils.h"
 #include "sampling-core/sampling_visualization.h"
+#include "sampling-core/utils.h"
 
 namespace sampling {
 class CentralizedSamplingNode {
@@ -12,8 +13,24 @@ class CentralizedSamplingNode {
   }
 
   bool load_parameter() {
-    if (!rh_.getParam("ground_truth_data_path", ground_truth_data_path_)) {
+    std::string ground_truth_location_path, ground_truth_temperature_path;
+
+    if (!rh_.getParam("ground_truth_location_path",
+                      ground_truth_location_path)) {
+      ROS_INFO_STREAM("Error! Missing ground truth location data!");
+      return false;
+    }
+
+    if (!rh_.getParam("ground_truth_temperature_path",
+                      ground_truth_temperature_path)) {
       ROS_INFO_STREAM("Error! Missing ground truth temperature data!");
+      return false;
+    }
+
+    if (!load_ground_truth_data(
+            ground_truth_location_path, ground_truth_temperature_path,
+            ground_truth_location_, ground_truth_temperature_)) {
+      ROS_INFO_STREAM("Error! Can not load ground truth data!");
       return false;
     }
 
@@ -46,13 +63,14 @@ class CentralizedSamplingNode {
       return false;
     }
 
+    ROS_INFO_STREAM("Finish loading data!");
+
     /// todo subscribe pelican goal channel
     return true;
   }
 
  private:
   ros::NodeHandle nh_, rh_;
-  std::string ground_truth_data_path_;
   // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
 
@@ -60,10 +78,21 @@ class CentralizedSamplingNode {
   std::string ugv_goal_channel_;
   double uav_max_speed_;
   std::string uav_goal_channel_;
+
+  Eigen::MatrixXd ground_truth_location_;
+  Eigen::MatrixXd ground_truth_temperature_;
 };
 }  // namespace sampling
 
-int main() {
+int main(int argc, char ** argv) {
+  ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
+  ros::Rate r(10);
+  sampling::CentralizedSamplingNode(nh, rh);
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    r.sleep();
+  }
   return 0;
 }

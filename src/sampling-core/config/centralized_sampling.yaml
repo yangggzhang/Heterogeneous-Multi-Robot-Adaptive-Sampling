@@ -1,0 +1,10 @@
+#Configuation for centralized sampling
+#
+ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling-core/data/Xss.txt"
+ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling-core/data/Fss.txt"
+
+convergence_threshold: 0.01
+ugv_max_speed: 10
+ugv_goal_channel: "test"
+uav_max_speed: 10
+uav_goal_channel: "test"

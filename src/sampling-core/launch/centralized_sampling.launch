@@ -1,0 +1,10 @@
+<launch>
+  <node name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="jackal_joint_publisher jackal_velocity_controller" />
+  
+  <node pkg="sampling-core" type="centralized_sampling_node" name="centralized_sampling" output="screen"> 
+    <rosparam command="load" file="$(find sampling-core)/config/centralized_sampling.yaml" />
+  </node>
+
+</launch>
+

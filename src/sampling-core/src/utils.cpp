@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ros/ros.h>
 
 namespace sampling {
 bool load_ground_truth_data(const std::string &location_data_path,
@@ -14,7 +15,7 @@ bool load_ground_truth_data(const std::string &location_data_path,
   std::ifstream finFss(temperature_data_path.c_str(), std::ifstream::in);
 
   if (!finFss.is_open()) {
-    std::cout << "open Fss File: Error opening file" << std::endl;
+    ROS_INFO_STREAM("open Fss File: Error opening file");
     return false;
   }
 
@@ -40,7 +41,7 @@ bool load_ground_truth_data(const std::string &location_data_path,
   std::ifstream finXss(location_data_path.c_str(), std::ifstream::in);
 
   if (!finXss.is_open()) {
-    std::cout << "open Xss File: Error opening file" << std::endl;
+    ROS_INFO_STREAM("open Xss File: Error opening file");
     return false;
   }
 
@@ -70,5 +71,6 @@ bool load_ground_truth_data(const std::string &location_data_path,
     location(i, 0) = Xss_x[i];
     location(i, 1) = Xss_y[i];
   }
+  return true;
 }
 }
