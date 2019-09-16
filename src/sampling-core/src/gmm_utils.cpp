@@ -99,19 +99,6 @@ void expectation_maximization(const Eigen::MatrixXd &data,
       }
     }
   }
-  // double inf = std::numeric_limits<double>::infinity();
-  // double last_llh = 0;
-  // double current_llh = 0;
-
-  // Eigen::MatrixXd::Index max_index;
-  // Eigen::MatrixXd transpose_data = data.transpose();
-  // for (int iter = 0; iter < max_iteration; iter++) {
-  //   maximization(data, gp_model);
-  //   expectation(data, gp_model, current_llh); // update llh[iter] and R
-  //   if (abs(current_llh - last_llh) < tolerance * abs(current_llh))
-  //     break;
-  //   last_llh = current_llh;
-  // }
 }
 
 void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label) {
