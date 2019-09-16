@@ -27,10 +27,6 @@ Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n);
 
 Eigen::MatrixXd repmat(const Eigen::MatrixXd &x, const int &n);
 
-// void loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
-//                  const Eigen::MatrixXd sigma, Eigen::MatrixXd
-//                  log_likelyhood);
-
 Eigen::MatrixXd loggausspdf(const Eigen::MatrixXd &data,
                             const Eigen::MatrixXd &mu,
                             const Eigen::MatrixXd &Sigma);
@@ -46,14 +42,13 @@ void expectation_maximization(const Eigen::MatrixXd &data,
 // void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi
 // &label);
 
-// void gp_compute(const Eigen::MatrixXd &X, const Eigen::MatrixXd &Y,
-//                 const Eigen::MatrixXd &X_test, Eigen::MatrixXd &mu,
-//                 Eigen::MatrixXd &s2);
+void gp_compute(const Eigen::MatrixXd &X, const Eigen::MatrixXd &Y,
+                const Eigen::MatrixXd &X_test, Eigen::MatrixXd &mu,
+                Eigen::MatrixXd &s2);
 
-// void gpml_rms(const Eigen::MatrixXd &Xs_train, const Eigen::MatrixXd
-// &Fs_train,
-//               const Eigen::MatrixXd &X_test, Eigen::MatrixXd &mu,
-//               Eigen::MatrixXd &s2);
+void gpml_rms(const Eigen::MatrixXd &Xs_train, const Eigen::MatrixXd &Fs_train,
+              const Eigen::MatrixXd &X_test, Eigen::VectorXd &mu,
+              Eigen::VectorXd &s2);
 
 bool prepare_MixtureGaussianProcessd_data(
     const Model &gp_model, const Eigen::VectorXi &label,
@@ -93,17 +88,12 @@ Eigen::MatrixXd set_NaN_tz(Eigen::MatrixXd X);
 
 void gmm_pred_cen(const Eigen::MatrixXd &Xss, const Eigen::MatrixXd &Fss,
                   const Eigen::MatrixXd &All_Xss, Model &gpModel,
-                  Eigen::VectorXi label, Eigen::VectorXd &pred_h,
-                  Eigen::VectorXd &pred_Var);
+                  Eigen::VectorXd &pred_h, Eigen::VectorXd &pred_Var);
 
 Eigen::VectorXi sort_unique(Eigen::VectorXi a);
 
 Eigen::MatrixXd gt_pred(Eigen::MatrixXd Xs, Eigen::MatrixXd R,
                         Eigen::MatrixXd X_test);
-
-void gp_compute(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y,
-                const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
-                Eigen::VectorXd &s2);
 
 Eigen::VectorXi MixGaussPred_gmm(const Model &gpModel);
 

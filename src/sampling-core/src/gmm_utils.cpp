@@ -101,37 +101,36 @@ void expectation_maximization(const Eigen::MatrixXd &data,
   }
 }
 
-// void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi
-// &label) {
-//   Eigen::MatrixXd::Index max_index;
-//   label.resize(gp_model.R.rows());
-//   for (int i = 0; i < gp_model.R.rows(); i++) {
-//     gp_model.R.row(i).maxCoeff(&max_index);
-//     label(i) = max_index; // Eigen::VectorXd label(X.cols());
-//   }
-// }
+void GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label) {
+  Eigen::MatrixXd::Index max_index;
+  label.resize(gp_model.R.rows());
+  for (int i = 0; i < gp_model.R.rows(); i++) {
+    gp_model.R.row(i).maxCoeff(&max_index);
+    label(i) = max_index; // Eigen::VectorXd label(X.cols());
+  }
+}
 
-// void gp_compute(Eigen::MatrixXd &X, Eigen::MatrixXd &Y, Eigen::MatrixXd
-// &X_test,
-//                 Eigen::MatrixXd &mu, Eigen::MatrixXd &s2) {
-//   libgp::GaussianProcess gp(2, "CovSum ( CovSEiso, CovNoise)");
-//   Eigen::VectorXd params(3);
-//   params << 0.5, 0.5, -2.0;
-//   gp.covf().set_loghyper(params);
+void gp_compute(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y,
+                const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
+                Eigen::VectorXd &s2) {
+  double y;
+  libgp::GaussianProcess gp(2, "CovSum ( CovSEiso, CovNoise)");
+  Eigen::VectorXd params(3);
+  params << 0.5, 0.5, -2.0;
+  gp.covf().set_loghyper(params);
 
-//   double y;
-//   for (int i = 0; i < Y.size(); i++) {
-//     double x[] = {X(i, 0), X(i, 1)};
-//     y = Y(i);
-//     gp.add_pattern(x, y);
-//   }
+  for (int i = 0; i < Y.size(); i++) {
+    double x[] = {X(i, 0), X(i, 1)};
+    y = Y(i);
+    gp.add_pattern(x, y);
+  }
 
-//   for (int i = 0; i < X_test.rows(); i++) {
-//     double x[] = {X_test(i, 0), X_test(i, 1)};
-//     mu(i) = gp.f(x);
-//     s2(i) = gp.var(x);
-//   }
-// }
+  for (int i = 0; i < Xtest.rows(); i++) {
+    double x[] = {Xtest(i, 0), Xtest(i, 1)};
+    mu(i) = gp.f(x);
+    s2(i) = gp.var(x);
+  }
+}
 
 /*
 * Gaussian Process for Machine Learning
@@ -147,16 +146,14 @@ output:
     s2 - N_test x 1   Variance of prediction on all testing grids
     //rms - 1 x 1     RMS error from ground truth
 */
-// void gpml_rms(const Eigen::MatrixXd &Xs_train, const Eigen::MatrixXd
-// &Fs_train,
-//               const Eigen::MatrixXd &X_test, Eigen::MatrixXd &mu,
-//               Eigen::MatrixXd &s2) {
-//   Eigen::MatrixXd Fs_train_mtz;
-//   Fs_train_mtz = Fs_train.array() - Fs_train.mean(); // mean value equals to
-//   0
-//   gp_compute(Xs_train, Fs_train_mtz, X_test, mu, s2);
-//   mu = mu.array() + Fs_train.mean();
-// }
+void gpml_rms(const Eigen::MatrixXd &Xs_train, const Eigen::MatrixXd &Fs_train,
+              const Eigen::MatrixXd &X_test, Eigen::VectorXd &mu,
+              Eigen::VectorXd &s2) {
+  Eigen::MatrixXd Fs_train_mtz;
+  Fs_train_mtz = Fs_train.array() - Fs_train.mean(); // mean value equals to
+  gp_compute(Xs_train, Fs_train_mtz, X_test, mu, s2);
+  mu = mu.array() + Fs_train.mean();
+}
 
 bool prepare_MixtureGaussianProcessd_data(
     const Model &gp_model, const Eigen::VectorXi &label,
@@ -191,9 +188,9 @@ bool prepare_MixtureGaussianProcessd_data(
   for (int i = 0; i < gp_model.numGaussian; i++) {
     ROS_INFO_STREAM("P - 3");
 
-    training_location[i].resize(index[i].size(), data.cols());
+    training_location[i].resize(index[i].size(), location.cols());
     training_data[i].resize(index[i].size(), data.cols());
-    probability[i].resize(index[i].size(), data.cols());
+    probability[i].resize(index[i].size(), gp_model.R.cols());
     ROS_INFO_STREAM("P - 4");
     for (int j = 0; j < index[i].size(); j++) {
       ROS_INFO_STREAM("size : " << index[i].size());
@@ -400,28 +397,6 @@ Eigen::MatrixXd extract_rows(const Eigen::MatrixXd &X,
   return X_train;
 }
 
-void gp_compute(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y,
-                const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
-                Eigen::VectorXd &s2) {
-  double y;
-  libgp::GaussianProcess gp(2, "CovSum ( CovSEiso, CovNoise)");
-  Eigen::VectorXd params(3);
-  params << 0.5, 0.5, -2.0;
-  gp.covf().set_loghyper(params);
-
-  for (int i = 0; i < Y.size(); i++) {
-    double x[] = {X(i, 0), X(i, 1)};
-    y = Y(i);
-    gp.add_pattern(x, y);
-  }
-
-  for (int i = 0; i < Xtest.rows(); i++) {
-    double x[] = {Xtest(i, 0), Xtest(i, 1)};
-    mu(i) = gp.f(x);
-    s2(i) = gp.var(x);
-  }
-}
-
 void gpml_rms(Eigen::VectorXi &ind_train, const Eigen::MatrixXd &Xs,
               const Eigen::MatrixXd &Fs, const Eigen::MatrixXd &Xtest_new,
               Eigen::VectorXd &mu, Eigen::VectorXd &s2) {
@@ -514,19 +489,16 @@ Eigen::VectorXi MixGaussPred_gmm(const Model &gpModel) {
 
 void gmm_pred_cen(const Eigen::MatrixXd &Xss, const Eigen::MatrixXd &Fss,
                   const Eigen::MatrixXd &All_Xss, Model &gpModel,
-                  Eigen::VectorXi label, Eigen::VectorXd &pred_h,
-                  Eigen::VectorXd &pred_Var) {
-  /*
-   * Input:
-   *      Xtest: 202 x 2, Ftest: 202 x 1
-  */
-  // Eigen::MatrixXd Xtrain -> Xss
-  // Eigen::MatrixXd Ftrain -> Fss
-  // Eigen::MatrixXd Xtest -> all gt Xss
-  // Model model -> gpModel
-  // gt_data just use num_of_gaussian
+                  Eigen::VectorXd &pred_h, Eigen::VectorXd &pred_Var) {
+  Eigen::VectorXi label;
+  GaussianMixture_prediction(gpModel, label);
 
-  // cout << "label is " << label << endl;
+  std::vector<Eigen::MatrixXd> training_location, training_data, probability;
+  if (!prepare_MixtureGaussianProcessd_data(gpModel, label, Xss, Fss,
+                                            training_location, training_data,
+                                            probability)) {
+    ROS_INFO_STREAM("Can not prepare training data");
+  }
 
   Eigen::MatrixXd mu = Eigen::MatrixXd::Zero(
       All_Xss.rows(), gpModel.numGaussian); // Sample_size x 3
@@ -534,13 +506,15 @@ void gmm_pred_cen(const Eigen::MatrixXd &Xss, const Eigen::MatrixXd &Fss,
       All_Xss.rows(), gpModel.numGaussian); // Sample_size x 3
 
   for (int ijk = 0; ijk < gpModel.numGaussian; ijk++) {
-    Eigen::VectorXi ind_train = get_label_idx(label, ijk);
-    if (ind_train(0) == -1) {
+    // Eigen::VectorXi ind_train = get_label_idx(label, ijk);
+    if (training_location[ijk].rows() == 0) {
       continue;
     }
     Eigen::VectorXd mu_vec(All_Xss.rows());
     Eigen::VectorXd s2_vec(All_Xss.rows());
-    gpml_rms(ind_train, Xss, Fss, All_Xss, mu_vec, s2_vec);
+    // gpml_rms(ind_train, Xss, Fss, All_Xss, mu_vec, s2_vec);
+    gpml_rms(training_location[ijk], training_data[ijk], All_Xss, mu_vec,
+             s2_vec);
     mu.col(ijk) = mu_vec;
     s2.col(ijk) = s2_vec;
   }

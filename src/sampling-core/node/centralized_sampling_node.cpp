@@ -26,10 +26,9 @@ public:
 
     Eigen::VectorXd pred_h, pred_Var;
 
-    Eigen::VectorXi label = MixGaussPred_gmm(gt_model_);
     gmm_pred_cen(ground_truth_location_, ground_truth_temperature_,
-                 ground_truth_location_, gt_model_, label, pred_h, pred_Var);
-    // ROS_INFO_STREAM("Prediction : " << pred_h);
+                 ground_truth_location_, gt_model_, pred_h, pred_Var);
+    ROS_INFO_STREAM("Prediction : " << pred_h.mean());
   }
 
   bool load_parameter() {
