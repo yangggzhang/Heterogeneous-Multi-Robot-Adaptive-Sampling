@@ -14,25 +14,22 @@ public:
 
   void fit_ground_truth_data() {
     gt_model_.numGaussian = ground_truth_num_gaussian_;
-    // gt_model_.mu.resize(1, ground_truth_num_gaussian_);
-    // gt_model_.Sigma.resize(1, ground_truth_num_gaussian_);
-    // gt_model_.w.resize(1, ground_truth_num_gaussian_);
-    gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.cols(),
+    gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.rows(),
                                           ground_truth_num_gaussian_);
     gt_model_.R = gt_model_.R.array().abs();
     expectation_maximization(ground_truth_temperature_, max_iteration_,
                              convergence_threshold_, gt_model_);
-    ROS_INFO_STREAM("Model mu : " << gt_model_.mu);
-    ROS_INFO_STREAM("Model S : " << gt_model_.Sigma);
-    ROS_INFO_STREAM("Finish Ground truth fitting!");
-    // Eigen::VectorXd pred_mu, pred_var;
-    // ground_truth_location_.transposeInPlace();
-    // ground_truth_temperature_.transposeInPlace();
-    // if (MixtureGaussianProcess_prediction(
-    //         gt_model_, ground_truth_location_, ground_truth_temperature_,
-    //         ground_truth_location_, pred_mu, pred_var)) {
-    //   ROS_INFO_STREAM("GP prediction works!");
-    // }
+
+    ROS_INFO_STREAM("Finish EM ! ");
+
+    Eigen::VectorXd pred_mu, pred_var;
+
+    Eigen::VectorXd pred_h, pred_Var;
+
+    Eigen::VectorXi label = MixGaussPred_gmm(gt_model_);
+    gmm_pred_cen(ground_truth_location_, ground_truth_temperature_,
+                 ground_truth_location_, gt_model_, label, pred_h, pred_Var);
+    // ROS_INFO_STREAM("Prediction : " << pred_h);
   }
 
   bool load_parameter() {
