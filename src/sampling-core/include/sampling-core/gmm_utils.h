@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <Eigen/Dense>
-#include <cstdlib>
-#include <string>
-#include <vector>
 #include "gp.h"
 #include "gp_utils.h"
+#include <Eigen/Dense>
+#include <cstdlib>
+#include <stdlib.h>
+#include <string>
+#include <vector>
 
 namespace sampling {
 
@@ -27,8 +27,13 @@ Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n);
 
 Eigen::MatrixXd repmat(const Eigen::MatrixXd &x, const int &n);
 
-void loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
-                 const Eigen::MatrixXd sigma, Eigen::MatrixXd log_likelyhood);
+// void loggausspdf(const Eigen::MatrixXd data, const Eigen::MatrixXd mu,
+//                  const Eigen::MatrixXd sigma, Eigen::MatrixXd
+//                  log_likelyhood);
+
+Eigen::MatrixXd loggausspdf(const Eigen::MatrixXd &data,
+                            const Eigen::MatrixXd &mu,
+                            const Eigen::MatrixXd &Sigma);
 
 void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp);
 
@@ -73,4 +78,4 @@ bool MixtureGaussianProcess_prediction(const Model &gp_model,
                                        Eigen::VectorXd &pred_mu,
                                        Eigen::VectorXd &pred_var);
 
-}  // namespace sampling
+} // namespace sampling

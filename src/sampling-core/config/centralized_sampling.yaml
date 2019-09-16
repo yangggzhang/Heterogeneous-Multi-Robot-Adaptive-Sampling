@@ -12,6 +12,6 @@ uav_goal_channel: "test"
 ground_truth_num_gaussian: 3
 
 # learning criteria
-convergence_threshold: 0.0001
+convergence_threshold: 0.01
 max_iteration: 100
 

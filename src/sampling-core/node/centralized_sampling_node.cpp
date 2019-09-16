@@ -1,12 +1,12 @@
-#include <ros/ros.h>
-#include <string>
 #include "sampling-core/gmm_utils.h"
 #include "sampling-core/sampling_visualization.h"
 #include "sampling-core/utils.h"
+#include <ros/ros.h>
+#include <string>
 
 namespace sampling {
 class CentralizedSamplingNode {
- public:
+public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
     load_parameter();
@@ -22,15 +22,17 @@ class CentralizedSamplingNode {
     gt_model_.R = gt_model_.R.array().abs();
     expectation_maximization(ground_truth_temperature_, max_iteration_,
                              convergence_threshold_, gt_model_);
+    ROS_INFO_STREAM("Model mu : " << gt_model_.mu);
+    ROS_INFO_STREAM("Model S : " << gt_model_.Sigma);
     ROS_INFO_STREAM("Finish Ground truth fitting!");
-    Eigen::VectorXd pred_mu, pred_var;
-    ground_truth_location_.transposeInPlace();
-    ground_truth_temperature_.transposeInPlace();
-    if (MixtureGaussianProcess_prediction(
-            gt_model_, ground_truth_location_, ground_truth_temperature_,
-            ground_truth_location_, pred_mu, pred_var)) {
-      ROS_INFO_STREAM("GP prediction works!");
-    }
+    // Eigen::VectorXd pred_mu, pred_var;
+    // ground_truth_location_.transposeInPlace();
+    // ground_truth_temperature_.transposeInPlace();
+    // if (MixtureGaussianProcess_prediction(
+    //         gt_model_, ground_truth_location_, ground_truth_temperature_,
+    //         ground_truth_location_, pred_mu, pred_var)) {
+    //   ROS_INFO_STREAM("GP prediction works!");
+    // }
   }
 
   bool load_parameter() {
@@ -100,7 +102,7 @@ class CentralizedSamplingNode {
     return true;
   }
 
- private:
+private:
   ros::NodeHandle nh_, rh_;
   // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
@@ -118,7 +120,7 @@ class CentralizedSamplingNode {
   Model gt_model_;
   Model model_;
 };
-}  // namespace sampling
+} // namespace sampling
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
