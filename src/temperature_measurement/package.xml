@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sampling_core</name>
+  <name>temperature_measurement</name>
   <version>0.0.0</version>
-  <description>The sampling_core package</description>
+  <description>The temperature_measurement package for MRSD heterogeneous sampling project</description>
 
   <maintainer email="yunfeis@andrew.cmu.edu">Yunfei Shi</maintainer>
   <maintainer email="ningwang@andrew.cmu.edu">Ning Wang</maintainer>
@@ -12,16 +12,10 @@
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>cmuswarm_core</depend>
-  <depend>cmuswarm_msgs</depend>
-  <depend>cmuswarm_swarm</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
-  <depend>message_runtime</depend>
-  <depend>visualization_msgs</depend>
-  <depend>actionlib</depend>
-  <depend>actionlib_msgs</depend>
   <depend>message_generation</depend>
+  <depend>message_runtime</depend>
 
 </package>
