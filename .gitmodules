@@ -1,1 +1,7 @@
 
+[submodule "src/simulation/jackal"]
+	path = src/simulation/jackal
+	url = https://github.com/jackal/jackal.git
+[submodule "src/simulation/swarm-primitive-dp"]
+	path = src/simulation/swarm-primitive-dp
+	url = https://github.com/zyyyyyyyyy/swarm-primitive-dp.git
