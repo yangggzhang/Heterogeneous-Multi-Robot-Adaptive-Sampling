@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/devel
-
-Name: cmu24_jackal
-Description: Description of cmu24_jackal
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/administrator/catkin_ws/devel/lib 
-Requires: 

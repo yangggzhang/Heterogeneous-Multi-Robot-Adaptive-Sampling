@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/devel
-
-Name: jackal_gps_nav
-Description: Description of jackal_gps_nav
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/administrator/catkin_ws/devel/lib 
-Requires: 

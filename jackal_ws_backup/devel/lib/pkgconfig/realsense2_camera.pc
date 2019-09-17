@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/devel
-
-Name: realsense2_camera
-Description: Description of realsense2_camera
-Version: 2.0.3
-Cflags: -I/home/administrator/catkin_ws/devel/include
-Libs: -L/home/administrator/catkin_ws/devel/lib -lrealsense2_camera
-Requires: message_runtime roscpp sensor_msgs std_msgs nodelet cv_bridge image_transport dynamic_reconfigure
