@@ -32,6 +32,7 @@ add_message_files(
 add_service_files(
   FILES
   SamplingGoal.srv
+  RequestGoal.srv
 )
 
 generate_messages(
