@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   visualization_msgs
+  actionlib
+  actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -44,3 +46,6 @@ add_library(${PROJECT_NAME}
 
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
 target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+
+add_executable(jackal_node node/jackal_node.cpp)
+target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
