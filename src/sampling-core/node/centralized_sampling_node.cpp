@@ -26,8 +26,9 @@ public:
 
     Eigen::VectorXd pred_h, pred_Var;
 
-    gmm_pred_cen(ground_truth_location_, ground_truth_temperature_,
-                 ground_truth_location_, gt_model_, pred_h, pred_Var);
+    GaussianProcessMixture_predict(
+        ground_truth_location_, ground_truth_temperature_,
+        ground_truth_location_, gt_model_, pred_h, pred_Var);
     ROS_INFO_STREAM("Prediction : " << pred_h.mean());
   }
 
