@@ -20,16 +20,11 @@ public:
     expectation_maximization(ground_truth_temperature_, max_iteration_,
                              convergence_threshold_, gt_model_);
 
-    ROS_INFO_STREAM("Finish EM ! ");
-
-    Eigen::VectorXd pred_mu, pred_var;
-
     Eigen::VectorXd pred_h, pred_Var;
 
     GaussianProcessMixture_predict(
         ground_truth_location_, ground_truth_temperature_,
         ground_truth_location_, gt_model_, pred_h, pred_Var);
-    ROS_INFO_STREAM("Prediction : " << pred_h.mean());
   }
 
   bool load_parameter() {
