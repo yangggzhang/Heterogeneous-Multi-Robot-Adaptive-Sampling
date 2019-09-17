@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(sampling-core)
+project(sampling_core)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -17,10 +17,22 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   actionlib
   actionlib_msgs
+  message_generation
+  message_runtime
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
+
+add_service_files(
+  FILES
+  SamplingGoal.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
    INCLUDE_DIRS include

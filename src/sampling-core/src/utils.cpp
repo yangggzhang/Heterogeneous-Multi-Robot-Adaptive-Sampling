@@ -1,4 +1,4 @@
-#include "sampling-core/utils.h"
+#include "sampling_core/utils.h"
 #include <Eigen/Dense>
 #include <fstream>
 #include <iostream>

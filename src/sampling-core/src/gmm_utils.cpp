@@ -1,4 +1,4 @@
-#include "sampling-core/gmm_utils.h"
+#include "sampling_core/gmm_utils.h"
 #include <ros/ros.h>
 
 namespace sampling {

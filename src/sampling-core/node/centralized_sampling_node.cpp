@@ -1,6 +1,6 @@
-#include "sampling-core/gmm_utils.h"
-#include "sampling-core/sampling_visualization.h"
-#include "sampling-core/utils.h"
+#include "sampling_core/gmm_utils.h"
+#include "sampling_core/sampling_visualization.h"
+#include "sampling_core/utils.h"
 #include <ros/ros.h>
 #include <string>
 

@@ -10,7 +10,7 @@ cd build
 cmake ..
 make
 cd ../../../../../../..
-cd sampling-core/libgp/
+cd sampling_core/libgp/
 mkdir build
 cd build
 cmake ..

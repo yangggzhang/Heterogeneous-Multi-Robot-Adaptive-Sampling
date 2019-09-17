@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sampling-core</name>
+  <name>sampling_core</name>
   <version>0.0.0</version>
-  <description>The sampling-core package</description>
+  <description>The sampling_core package</description>
 
   <maintainer email="yangzha4@cmu.andrew.edu">yang</maintainer>
 
@@ -19,5 +19,6 @@
   <depend>visualization_msgs</depend>
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
+  <depend>message_generation</depend>
 
 </package>

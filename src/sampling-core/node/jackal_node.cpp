@@ -1,6 +1,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <ros/ros.h>
+#include <sampling_core/SamplingGoal.h>
 #include <string>
 
 namespace sampling {
@@ -32,6 +33,7 @@ public:
 
 private:
   ros::NodeHandle nh_, rh_;
+  std::string robot_id_;
   std::string Jackal_movebase_channel_;
   std::string Jackal_movebase_frame_id_;
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>

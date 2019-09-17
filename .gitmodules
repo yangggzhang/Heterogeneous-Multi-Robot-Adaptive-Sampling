@@ -5,9 +5,6 @@
 [submodule "src/simulation/swarm-primitive-dp"]
 	path = src/simulation/swarm-primitive-dp
 	url = https://github.com/zyyyyyyyyy/swarm-primitive-dp.git
-[submodule "src/sampling-core/libgp"]
-	path = src/sampling-core/libgp
-	url = https://github.com/mblum/libgp.git
 [submodule "src/simulation/jackal_desktop"]
 	path = src/simulation/jackal_desktop
 	url = https://github.com/jackal/jackal_desktop.git

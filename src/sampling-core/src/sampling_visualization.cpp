@@ -1,5 +1,5 @@
 #pragma once
-#include "sampling-core/sampling_visualization.h"
+#include "sampling_core/sampling_visualization.h"
 
 namespace sampling {
 namespace visualization {
