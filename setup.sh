@@ -4,14 +4,15 @@ sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-msgs ros-kinetic-co
 git submodule update --init --recursive
 cd src/simulation/swarm-primitive-dp
 mkdir generated_launch
-cd ../sampling-core/libgp
+cd swarm_simulator/src/cmuswarm_swarm/libgp/
 mkdir build
 cd build
 cmake ..
 make
-<<<<<<< HEAD
-cd ../../../../..
-=======
-cd ../../../../../..
->>>>>>> 9252d6b89ddf8292c473e2b7fcf826d4f22b0687
+cd ../../../../../../..
+cd sampling-core/libgp/
+mkdir build
+cd build
+cmake ..
+make
 pip install pyspread openpyxl scipy cvxopt --user
