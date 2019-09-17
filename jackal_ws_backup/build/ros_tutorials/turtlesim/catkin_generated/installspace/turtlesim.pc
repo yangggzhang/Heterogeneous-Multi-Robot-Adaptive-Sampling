@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/install
-
-Name: turtlesim
-Description: Description of turtlesim
-Version: 0.5.5
-Cflags: -I/home/administrator/catkin_ws/install/include
-Libs: -L/home/administrator/catkin_ws/install/lib 
-Requires: geometry_msgs message_runtime std_msgs std_srvs

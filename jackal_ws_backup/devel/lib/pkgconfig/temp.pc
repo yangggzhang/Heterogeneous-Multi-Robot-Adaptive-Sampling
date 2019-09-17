@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/devel
-
-Name: temp
-Description: Description of temp
-Version: 0.0.0
-Cflags: -I/home/administrator/catkin_ws/devel/include
-Libs: -L/home/administrator/catkin_ws/devel/lib 
-Requires: 

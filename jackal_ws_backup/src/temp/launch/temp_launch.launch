@@ -1,5 +1,0 @@
-<launch>
-<!-- <env name="PYTHONPATH" value="$(env PYTHONPATH)"/> -->
-<node pkg="temp" type="temper.py" name="node_temper" output="screen">
-</node>
-</launch>

@@ -1,8 +1,0 @@
-prefix=/home/administrator/catkin_ws/install
-
-Name: jackal_msgs
-Description: Description of jackal_msgs
-Version: 0.5.4
-Cflags: -I/home/administrator/catkin_ws/install/include
-Libs: -L/home/administrator/catkin_ws/install/lib 
-Requires: std_msgs message_runtime

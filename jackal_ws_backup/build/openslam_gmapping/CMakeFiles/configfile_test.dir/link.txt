@@ -1,1 +1,0 @@
-/usr/bin/c++    -rdynamic CMakeFiles/configfile_test.dir/configfile/configfile_test.cpp.o  -o /home/administrator/catkin_ws/devel/lib/openslam_gmapping/configfile_test -Wl,-rpath,/home/administrator/catkin_ws/devel/lib: /home/administrator/catkin_ws/devel/lib/libconfigfile.so 
