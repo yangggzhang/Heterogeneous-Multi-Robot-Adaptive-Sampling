@@ -11,3 +11,6 @@
 [submodule "src/simulation/jackal_simulator"]
 	path = src/simulation/jackal_simulator
 	url = https://github.com/jackal/jackal_simulator.git
+[submodule "src/sampling_core/libgp"]
+	path = src/sampling_core/libgp
+	url = https://github.com/mblum/libgp.git
