@@ -1,0 +1,6 @@
+string robot_id
+float64 robot_latitude
+float64 robot_longitude
+---
+float64 latitude
+float64 longitude

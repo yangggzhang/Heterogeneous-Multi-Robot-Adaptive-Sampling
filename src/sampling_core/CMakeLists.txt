@@ -24,6 +24,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 
+add_message_files(
+  FILES
+  measurement.msg
+)
+
 add_service_files(
   FILES
   SamplingGoal.srv
