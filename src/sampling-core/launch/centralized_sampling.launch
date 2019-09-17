@@ -1,10 +1,23 @@
 <launch>
-  <node name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="jackal_joint_publisher jackal_velocity_controller" />
+  <arg name="simulation" value="true" />
+
+  <!-- <node name="controller_spawner" pkg="controller_manager" type="spawner"
+        args="jackal_joint_publisher jackal_velocity_controller" /> -->
   
   <node pkg="sampling-core" type="centralized_sampling_node" name="centralized_sampling" output="screen"> 
     <rosparam command="load" file="$(find sampling-core)/config/centralized_sampling.yaml" />
   </node>
+
+  <group if="$(arg simulation)">
+    <include file = "$(find jackal_gazebo)/launch/jackal_world.launch">
+      <arg name="config" value="front_laser" />
+      <arg name="world_name" value="$(find jackal_gazebo)/worlds/scenario1.world" />
+    </include>
+    <include file = "$(find jackal_navigation)/launch/odom_navigation_demo.launch"/>
+  </group>
+
+  <node name="rviz" pkg="rviz" type="rviz"/>
+
 
 </launch>
 

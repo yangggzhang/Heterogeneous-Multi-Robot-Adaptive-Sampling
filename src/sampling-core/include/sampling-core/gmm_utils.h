@@ -14,6 +14,7 @@
 #include <vector>
 
 namespace sampling {
+namespace gmm {
 
 struct Model {
   int numGaussian;
@@ -82,4 +83,5 @@ void GaussianProcessMixture_predict(const Eigen::MatrixXd &Xss,
                                     const Eigen::MatrixXd &All_Xss,
                                     Model &gpModel, Eigen::VectorXd &pred_h,
                                     Eigen::VectorXd &pred_Var);
+}
 } // namespace sampling

@@ -8,6 +8,7 @@
 #include <vector>
 
 namespace sampling {
+namespace utils {
 bool load_ground_truth_data(const std::string &location_data_path,
                             const std::string &temperature_data_path,
                             Eigen::MatrixXd &location,
@@ -72,5 +73,6 @@ bool load_ground_truth_data(const std::string &location_data_path,
     location(i, 1) = Xss_y[i];
   }
   return true;
+}
 }
 }

@@ -10,6 +10,8 @@ public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
     load_parameter();
+    distribution_visualization_pub_ =
+        nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
   }
 
   void fit_ground_truth_data() {
@@ -17,14 +19,28 @@ public:
     gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.rows(),
                                           ground_truth_num_gaussian_);
     gt_model_.R = gt_model_.R.array().abs();
-    expectation_maximization(ground_truth_temperature_, max_iteration_,
-                             convergence_threshold_, gt_model_);
+    gmm::expectation_maximization(ground_truth_temperature_, max_iteration_,
+                                  convergence_threshold_, gt_model_);
 
-    Eigen::VectorXd pred_h, pred_Var;
-
-    GaussianProcessMixture_predict(
+    gmm::GaussianProcessMixture_predict(
         ground_truth_location_, ground_truth_temperature_,
-        ground_truth_location_, gt_model_, pred_h, pred_Var);
+        ground_truth_location_, gt_model_, mean_prediction_, var_prediction_);
+  }
+
+  void visualize_distribution() {
+
+    if (mean_prediction_.size() == 0 || var_prediction_.size() == 0) {
+      return;
+    }
+
+    visualization::construct_visualization_map(
+        ground_truth_temperature_, mean_prediction_, var_prediction_,
+        seed_point_, heat_map_pred_, heat_map_var_, heat_map_truth_);
+
+    distribution_visualization_pub_.publish(seed_point_);
+    distribution_visualization_pub_.publish(heat_map_pred_);
+    distribution_visualization_pub_.publish(heat_map_var_);
+    distribution_visualization_pub_.publish(heat_map_truth_);
   }
 
   bool load_parameter() {
@@ -42,7 +58,7 @@ public:
       return false;
     }
 
-    if (!load_ground_truth_data(
+    if (!utils::load_ground_truth_data(
             ground_truth_location_path, ground_truth_temperature_path,
             ground_truth_location_, ground_truth_temperature_)) {
       ROS_INFO_STREAM("Error! Can not load ground truth data!");
@@ -96,6 +112,8 @@ public:
 
 private:
   ros::NodeHandle nh_, rh_;
+  ros::Publisher distribution_visualization_pub_;
+
   // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
   int max_iteration_;
@@ -109,8 +127,16 @@ private:
   Eigen::MatrixXd ground_truth_location_;
   Eigen::MatrixXd ground_truth_temperature_;
 
-  Model gt_model_;
-  Model model_;
+  Eigen::VectorXd mean_prediction_;
+  Eigen::VectorXd var_prediction_;
+
+  gmm::Model gt_model_;
+  gmm::Model model_;
+
+  visualization_msgs::Marker seed_point_;
+  visualization_msgs::Marker heat_map_pred_;
+  visualization_msgs::Marker heat_map_var_;
+  visualization_msgs::Marker heat_map_truth_;
 };
 } // namespace sampling
 
@@ -121,6 +147,7 @@ int main(int argc, char **argv) {
   sampling::CentralizedSamplingNode node(nh, rh);
   node.fit_ground_truth_data();
   while (ros::ok()) {
+    node.visualize_distribution();
     ros::spinOnce();
     r.sleep();
   }

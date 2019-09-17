@@ -2,6 +2,7 @@
 #include <ros/ros.h>
 
 namespace sampling {
+namespace gmm {
 
 Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n) {
   /*
@@ -348,5 +349,6 @@ void GaussianProcessMixture_predict(const Eigen::MatrixXd &Xss,
       GaussianProcess_predict(gpModel, Xss, All_Xss);
 
   apply_GP(gpModel, mu, s2, gp_probability, pred_h, pred_Var);
+}
 }
 } // namespace sampling
