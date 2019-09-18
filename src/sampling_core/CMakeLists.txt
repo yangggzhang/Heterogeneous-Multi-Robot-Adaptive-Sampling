@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   message_generation
   message_runtime
+  temperature_measurement
 )
 
 ## System dependencies are found with CMake's conventions

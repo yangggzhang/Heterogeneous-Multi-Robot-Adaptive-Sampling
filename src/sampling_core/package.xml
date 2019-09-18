@@ -23,5 +23,6 @@
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
   <depend>message_generation</depend>
+  <depend>temperature_measurement</depend>
 
 </package>

@@ -3,7 +3,9 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <ros/ros.h>
 #include <sampling_core/RequestGoal.h>
+#include <sampling_core/measurement.h>
 #include <string>
+#include <temperature_measurement/RequestTemperatureMeasurement.h>
 
 namespace sampling {
 class JackalNode {
@@ -23,6 +25,13 @@ public:
     }
     request_target_client_ =
         nh_.serviceClient<sampling_core::RequestGoal>(request_target_channel_);
+
+    temperature_measurement_client_ = nh_.serviceClient<
+        temperature_measurement::RequestTemperatureMeasurement>(
+        Jackal_temperature_measurement_channel_);
+
+    temperature_sample_pub_ = nh_.advertise<sampling_core::measurement>(
+        temperature_update_channel_, 10);
   }
 
   bool load_parameter() {
@@ -43,13 +52,24 @@ public:
       return false;
     }
 
+    if (!rh_.getParam("Jackal_temperature_measurement_channel",
+                      Jackal_temperature_measurement_channel_)) {
+      ROS_INFO_STREAM("Error! Missing Jackal temperature measurement channel!");
+      return false;
+    }
+
     if (!rh_.getParam("Jackal_moving_duration_threshold_s",
                       Jackal_moving_duration_threshold_s_)) {
       ROS_INFO_STREAM("Error! Missing Jackal moving maximum duration!");
       return false;
     }
 
-    Jackal_moving_duration_threshold_s_;
+    if (!rh_.getParam("temperature_update_channel",
+                      temperature_update_channel_)) {
+      ROS_INFO_STREAM("Error! Missing temperature update channel!");
+      return false;
+    }
+
     return true;
   }
 
@@ -87,6 +107,24 @@ public:
     return true;
   }
 
+  bool collect_temperature_sample(double &temperature) {
+    temperature_measurement::RequestTemperatureMeasurement srv;
+    srv.request.robot_id = robot_id_;
+
+    if (temperature_measurement_client_.call(srv)) {
+      ROS_INFO_STREAM("Robot " << robot_id_
+                               << " received new temperature measurement : "
+                               << srv.response.temperature);
+      temperature = srv.response.temperature;
+      return true;
+    } else {
+      ROS_INFO_STREAM("Robot "
+                      << robot_id_
+                      << " failed to receive temperature measurement!");
+      return false;
+    }
+  }
+
   bool collect_sample() {
     /// request target from master computer w/ GPS
     while (!request_target_from_master()) {
@@ -115,17 +153,38 @@ public:
                       << robot_id_
                       << " failed to reach the target location with state "
                       << Jackal_action_client_->getState().toString());
+      return false;
     }
 
     /// Collect temperature
+    double temperature_measurement;
+    if (!collect_temperature_sample(temperature_measurement)) {
+      ROS_INFO_STREAM("Robot : " << robot_id_
+                                 << " failed to collect temperature sample!");
+      return false;
+    }
+
+    /// send temperature to maskter computer
+
+    sampling_core::measurement msg;
+    msg.valid = true;
+    msg.latitude = current_latitude_;
+    msg.longitude = current_longitude_;
+    msg.measurement = temperature_measurement;
+    temperature_sample_pub_.publish(msg);
   }
 
 private:
   ros::NodeHandle nh_, rh_;
   ros::ServiceClient request_target_client_;
+  ros::ServiceClient temperature_measurement_client_;
+  ros::Publisher temperature_sample_pub_;
+
   std::string request_target_channel_;
   std::string Jackal_movebase_channel_;
   std::string Jackal_movebase_frame_id_;
+  std::string Jackal_temperature_measurement_channel_;
+  std::string temperature_update_channel_;
 
   double Jackal_moving_duration_threshold_s_;
 
@@ -134,6 +193,9 @@ private:
   utils::gps_location current_location_;
   utils::gps_location gps_target_;
   utils::map_location map_target_;
+
+  double current_latitude_;
+  double current_longitude_;
 
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
       *Jackal_action_client_;
