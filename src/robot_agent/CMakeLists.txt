@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(temperature_measurement)
+project(robot_agent)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -11,9 +11,18 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  visualization_msgs
+  actionlib
+  actionlib_msgs
   message_generation
   message_runtime
-  robot_agent
+  temperature_measurement
+)
+
+add_service_files(
+  FILES
+  RequestGoal.srv
+  RequestTemperatureMeasurement.srv
 )
 
 generate_messages(
@@ -22,9 +31,9 @@ generate_messages(
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES temperature_measurement
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+   INCLUDE_DIRS include
+#  LIBRARIES cmu_swarm
+#  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
    CATKIN_DEPENDS message_runtime
 )
@@ -36,9 +45,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
-
-add_executable(temperature_measurement_simulation_node node/temperature_measurement_simulation_node.cpp)
-target_link_libraries(temperature_measurement_simulation_node ${catkin_LIBRARIES})

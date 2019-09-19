@@ -1,35 +1,38 @@
+#include <robot_agent/RequestTemperatureMeasurement.h>
 #include <ros/ros.h>
 #include <stdlib.h> /* srand, rand */
 #include <string>
-#include <temperature_measurement/RequestTemperatureMeasurement.h>
 
 namespace sampling {
 class TemperatureMeasurementSimulationNode {
 public:
   TemperatureMeasurementSimulationNode(const ros::NodeHandle &nh,
                                        const ros::NodeHandle &rh)
-      : nh_(nh), rh_(rh) {}
+      : nh_(nh), rh_(rh) {
 
-  bool load_parameter() {
+    if (!rh_.getParam("temperature_report_service_channel",
+                      temperature_report_service_channel_)) {
+      ROS_ERROR("Error! Missing temperature report service channel!");
+    }
+
     if (!rh_.getParam("max_temperature", max_temperature_)) {
-      ROS_INFO_STREAM(
+      ROS_ERROR(
           "Error! Missing temperature measurement simulation upper bound!");
-      return false;
     }
 
     if (!rh_.getParam("min_temperature", min_temperature_)) {
-      ROS_INFO_STREAM(
+      ROS_ERROR(
           "Error! Missing temperature measurement simulation lower bound!");
-      return false;
     }
-
-    ROS_INFO_STREAM("Finish loading data!");
-    return true;
+    temperature_report_service_ = nh_.advertiseService(
+        temperature_report_service_channel_,
+        &TemperatureMeasurementSimulationNode::collect_temperature_sample,
+        this);
   }
 
   bool collect_temperature_sample(
-      temperature_measurement::RequestTemperatureMeasurement::Request &req,
-      temperature_measurement::RequestTemperatureMeasurement::Response &res) {
+      robot_agent::RequestTemperatureMeasurement::Request &req,
+      robot_agent::RequestTemperatureMeasurement::Response &res) {
     double random_temperature = (double)std::rand() / RAND_MAX;
     random_temperature =
         min_temperature_ +
@@ -38,8 +41,12 @@ public:
     return true;
   }
 
+  service = n.advertiseService("add_two_ints", add);
+
 private:
   ros::NodeHandle nh_, rh_;
+  ros::ServiceServer temperature_report_service_;
+  std::string temperature_report_service_channel_;
   double min_temperature_;
   double max_temperature_;
 };

@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>temperature_measurement</name>
+  <name>robot_agent</name>
   <version>0.0.0</version>
-  <description>The temperature_measurement package for MRSD heterogeneous sampling project</description>
+  <description>The robot_agent package</description>
 
   <maintainer email="yunfeis@andrew.cmu.edu">Yunfei Shi</maintainer>
   <maintainer email="ningwang@andrew.cmu.edu">Ning Wang</maintainer>
   <maintainer email="jianminz@andrew.cmu.edu">Jianmin Zheng</maintainer>
   <maintainer email="yangzha4@andrew.cmu.edu">Yang Zhang</maintainer>
+
 
   <license>BSD</license>
 
@@ -15,8 +16,11 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
-  <depend>message_generation</depend>
   <depend>message_runtime</depend>
-  <depend>robot_agent</depend>
+  <depend>visualization_msgs</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>temperature_measurement</depend>
 
 </package>

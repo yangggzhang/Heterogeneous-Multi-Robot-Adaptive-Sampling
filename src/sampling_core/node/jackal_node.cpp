@@ -133,6 +133,8 @@ public:
     }
   }
 
+  bool navigate() {}
+
   void report_temperature_sample() {
     /// send temperature to maskter computer
     sampling_core::measurement msg;
