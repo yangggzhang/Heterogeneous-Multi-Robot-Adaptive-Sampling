@@ -14,20 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   actionlib
   actionlib_msgs
-  message_generation
   message_runtime
   temperature_measurement
-)
-
-add_service_files(
-  FILES
-  RequestGoal.srv
-  RequestTemperatureMeasurement.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
+  sampling_msgs
 )
 
 catkin_package(

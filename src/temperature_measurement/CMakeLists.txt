@@ -11,9 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  message_generation
   message_runtime
-  robot_agent
+  sampling_msgs
 )
 
 generate_messages(

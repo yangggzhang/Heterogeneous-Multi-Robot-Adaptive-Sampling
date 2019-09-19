@@ -1,28 +1,20 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>sampling_core</name>
+  <name>sampling_msgs</name>
   <version>0.0.0</version>
-  <description>The sampling_core package</description>
+  <description>The sampling_msgs package</description>
 
   <maintainer email="yunfeis@andrew.cmu.edu">Yunfei Shi</maintainer>
   <maintainer email="ningwang@andrew.cmu.edu">Ning Wang</maintainer>
   <maintainer email="jianminz@andrew.cmu.edu">Jianmin Zheng</maintainer>
   <maintainer email="yangzha4@andrew.cmu.edu">Yang Zhang</maintainer>
 
+
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <depend>cmuswarm_core</depend>
-  <depend>cmuswarm_msgs</depend>
-  <depend>cmuswarm_swarm</depend>
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>message_runtime</depend>
-  <depend>visualization_msgs</depend>
-  <depend>actionlib</depend>
-  <depend>actionlib_msgs</depend>
-  <depend>temperature_measurement</depend>
-  <depend>sampling_msgs</depend>
+  <depend>message_generation</depend>
 
 </package>

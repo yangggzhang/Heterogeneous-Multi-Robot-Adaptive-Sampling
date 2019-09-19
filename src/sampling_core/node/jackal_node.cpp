@@ -2,11 +2,11 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <ros/ros.h>
-#include <sampling_core/RequestGoal.h>
-#include <sampling_core/measurement.h>
+#include <sampling_msgs/RequestGoal.h>
+#include <sampling_msgs/RequestTemperatureMeasurement.h>
+#include <sampling_msgs/measurement.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <string>
-#include <temperature_measurement/RequestTemperatureMeasurement.h>
 
 namespace sampling {
 class JackalNode {
@@ -25,13 +25,13 @@ public:
                       << robot_id_ << " to come up");
     }
     request_target_client_ =
-        nh_.serviceClient<sampling_core::RequestGoal>(request_target_channel_);
+        nh_.serviceClient<sampling_msgs::RequestGoal>(request_target_channel_);
 
-    temperature_measurement_client_ = nh_.serviceClient<
-        temperature_measurement::RequestTemperatureMeasurement>(
-        Jackal_temperature_measurement_channel_);
+    temperature_measurement_client_ =
+        nh_.serviceClient<sampling_msgs::RequestTemperatureMeasurement>(
+            Jackal_temperature_measurement_channel_);
 
-    temperature_sample_pub_ = nh_.advertise<sampling_core::measurement>(
+    temperature_sample_pub_ = nh_.advertise<sampling_msgs::measurement>(
         temperature_update_channel_, 10);
 
     gps_location_sub_ =
@@ -86,7 +86,7 @@ public:
   }
 
   bool request_target_from_master() {
-    sampling_core::RequestGoal srv;
+    sampling_msgs::RequestGoal srv;
     srv.request.robot_id = robot_id_;
     srv.request.robot_latitude = current_location_.latitude;
     srv.request.robot_longitude = current_location_.longitude;
@@ -119,7 +119,7 @@ public:
   }
 
   bool collect_temperature_sample() {
-    temperature_measurement::RequestTemperatureMeasurement srv;
+    sampling_msgs::RequestTemperatureMeasurement srv;
     srv.request.robot_id = robot_id_;
 
     if (temperature_measurement_client_.call(srv)) {
@@ -137,7 +137,7 @@ public:
 
   void report_temperature_sample() {
     /// send temperature to maskter computer
-    sampling_core::measurement msg;
+    sampling_msgs::measurement msg;
     msg.valid = true;
     msg.latitude = current_latitude_;
     msg.longitude = current_longitude_;

@@ -20,7 +20,7 @@
   <depend>visualization_msgs</depend>
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
-  <depend>message_generation</depend>
   <depend>temperature_measurement</depend>
+  <depend>sampling_msgs</depend>
 
 </package>

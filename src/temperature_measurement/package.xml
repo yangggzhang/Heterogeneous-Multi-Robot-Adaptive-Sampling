@@ -15,8 +15,7 @@
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>std_msgs</depend>
-  <depend>message_generation</depend>
   <depend>message_runtime</depend>
-  <depend>robot_agent</depend>
+  <depend>sampling_msgs</depend>
 
 </package>

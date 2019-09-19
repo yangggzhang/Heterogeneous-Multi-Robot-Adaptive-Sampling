@@ -1,5 +1,5 @@
-#include <robot_agent/RequestTemperatureMeasurement.h>
 #include <ros/ros.h>
+#include <sampling_msgs/RequestTemperatureMeasurement.h>
 #include <stdlib.h> /* srand, rand */
 #include <string>
 
@@ -31,8 +31,8 @@ public:
   }
 
   bool collect_temperature_sample(
-      robot_agent::RequestTemperatureMeasurement::Request &req,
-      robot_agent::RequestTemperatureMeasurement::Response &res) {
+      sampling_msgs::RequestTemperatureMeasurement::Request &req,
+      sampling_msgs::RequestTemperatureMeasurement::Response &res) {
     double random_temperature = (double)std::rand() / RAND_MAX;
     random_temperature =
         min_temperature_ +

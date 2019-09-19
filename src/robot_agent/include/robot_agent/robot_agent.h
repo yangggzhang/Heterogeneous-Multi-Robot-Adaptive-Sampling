@@ -2,23 +2,32 @@
 
 #include "sampling_core/utils.h"
 #include <ros/ros.h>
+#include <sampling_msgs/RequestTemperatureMeasurement.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <string>
-#include <temperature_measurement/RequestTemperatureMeasurement.h>
 
 namespace sampling {
 namespace agent {
+
+/// robot state machine
+/// Default : IDLE
+/// Workflow
+/// Request : Request next interest point from master computer
+/// Navigate : navigate to target location
+/// Report : measure temperature and report to master computer
+enum STATE { IDLE, REQUEST, NAVIGATE, REPORT };
+
 class AgentNode {
 public:
   AgentNode(){};
 
   AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
 
-  virtual bool update_goal_from_gps();
-
-  virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg);
+  virtual bool update_goal_from_gps() = 0;
 
   virtual bool navigate() = 0;
+
+  virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg);
 
   bool request_target_from_master();
 
@@ -26,6 +35,7 @@ public:
 
   void report_temperature_sample();
 
+  /// State machine
   void collect_sample();
 
 protected:
@@ -47,6 +57,10 @@ protected:
   double temperature_measurement_;
   double current_latitude_;
   double current_longitude_;
+  double goal_rtk_latitude_;
+  double goal_rtk_longitude_;
+  double goal_map_latitude_;
+  double goal_map_longitude_;
 };
 } // namespace agent
 } // namespace sampling

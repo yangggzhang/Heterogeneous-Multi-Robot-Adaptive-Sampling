@@ -17,28 +17,13 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   actionlib
   actionlib_msgs
-  message_generation
   message_runtime
   temperature_measurement
+  sampling_msgs
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
-
-add_message_files(
-  FILES
-  measurement.msg
-)
-
-add_service_files(
-  FILES
-  SamplingGoal.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
 
 catkin_package(
    INCLUDE_DIRS include
