@@ -1,11 +1,10 @@
-#include "sampling_msgs/robot_agent.h"
+#include "robot_agent/robot_agent.h"
 #include <sampling_msgs/RequestGoal.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
+#include <sampling_msgs/measurement.h>
 
 namespace sampling {
 namespace agent {
-AgentNode::AgentNode() {}
-
 AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     : nh_(nh), rh_(rh) {
 
@@ -60,8 +59,8 @@ void AgentNode::update_GPS_location_callback(
 bool AgentNode::request_target_from_master() {
   sampling_msgs::RequestGoal srv;
   srv.request.robot_id = agent_id_;
-  srv.request.robot_latitude = current_location_.latitude;
-  srv.request.robot_longitude = current_location_.longitude;
+  srv.request.robot_latitude = current_latitude_;
+  srv.request.robot_longitude = current_longitude_;
 
   if (request_target_client_.call(srv)) {
     goal_rtk_latitude_ = srv.response.latitude;
@@ -139,9 +138,8 @@ void AgentNode::collect_sample() {
       agent_state_ = REPORT;
       break;
     } else {
-      ROS_INFO_STREAM("Robot "
-                      << agent_id_
-                      << " failed to reach the target location.s "
+      ROS_INFO_STREAM("Robot " << agent_id_
+                               << " failed to reach the target location.s ");
       agent_state_ = REQUEST;
       break;
     }

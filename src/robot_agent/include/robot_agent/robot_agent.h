@@ -1,6 +1,5 @@
 #pragma once
 
-#include "sampling_core/utils.h"
 #include <ros/ros.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -39,7 +38,7 @@ public:
   void collect_sample();
 
 protected:
-  utils::STATE agent_state_;
+  STATE agent_state_;
   std::string agent_id_;
 
   ros::NodeHandle nh_, rh_;
