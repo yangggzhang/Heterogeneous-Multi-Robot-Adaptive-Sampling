@@ -1,5 +1,6 @@
 <launch>
 <!-- <env name="PYTHONPATH" value="$(env PYTHONPATH)"/> -->
 <node pkg="temp" type="temper.py" name="node_temper" output="screen">
+    <param name="temperature_report_service_channel" value="test_channel"/>
 </node>
 </launch>

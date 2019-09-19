@@ -42,6 +42,7 @@ import rospy
 import numpy as np
 from collections import deque
 from temp.msg import Temperature
+from sampling_msgs.srv import RequestTemperatureMeasurement, RequestTemperatureMeasurementResponse
 
 # Non-standard modules
 try:
@@ -348,6 +349,11 @@ class Temper(object):
     temp_std = np.std(list(self.fused_temp_window))
     return (temp_std < thre)
 
+  def collect_temperature_sample(req):
+    while (not self.is_converged()):
+      rospy.loginfo("Waiting for temperature measurement to converge")
+    return AddTwoIntsResponse(self.fused_temp)
+
   def main(self):
     '''An example 'main' entry point that can be used to make temper.py a
     standalone program.
@@ -355,6 +361,8 @@ class Temper(object):
     converge_timer = time.time()
     rospy.init_node('node_temper')
     r = rospy.Rate(10)
+    temperature_report_service_channel = rospy.get_param("temperature_report_service_channel")
+    temperature_report_service = rospy.Service(temperature_report_service_channel, RequestTemperatureMeasurement, collect_temperature_sample)
     while not rospy.is_shutdown():
       results = self.read(verbose=False)
 
@@ -374,7 +382,6 @@ class Temper(object):
             self.converged = self.is_converged()
             converge_timer = time.time()
 
-      print(self.raw_temp, self.fused_temp, self.converged)
       r.sleep()
 
     return 0
