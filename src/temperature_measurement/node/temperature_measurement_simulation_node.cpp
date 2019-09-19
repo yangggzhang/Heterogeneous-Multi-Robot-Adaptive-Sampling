@@ -41,8 +41,6 @@ public:
     return true;
   }
 
-  service = n.advertiseService("add_two_ints", add);
-
 private:
   ros::NodeHandle nh_, rh_;
   ros::ServiceServer temperature_report_service_;
