@@ -58,8 +58,6 @@ protected:
   double current_longitude_;
   double goal_rtk_latitude_;
   double goal_rtk_longitude_;
-  double goal_map_latitude_;
-  double goal_map_longitude_;
 };
 } // namespace agent
 } // namespace sampling

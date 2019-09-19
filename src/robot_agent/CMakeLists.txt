@@ -35,4 +35,5 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
+  src/jackal_agent.cpp
 )

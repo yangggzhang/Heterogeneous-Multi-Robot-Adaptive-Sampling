@@ -123,8 +123,7 @@ void AgentNode::collect_sample() {
         /// todo \yang keeps requesting?
         break;
       } else {
-        ROS_INFO_STREAM("Successfully updated local map goal : "
-                        << goal_map_latitude_ << " " << goal_map_longitude_);
+        ROS_INFO_STREAM("Successfully updated local map goal");
       }
       agent_state_ = NAVIGATE;
     }
@@ -162,6 +161,6 @@ void AgentNode::collect_sample() {
     break;
   }
   }
-};
+}
 } // namespace agent
 } // namespace sampling

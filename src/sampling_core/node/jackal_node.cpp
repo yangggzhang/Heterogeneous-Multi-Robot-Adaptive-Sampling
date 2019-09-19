@@ -225,7 +225,6 @@ private:
   ros::Subscriber gps_location_sub_;
 
   std::string robot_id_;
-  double Jackal_moving_duration_threshold_s_;
 
   std::string request_target_channel_;
   std::string Jackal_movebase_channel_;
@@ -234,7 +233,6 @@ private:
   std::string temperature_update_channel_;
   std::string Jackal_GPS_channel_;
 
-  move_base_msgs::MoveBaseGoal move_base_goal_;
   double temperature_measurement_;
   double current_latitude_;
   double current_longitude_;
@@ -242,9 +240,6 @@ private:
   utils::gps_location current_location_;
   utils::gps_location gps_target_;
   utils::map_location map_target_;
-
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
-      *Jackal_action_client_;
 };
 } // namespace sampling
 
