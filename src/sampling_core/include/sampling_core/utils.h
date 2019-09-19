@@ -11,6 +11,14 @@
 namespace sampling {
 namespace utils {
 
+/// robot state machine
+/// Default : IDLE
+/// Workflow
+/// Request : Request next interest point from master computer
+/// Navigate : navigate to target location
+/// Report : measure temperature and report to master computer
+enum STATE { IDLE, REQUEST, NAVIGATE, REPORT };
+
 struct gps_location {
   double latitude;
   double longitude;
