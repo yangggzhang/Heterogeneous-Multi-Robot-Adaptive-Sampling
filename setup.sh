@@ -15,4 +15,4 @@ mkdir build
 cd build
 cmake ..
 make
-pip install pyspread openpyxl scipy cvxopt --user
+pip install pyspread openpyxl scipy cvxopt scandir --user
