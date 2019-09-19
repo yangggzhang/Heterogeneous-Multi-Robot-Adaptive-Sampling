@@ -214,11 +214,16 @@ public:
   }
 
 private:
+  utils::STATE Jackal_state_;
+
   ros::NodeHandle nh_, rh_;
   ros::ServiceClient request_target_client_;
   ros::ServiceClient temperature_measurement_client_;
   ros::Publisher temperature_sample_pub_;
   ros::Subscriber gps_location_sub_;
+
+  std::string robot_id_;
+  double Jackal_moving_duration_threshold_s_;
 
   std::string request_target_channel_;
   std::string Jackal_movebase_channel_;
@@ -228,23 +233,16 @@ private:
   std::string Jackal_GPS_channel_;
 
   move_base_msgs::MoveBaseGoal move_base_goal_;
-
-  double Jackal_moving_duration_threshold_s_;
   double temperature_measurement_;
-
-  std::string robot_id_;
+  double current_latitude_;
+  double current_longitude_;
 
   utils::gps_location current_location_;
   utils::gps_location gps_target_;
   utils::map_location map_target_;
 
-  double current_latitude_;
-  double current_longitude_;
-
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
       *Jackal_action_client_;
-
-  utils::STATE Jackal_state_;
 };
 } // namespace sampling
 
@@ -254,6 +252,7 @@ int main(int argc, char **argv) {
   ros::Rate r(10);
   sampling::JackalNode node(nh, rh);
   while (ros::ok()) {
+    node.collect_sample();
     ros::spinOnce();
     r.sleep();
   }
