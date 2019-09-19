@@ -36,4 +36,11 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
   src/jackal_agent.cpp
+  src/pelican_agent.cpp
 )
+
+add_executable(jackal_node node/jackal_node.cpp)
+target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+
+add_executable(pelican_node node/pelican_node.cpp)
+target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
