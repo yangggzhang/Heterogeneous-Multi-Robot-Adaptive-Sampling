@@ -37,7 +37,10 @@ import re
 import select
 import struct
 import sys
+import time
 import rospy
+import numpy as np
+from collections import deque
 from temp.msg import Temperature
 
 # Non-standard modules
@@ -275,13 +278,19 @@ class USBRead(object):
 class Temper(object):
   SYSPATH = '/sys/bus/usb/devices'
 
+
   def __init__(self, verbose=False):
     usblist = USBList()
     self.usb_devices = usblist.get_usb_devices()
-    print(json.dumps(self.usb_devices, indent=4))
+    #print(json.dumps(self.usb_devices, indent=4))
     self.forced_vendor_id = None
     self.forced_product_id = None
     self.verbose = verbose
+    self.raw_temp_window = deque()
+    self.fused_temp_window = deque()
+    self.fused_temp = 0.0
+    self.raw_temp = 0.0
+    self.converged = False
 
   def _is_known_id(self, vendorid, productid):
     '''Returns True if the vendorid and product id are valid.
@@ -306,26 +315,6 @@ class Temper(object):
 
     # The id is not known to this program.
     return False
-
-  def list(self, use_json=False):
-    '''Print out a list all of the USB devices on the system. If 'use_json' is
-    True, then JSON formatting will be used.
-    '''
-    if use_json:
-      print(json.dumps(self.usb_devices, indent=4))
-      return
-
-    for _, info in sorted(self.usb_devices.items(),
-                          key=lambda x: x[1]['busnum'] * 1000 + \
-                          x[1]['devnum']):
-      print('Bus %03d Dev %03d %04x:%04x %s %s %s' % (
-        info['busnum'],
-        info['devnum'],
-        info['vendorid'],
-        info['productid'],
-        '*' if self._is_known_id(info['vendorid'], info['productid']) else ' ',
-        info.get('product', '???'),
-        list(info['devices']) if len(info['devices']) > 0 else ''))
 
   def read(self, verbose=False):
     '''Read all of the known devices on the system and return a list of
@@ -352,114 +341,43 @@ class Temper(object):
       # results.append({ **info, **usbread.read() })
     return results
 
-  def _add_temperature(self, name, info):
-    '''Helper method to add the temperature to a string in both Celsius and
-    Fahrenheit. If no sensor data is available, then '- -' will be returned.
-    '''
-    if name not in info:
-      return '- -'
-    degC = info[name]
-    degF = degC * 1.8 + 32.0
-    return '%.1fC %.1fF' % (degC, degF)
-
-  def _add_humidity(self, name, info):
-    '''Helper method to add the humidity to a string. If no sensor data is
-    available, then '-' will be returned.
-    '''
-
-    if name not in info:
-      return '-'
-    return '%d%%' % int(info[name])
-
-  def self_print(self, results, use_json=False):
-    '''Print out a list of all of the known USB sensor devices on the system.
-    If 'use_json' is True, then JSON formatting will be used.
-    '''
-
-    if use_json:
-      print(json.dumps(results, indent=4))
-      return
-
-    for info in results:
-      s = 'Bus %03d Dev %03d %04x:%04x %s' % (info['busnum'],
-                                              info['devnum'],
-                                              info['vendorid'],
-                                              info['productid'],
-                                              info.get('firmware'))
-      if 'error' in info:
-        s += ' Error: %s' % info['error']
-      else:
-        s += ' ' + self._add_temperature('internal temperature', info)
-        s += ' ' + self._add_humidity('internal humidity', info)
-        s += ' ' + self._add_temperature('external temperature', info)
-        s += ' ' + self._add_humidity('external humidity', info)
-      print(s)
-
-  def self_publish(self, results, pub):
-    for info in results:
-      if 'error' in info:
-        t = -0.12345678
-        print("Error: ", info['error'])
-      else:
-        if 'internal temperature' not in info:
-          t = -0.12345678
-        else:
-          t = info['internal temperature']
-      msg = Temperature()
-      msg.header.stamp = rospy.get_rostime()
-      msg.data = t
-      pub.publish(msg)
+  def is_converged(self, thre=0.3):
+    if len(self.fused_temp_window) >= 5:
+      self.fused_temp_window.popleft()
+    self.fused_temp_window.append(self.fused_temp)
+    temp_std = np.std(list(self.fused_temp_window))
+    return (temp_std < thre)
 
   def main(self):
     '''An example 'main' entry point that can be used to make temper.py a
     standalone program.
     '''
-
-    # parser = argparse.ArgumentParser(description='temper')
-    # parser.add_argument('-l', '--list', action='store_true',
-    #                     help='List all USB devices')
-    # parser.add_argument('--json', action='store_true',
-    #                     help='Provide output as JSON')
-    # parser.add_argument('--force', type=str,
-    #                     help='Force the use of the hex id; ignore other ids',
-    #                     metavar=('VENDOR_ID:PRODUCT_ID'))
-    # parser.add_argument('--verbose', action='store_true',
-    #                     help='Output binary data from thermometer')
-    # args = parser.parse_args()
-    # self.verbose = args.verbose
-
-    # if args.list:
-    #   self.list(args.json)
-    #   return 0
-
-    # if args.force:
-    #   ids = args.force.split(':')
-    #   if len(ids) != 2:
-    #     print('Cannot parse hexadecimal id: %s' % args.force)
-    #     return 1
-    #   try:
-    #     vendor_id = int(ids[0], 16)
-    #     product_id = int(ids[1], 16)
-    #   except:
-    #     print('Cannot parse hexadecimal id: %s' % args.force)
-    #     return 1
-    #   self.forced_vendor_id = vendor_id;
-    #   self.forced_product_id = product_id;
-
-    # By default, output the temperature and humidity for all known sensors.
-    pub = rospy.Publisher('temp', Temperature)
+    converge_timer = time.time()
     rospy.init_node('node_temper')
     r = rospy.Rate(10)
     while not rospy.is_shutdown():
       results = self.read(verbose=False)
-      self.self_print(results, use_json=False)
-      self.self_publish(results, pub)
-      # pub.publish(0.05)
-      r.sleep()
-      
-    
-    return 0
 
+      if 'internal temperature' in results[0]:
+        t = results[0]['internal temperature']
+        if len(self.raw_temp_window) >= 5:
+          self.raw_temp_window.popleft()
+        self.raw_temp_window.append(t)
+        self.raw_temp = t
+        
+        if len(self.raw_temp_window) > 0:
+          self.fused_temp = np.mean(list(self.raw_temp_window))
+
+          # check if converged
+          now = time.time()
+          if now - converge_timer > 0.5:
+            self.converged = self.is_converged()
+            converge_timer = time.time()
+
+      print(self.raw_temp, self.fused_temp, self.converged)
+      r.sleep()
+
+    return 0
 
 if __name__ == "__main__":
   temper = Temper()
