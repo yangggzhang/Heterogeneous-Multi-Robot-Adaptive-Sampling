@@ -17,7 +17,7 @@ public:
 
   bool navigate();
 
-  void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg);
+  void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg) override;
 
 private:
   std::string jackal_movebase_channel_;

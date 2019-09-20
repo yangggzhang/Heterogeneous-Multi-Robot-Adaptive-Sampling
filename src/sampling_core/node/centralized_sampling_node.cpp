@@ -13,7 +13,7 @@ public:
     load_parameter();
     distribution_visualization_pub_ =
         nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
-    update_flag_;
+    update_flag_ = false;
   }
 
   void fit_ground_truth_data() {
@@ -32,6 +32,9 @@ public:
   void collect_sample_callback(const sampling_msgs::measurement &msg) {
     if (msg.valid) {
       sample_size_++;
+      if (sample_size_ % update_flag_ == 0) {
+        update_flag_ = true;
+      }
       sample_temperature_.conservativeResize(sample_size_, 1);
       sample_location_.conservativeResize(sample_size_, 2);
       sample_temperature_(sample_size_, 0) = msg.measurement;
