@@ -1,5 +1,4 @@
 #!/bin/sh
-sudo apt-get update
 sudo apt-get install ros-kinetic-octomap ros-kinetic-octomap-msgs ros-kinetic-costmap-2d ros-kinetic-costmap-2d ros-kinetic-grid-map-ros
 git submodule update --init --recursive
 cd src/simulation/swarm-primitive-dp
