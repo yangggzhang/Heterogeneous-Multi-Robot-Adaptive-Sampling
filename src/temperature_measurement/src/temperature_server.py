@@ -41,7 +41,8 @@ import time
 import rospy
 import numpy as np
 from collections import deque
-from temp.msg import Temperature
+import std_msgs.msg
+from sampling_msgs.msg import temperature_measurement
 from sampling_msgs.srv import RequestTemperatureMeasurement, RequestTemperatureMeasurementResponse
 
 # Non-standard modules
@@ -55,9 +56,6 @@ try:
     from os import scandir, walk
 except ImportError:
     from scandir import scandir, walk
-
-path = os.path.join('/dev', 'ttyUSB2')
-s = serial.Serial(path, 115200)
 
 class USBList(object):
   '''Get a list of all of the USB devices on a system, along with their
@@ -227,7 +225,9 @@ class USBRead(object):
     A dictionary of device info (like that returned by USBList) combined with
     temperature and humidity info is returned.
     '''
-
+    USB = rospy.get_param("~USBPort")
+    path = os.path.join('/dev', USB)
+    s = serial.Serial(path, 115200)
     # path = os.path.join('/dev', device)
     # s = serial.Serial(path, 9600)
     s.bytesize = serial.EIGHTBITS
@@ -361,12 +361,15 @@ class Temper(object):
     converge_timer = time.time()
     rospy.init_node('node_temper')
     r = rospy.Rate(10)
-    temperature_report_service_channel = rospy.get_param("temperature_report_service_channel")
-    temperature_report_service = rospy.Service(temperature_report_service_channel, RequestTemperatureMeasurement, collect_temperature_sample)
+    temperature_report_service_channel = rospy.get_param("~temperature_report_service_channel")
+    temperature_report_service = rospy.Service(temperature_report_service_channel, RequestTemperatureMeasurement, self.collect_temperature_sample)
+    temperature_publish_channel = rospy.get_param("~temperature_publish_channel")
+    temperature_pub = rospy.Publisher(temperature_publish_channel, temperature_measurement, queue_size=10)
+
     while not rospy.is_shutdown():
       results = self.read(verbose=False)
 
-      if 'internal temperature' in results[0]:
+      if len(results) > 0 and 'internal temperature' in results[0]:
         t = results[0]['internal temperature']
         if len(self.raw_temp_window) >= 5:
           self.raw_temp_window.popleft()
@@ -381,7 +384,12 @@ class Temper(object):
           if now - converge_timer > 0.5:
             self.converged = self.is_converged()
             converge_timer = time.time()
-
+      msg = temperature_measurement()
+      msg.header.stamp = rospy.Time.now()
+      msg.raw_temperature = self.raw_temp
+      msg.filtered_temperature = self.fused_temp
+      msg.converged = self.converged
+      temperature_pub.publish(msg)
       r.sleep()
 
     return 0
