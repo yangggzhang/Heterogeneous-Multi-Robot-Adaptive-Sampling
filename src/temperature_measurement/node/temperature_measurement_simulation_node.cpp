@@ -5,11 +5,10 @@
 
 namespace sampling {
 class TemperatureMeasurementSimulationNode {
-public:
+ public:
   TemperatureMeasurementSimulationNode(const ros::NodeHandle &nh,
                                        const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
-
     if (!rh_.getParam("temperature_report_service_channel",
                       temperature_report_service_channel_)) {
       ROS_ERROR("Error! Missing temperature report service channel!");
@@ -41,14 +40,14 @@ public:
     return true;
   }
 
-private:
+ private:
   ros::NodeHandle nh_, rh_;
   ros::ServiceServer temperature_report_service_;
   std::string temperature_report_service_channel_;
   double min_temperature_;
   double max_temperature_;
 };
-} // namespace sampling
+}  // namespace sampling
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "temperature_measurement_simulation");

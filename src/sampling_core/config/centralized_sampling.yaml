@@ -1,7 +1,7 @@
 #Configuation for centralized sampling
 #
-ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Xss.txt"
-ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Fss.txt"
+ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Xss_gps.txt"
+ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Fss_gps.txt"
 
 ugv_max_speed: 10
 ugv_goal_channel: "test"
