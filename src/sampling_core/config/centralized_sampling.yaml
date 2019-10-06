@@ -14,4 +14,20 @@ ground_truth_num_gaussian: 3
 # learning criteria
 convergence_threshold: 0.01
 max_iteration: 100
+model_update_rate: 10
+
+# visualization
+visualization_frame_id: "/map"
+visualization_namespace: "visualization"
+ground_truth_visualization_id: 0
+ground_truth_visualization_offset_x: 25
+prediction_mean_visualization_id: 1
+prediction_mean_visualization_offset_x: 0
+prediction_var_visualization_id: 2
+prediction_var_visualization_offset_x: -25
+visualization_scale_x: 1.0 
+visualization_scale_y: 0.5
+visualization_scale_z: 0.1
+
+temperature_update_channel: "/temp"
 

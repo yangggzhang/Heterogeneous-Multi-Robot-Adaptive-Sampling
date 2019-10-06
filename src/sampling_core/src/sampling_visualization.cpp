@@ -1,212 +1,110 @@
-#pragma once
 #include "sampling_core/sampling_visualization.h"
 
-namespace sampling {
-namespace visualization {
-// this function gets the color for each pixel given the normalized value of the
-// pixel
-void getHeatMapColor(float norm, float &r, float &g, float &b) {
-  const int NUM_COLORS = 5;
-  static float color[NUM_COLORS][3] = {
-      {0, 0, 1}, {0, 1, 1}, {1, 1, 0}, {1, 0, 0}, {0.6, 0, 0}};
+namespace sampling
+{
+namespace visualization
+{
+sampling_visualization::sampling_visualization()
+{
+  latitude_range_ = 0;
+  longitude_range_ = 0;
+  x_scale_ = 1.0;
+  y_scale_ = 1.0;
+  z_scale_ = 1.0;
+}
+
+sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location, const double &x_scale, const double &y_scale, const double &z_scale)
+    : location_(location), x_scale_(x_scale), y_scale_(y_scale), z_scale_(z_scale)
+{
+  assert(location.cols() == 2);
+  latitude_range_ = (location.col(0).maxCoeff() - location.col(0).minCoeff()) /
+                        K_GPS_RESOLUTION +
+                    1;
+  longitude_range_ = (location.col(1).maxCoeff() - location.col(1).minCoeff()) /
+                         K_GPS_RESOLUTION +
+                     1;
+}
+
+void sampling_visualization::get_heatmap_color(const double &norm, std_msgs::ColorRGBA &color)
+{
   int idx1, idx2;
-  float fracB = 0;
+  double fracB = 0;
 
-  if (norm <= 0) {
+  if (norm <= 0)
+  {
     idx1 = idx2 = 0;
-  } else if (norm >= 1) {
-    idx1 = idx2 = NUM_COLORS - 1;
-  } else {
-    norm = norm * (NUM_COLORS - 1);
-    idx1 = floor(norm);
+  }
+  else if (norm >= 1)
+  {
+    idx1 = idx2 = K_NUM_COLOR - 1;
+  }
+  else
+  {
+    double adjusted_norm = norm * ((double)K_NUM_COLOR - 1);
+    idx1 = floor(adjusted_norm);
     idx2 = idx1 + 1;
-    fracB = norm - (float)idx1;
+    fracB = adjusted_norm - (double)idx1;
   }
-
-  r = (color[idx2][0] - color[idx1][0]) * fracB + color[idx1][0];
-  g = (color[idx2][1] - color[idx1][1]) * fracB + color[idx1][1];
-  b = (color[idx2][2] - color[idx1][2]) * fracB + color[idx1][2];
+  color.a = 1.0;
+  color.r = (K_COLOR[idx2][0] - K_COLOR[idx1][0]) * fracB + K_COLOR[idx1][0];
+  color.g = (K_COLOR[idx2][1] - K_COLOR[idx1][1]) * fracB + K_COLOR[idx1][1];
+  color.b = (K_COLOR[idx2][2] - K_COLOR[idx1][2]) * fracB + K_COLOR[idx1][2];
 }
 
-// This function is used to generate the rviz visualization of the robot
-// positions, corresponding voronoi edges, and heat map
-void construct_visualization_map(const Eigen::MatrixXd &Fss,
-                                 const Eigen::VectorXd &pred_h,
-                                 const Eigen::VectorXd &pred_Var,
-                                 visualization_msgs::Marker &seed_point,
-                                 visualization_msgs::Marker &heat_map_pred,
-                                 visualization_msgs::Marker &heat_map_Var,
-                                 visualization_msgs::Marker &heat_map_truth) {
-  // initializing stuff for the marker msg
+void sampling_visualization::initialize_map(const std::string &visualization_frame, const std::string &name_space, const int &map_id, visualization_msgs::Marker &map)
+{
   visualization_msgs::Marker empty_marker;
-  seed_point = heat_map_pred = heat_map_truth = heat_map_Var = empty_marker;
+  map = empty_marker;
+  map.header.frame_id = visualization_frame;
+  map.header.stamp = ros::Time::now();
+  map.ns = name_space;
+  map.pose.orientation.w = 0.0;
+  map.action = visualization_msgs::Marker::ADD;
+  map.id = map_id;
+  map.type = visualization_msgs::Marker::CUBE_LIST;
+  map.scale.x = x_scale_;
+  map.scale.y = y_scale_;
+  map.scale.z = z_scale_;
+}
 
-  seed_point.header.frame_id = heat_map_pred.header.frame_id =
-      heat_map_Var.header.frame_id = heat_map_truth.header.frame_id = "/map";
-  seed_point.header.stamp = heat_map_pred.header.stamp =
-      heat_map_Var.header.stamp = heat_map_truth.header.stamp =
-          ros::Time::now();
-  seed_point.ns = heat_map_pred.ns = heat_map_Var.ns = heat_map_truth.ns =
-      "testVor";
-  seed_point.pose.orientation.w = heat_map_pred.pose.orientation.w =
-      heat_map_Var.pose.orientation.w = heat_map_truth.pose.orientation.w = 0.0;
-  seed_point.action = heat_map_pred.action = heat_map_Var.action =
-      heat_map_truth.action = visualization_msgs::Marker::ADD;
+void sampling_visualization::update_map(const int &x_offset, const Eigen::VectorXd &filling_value, visualization_msgs::Marker &map)
+{
+  assert(filling_value.size() == latitude_range_ * longitude_range_);
+  map.header.stamp = ros::Time::now();
+  double upper_bound = filling_value.maxCoeff();
+  double lower_bound = filling_value.minCoeff();
+  bool equal = upper_bound == lower_bound;
+  map.points.resize(filling_value.size());
+  map.colors.resize(filling_value.size());
 
-  // to keep the points from accidentally interfering with one to the other
-  seed_point.id = 11;
-  heat_map_pred.id = 12;
-  heat_map_truth.id = 13;
-  heat_map_Var.id = 16;
+  for (int lat = 0; lat < latitude_range_; lat++)
+  {
+    for (int lng = 0; lng < longitude_range_; lng++)
+    {
+      int index = lat * latitude_range_ + lng;
 
-  seed_point.type = visualization_msgs::Marker::SPHERE_LIST;
-  heat_map_pred.type = visualization_msgs::Marker::CUBE_LIST;
-  heat_map_Var.type = visualization_msgs::Marker::CUBE_LIST;
-  heat_map_truth.type = visualization_msgs::Marker::CUBE_LIST;
-
-  // points need both x and y scale
-  seed_point.scale.x = 0.4;
-  seed_point.scale.y = 0.4;
-  seed_point.scale.z = 0.4;
-  heat_map_pred.scale.x = 1.0;
-  heat_map_pred.scale.y = 0.5;
-  heat_map_pred.scale.z = 0.1;
-  heat_map_truth.scale.x = 1.0;
-  heat_map_truth.scale.y = 0.5;
-  heat_map_truth.scale.z = 0.1;
-  heat_map_Var.scale.x = 1.0;
-  heat_map_Var.scale.y = 0.5;
-  heat_map_Var.scale.z = 0.1;
-
-  // the r and b color values are automagically set to 0. That's why we need to
-  // specify 'a' as 1.0 otherwise we won't be able to see anything in rviz
-  seed_point.color.r = 0.0;
-  seed_point.color.g = 0.0;
-  seed_point.color.b = 0.0;
-  seed_point.color.a = 1.0;
-
-  // TODO:  add a for loop to loop over bots
-
-  // Eigen::VectorXi idx_ = get_label_idx(this->k, robo_id);
-  double max = Fss.maxCoeff();
-  double min = Fss.minCoeff();
-
-  double max_p = pred_h.maxCoeff(); // 12.9;
-  double min_p = pred_h.minCoeff(); // 4.9;
-
-  double max_v = pred_Var.maxCoeff(); // 12.9;
-  double min_v = pred_Var.minCoeff(); // 4.9;
-
-  // using the temperature data from Fss create the heat map visuals. Red are
-  int count = 0;
-  bool raise = false;
-  for (int i = 0; i < 21; i++) {
-    for (int j = 0; j < 45; j++) {
       geometry_msgs::Point p;
-      p.x = i;
-      p.y = j * heat_map_pred.scale.y;
-      if (raise == true) {
-        p.z = 0.0;
-        raise = false;
-      } else {
-        p.z = -1.0;
-      }
+      p.x = lat + x_offset;
+      p.y = lng * map.scale.y;
+      p.z = -1.0;
 
+      std_msgs::ColorRGBA color;
       double norm;
-      if (std::isnan(pred_h(count))) {
+      if (std::isnan(filling_value(index)) || equal)
+      {
         norm = 0;
-      } else {
-        if ((max - min) == 0 && max == 0) {
-          norm = (pred_h(count) - min);
-        } else if ((max - min) == 0 && max != 0) {
-          norm = (pred_h(count) - min) / max;
-        } else {
-          norm = (pred_h(count) - min) / (max - min);
-        }
+      }
+      else
+      {
+        norm = (filling_value(index) - lower_bound) / (upper_bound - lower_bound);
       }
 
-      std_msgs::ColorRGBA c;
-      float r, g, b;
-      getHeatMapColor((float)norm, r, g, b);
+      get_heatmap_color(norm, color);
 
-      c.r = r;
-      c.g = g;
-      c.b = b;
-      c.a = 1.0;
-
-      heat_map_pred.points.push_back(p);
-      heat_map_pred.colors.push_back(c);
-      count++;
-    }
-  }
-
-  count = 0;
-  for (int i = 0; i < 21; i++) {
-    for (int j = 0; j < 45; j++) {
-      geometry_msgs::Point p;
-      p.x = i - 25;
-      p.y = j * heat_map_truth.scale.y;
-      p.z = 0;
-      double norm;
-      if (std::isnan(Fss(count, 0))) {
-        norm = 0;
-      } else {
-        if ((max - min) == 0 && max == 0) {
-          norm = (Fss(count, 0) - min);
-        } else if ((max - min) == 0 && max != 0) {
-          norm = (Fss(count, 0) - min) / max;
-        } else {
-          norm = (Fss(count, 0) - min) / (max - min);
-        }
-      }
-      std_msgs::ColorRGBA c;
-      float r, g, b;
-      getHeatMapColor((float)norm, r, g, b);
-
-      c.r = r;
-      c.g = g;
-      c.b = b;
-      c.a = 1.0;
-
-      heat_map_truth.points.push_back(p);
-      heat_map_truth.colors.push_back(c);
-      count++;
-    }
-  }
-
-  count = 0;
-  for (int i = 0; i < 21; i++) {
-    for (int j = 0; j < 45; j++) {
-      geometry_msgs::Point p;
-      p.x = i + 25;
-      p.y = j * heat_map_Var.scale.y;
-      p.z = 0;
-      double norm;
-      if (std::isnan(pred_Var(count))) {
-        norm = 0;
-      } else {
-        if ((max - min) == 0 && max == 0) {
-          norm = (pred_Var(count) - min);
-        } else if ((max - min) == 0 && max != 0) {
-          norm = (pred_Var(count) - min) / max;
-        } else {
-          norm = (pred_Var(count) - min) / (max - min);
-        }
-      }
-      std_msgs::ColorRGBA c;
-      float r, g, b;
-      getHeatMapColor((float)norm, r, g, b);
-
-      c.r = r;
-      c.g = g;
-      c.b = b;
-      c.a = 1.0;
-
-      heat_map_Var.points.push_back(p);
-      heat_map_Var.colors.push_back(c);
-      count++;
+      map.points[index] = p;
+      map.colors[index] = color;
     }
   }
 }
-}
+} // namespace visualization
 } // namespace sampling

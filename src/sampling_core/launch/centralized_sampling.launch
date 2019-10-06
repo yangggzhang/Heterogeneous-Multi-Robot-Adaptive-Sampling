@@ -1,6 +1,6 @@
 <launch>
-  <arg name="simulation" value="true" />
-  <arg name="jackal" value="true" />
+  <arg name="simulation" value="false" />
+  <arg name="jackal" value="false" />
   <arg name="pelican" value="false" />
 
 
@@ -11,20 +11,19 @@
     <rosparam command="load" file="$(find sampling_core)/config/centralized_sampling.yaml" />
   </node>
 
-  <group if="$(arg simulation)">
-    <include file = "$(find jackal_gazebo)/launch/jackal_world.launch">
-      <arg name="config" value="front_laser" />
-      <arg name="world_name" value="$(find jackal_gazebo)/worlds/scenario1.world" />
-    </include>
-    <include file = "$(find jackal_navigation)/launch/odom_navigation_demo.launch"/>
-  </group>
-
   <group if="$(arg jackal)">
     <node pkg="robot_agent" type="jackal_node" name="jackal_node" output="screen" >
         <rosparam command="load" file="$(find robot_agent)/config/jackal_config.yaml" />
-   </node>
+     </node>
+    <group if="$(arg simulation)">
+      <include file = "$(find jackal_gazebo)/launch/jackal_world.launch">
+        <arg name="config" value="front_laser" />
+        <arg name="world_name" value="$(find jackal_gazebo)/worlds/scenario1.world" />
+      </include>
+      <include file = "$(find jackal_navigation)/launch/odom_navigation_demo.launch"/>
+    </group>
   </group>
-
+ 
   <group if="$(arg pelican)">
     <node pkg="robot_agent" type="pelican_node" name="pelican_node" output="screen" /> 
   </group>
