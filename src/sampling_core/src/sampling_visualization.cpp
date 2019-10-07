@@ -5,8 +5,6 @@ namespace visualization {
 sampling_visualization::sampling_visualization() {
   latitude_range_ = 0;
   longitude_range_ = 0;
-  visualization_x_range_ = 0;
-  visualization_y_range_ = 0;
   x_scale_ = 1.0;
   y_scale_ = 1.0;
   z_scale_ = 1.0;
@@ -29,14 +27,6 @@ sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location,
       std::round((location.col(1).maxCoeff() - location.col(1).minCoeff()) /
                  K_GPS_RESOLUTION) +
       1;
-
-  if (latitude_range_ <= longitude_range_) {
-    visualization_x_range_ = longitude_range_;
-    visualization_y_range_ = latitude_range_;
-  } else {
-    visualization_x_range_ = latitude_range_;
-    visualization_y_range_ = longitude_range_;
-  }
 }
 
 void sampling_visualization::get_heatmap_color(const double &norm,
@@ -88,9 +78,9 @@ void sampling_visualization::update_map(const int &x_offset,
   map.points.resize(filling_value.size());
   map.colors.resize(filling_value.size());
 
-  for (int lat = 0; lat < visualization_x_range_; lat++) {
-    for (int lng = 0; lng < visualization_y_range_; lng++) {
-      int index = lat * latitude_range_ + lng;
+  for (int lat = 0; lat < latitude_range_; lat++) {
+    for (int lng = 0; lng < longitude_range_; lng++) {
+      int index = lat * longitude_range_ + lng;
 
       geometry_msgs::Point p;
       p.x = lat * map.scale.x + x_offset;

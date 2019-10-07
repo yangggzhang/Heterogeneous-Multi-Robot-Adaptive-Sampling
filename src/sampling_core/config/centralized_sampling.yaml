@@ -1,7 +1,7 @@
 #Configuation for centralized sampling
 #
-ground_truth_location_path: "/home/yang/heterogeneous-sampling/bags/scripts/GPS.txt"
-ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/bags/scripts/temperature.txt"
+ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Xss.txt"
+ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/Fss.txt"
 
 ugv_max_speed: 10
 ugv_goal_channel: "test"
@@ -20,11 +20,11 @@ model_update_rate: 10
 visualization_frame_id: "/map"
 visualization_namespace: "visualization"
 ground_truth_visualization_id: 10
-ground_truth_visualization_offset_x: 0
+ground_truth_visualization_offset_x: 50
 prediction_mean_visualization_id: 1
 prediction_mean_visualization_offset_x: 0
 prediction_var_visualization_id: 2
-prediction_var_visualization_offset_x: -25
+prediction_var_visualization_offset_x: 100
 visualization_scale_x: 1.0
 visualization_scale_y: 1.0
 visualization_scale_z: 0.1

@@ -5,7 +5,7 @@
 
 namespace sampling {
 namespace visualization {
-const double K_GPS_RESOLUTION = 0.000001;
+const double K_GPS_RESOLUTION = 1;
 const int K_NUM_COLOR = 5;
 const double K_COLOR[K_NUM_COLOR][3] = {
     {0, 0, 1}, {0, 1, 1}, {1, 1, 0}, {1, 0, 0}, {0.6, 0, 0}};
@@ -27,8 +27,7 @@ class sampling_visualization {
  private:
   Eigen::MatrixXd location_;
 
-  int latitude_range_, longitude_range_, visualization_x_range_,
-      visualization_y_range_;
+  int latitude_range_, longitude_range_;
 
   double x_scale_, y_scale_, z_scale_;
 

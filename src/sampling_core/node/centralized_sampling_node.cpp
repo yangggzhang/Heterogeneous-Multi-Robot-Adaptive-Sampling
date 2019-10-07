@@ -13,8 +13,8 @@ class CentralizedSamplingNode {
     if (!load_parameter()) {
       ROS_ERROR_STREAM("Missing required ros parameter");
     }
-    distribution_visualization_pub_ =
-        nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+    distribution_visualization_pub_ = nh_.advertise<visualization_msgs::Marker>(
+        "visualization_marker", 10000);
     update_flag_ = false;
 
     /// initialize visualization
@@ -46,6 +46,10 @@ class CentralizedSamplingNode {
     gmm::GaussianProcessMixture_predict(
         ground_truth_location_, ground_truth_temperature_,
         ground_truth_location_, gt_model_, mean_prediction_, var_prediction_);
+    visualization_node_.update_map(prediction_mean_visualization_offset_x_,
+                                   mean_prediction_, heat_map_pred_);
+    visualization_node_.update_map(prediction_var_visualization_offset_x_,
+                                   var_prediction_, heat_map_var_);
   }
 
   void collect_sample_callback(const sampling_msgs::measurement &msg) {
@@ -67,19 +71,12 @@ class CentralizedSamplingNode {
   }
 
   void visualize_distribution() {
-    // if (mean_prediction_.size() == 0 || var_prediction_.size() == 0) {
-    //   return;
-    // }
+    if (mean_prediction_.size() == 0 || var_prediction_.size() == 0) {
+      return;
+    }
 
-    // distribution_visualization_pub_.publish(seed_point_);
-    // distribution_visualization_pub_.publish(heat_map_pred_);
+    distribution_visualization_pub_.publish(heat_map_pred_);
     // distribution_visualization_pub_.publish(heat_map_var_);
-    // for (const auto &point : heat_map_truth_.points) {
-    //   if (point.y > 13) {
-    //     ROS_INFO_STREAM("x : " << point.x << " "
-    //                            << "y : " << point.y);
-    //   }
-    // }
     distribution_visualization_pub_.publish(heat_map_truth_);
   }
 
