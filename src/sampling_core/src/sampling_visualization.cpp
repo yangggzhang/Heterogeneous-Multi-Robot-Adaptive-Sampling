@@ -5,14 +5,13 @@ namespace visualization {
 sampling_visualization::sampling_visualization() {
   latitude_range_ = 0;
   longitude_range_ = 0;
-  visualization_x_range_ = 0;
-  visualization_y_range_ = 0;
   x_scale_ = 1.0;
   y_scale_ = 1.0;
   z_scale_ = 1.0;
 }
 
 sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location,
+                                               const double &map_resolution,
                                                const double &x_scale,
                                                const double &y_scale,
                                                const double &z_scale)
@@ -23,20 +22,12 @@ sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location,
   assert(location.cols() == 2);
   latitude_range_ =
       std::round((location.col(0).maxCoeff() - location.col(0).minCoeff()) /
-                 K_GPS_RESOLUTION) +
+                 map_resolution) +
       1;
   longitude_range_ =
       std::round((location.col(1).maxCoeff() - location.col(1).minCoeff()) /
-                 K_GPS_RESOLUTION) +
+                 map_resolution) +
       1;
-
-  if (latitude_range_ <= longitude_range_) {
-    visualization_x_range_ = longitude_range_;
-    visualization_y_range_ = latitude_range_;
-  } else {
-    visualization_x_range_ = latitude_range_;
-    visualization_y_range_ = longitude_range_;
-  }
 }
 
 void sampling_visualization::get_heatmap_color(const double &norm,
@@ -77,7 +68,7 @@ void sampling_visualization::initialize_map(
   map.scale.z = z_scale_;
 }
 
-void sampling_visualization::update_map(const int &x_offset,
+void sampling_visualization::update_map(const int &offset,
                                         const Eigen::VectorXd &filling_value,
                                         visualization_msgs::Marker &map) {
   assert(filling_value.size() == latitude_range_ * longitude_range_);
@@ -88,13 +79,12 @@ void sampling_visualization::update_map(const int &x_offset,
   map.points.resize(filling_value.size());
   map.colors.resize(filling_value.size());
 
-  for (int lat = 0; lat < visualization_x_range_; lat++) {
-    for (int lng = 0; lng < visualization_y_range_; lng++) {
-      int index = lat * latitude_range_ + lng;
-
+  for (int lat = 0; lat < latitude_range_; lat++) {
+    for (int lng = 0; lng < longitude_range_; lng++) {
+      int index = lat * longitude_range_ + lng;
       geometry_msgs::Point p;
-      p.x = lat * map.scale.x + x_offset;
-      p.y = lng * map.scale.y;
+      p.x = (lat - latitude_range_ / 2) * map.scale.x;
+      p.y = (lng - longitude_range_ / 2) * map.scale.y + offset;
       p.z = -1.0;
       map.points[index] = p;
 
