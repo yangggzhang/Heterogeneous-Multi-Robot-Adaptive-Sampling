@@ -324,8 +324,8 @@ void Gaussian_Mixture_Model::expectation_maximization(const int &max_iteration,
                                                       const double &tolerance) {
   double last_llh, current_llh;
   for (int iter = 0; iter < max_iteration; iter++) {
-    maximization(transpose_training_location_);
-    expectation(transpose_training_location_, current_llh);
+    maximization(transpose_training_feature_);
+    expectation(transpose_training_feature_, current_llh);
     if (iter == 0) {
       last_llh = current_llh;
       continue;
@@ -379,7 +379,7 @@ void Gaussian_Mixture_Model::add_training_data(
     training_feature_.row(original_datasize + i) = new_training_feature.row(i);
     model_.R.row(original_datasize + i) = random_probability.row(0);
   }
-  transpose_training_location_ = training_location_.transpose();
+  transpose_training_feature_ = training_location_.transpose();
   label_.conservativeResize(training_location_.rows());
 }
 

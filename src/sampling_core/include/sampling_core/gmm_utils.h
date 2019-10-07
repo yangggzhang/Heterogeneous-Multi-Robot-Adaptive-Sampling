@@ -92,7 +92,7 @@ class Gaussian_Mixture_Model {
   Model model_;
   Eigen::MatrixXd training_location_;
   Eigen::MatrixXd training_feature_;
-  Eigen::MatrixXd transpose_training_location_;
+  Eigen::MatrixXd transpose_training_feature_;
   Eigen::MatrixXd testing_location_;
   std::vector<Eigen::MatrixXd> training_location_vec_;
   std::vector<Eigen::MatrixXd> training_feature_vec_;
