@@ -1,8 +1,8 @@
 #include "sampling_core/utils.h"
+#include <ros/ros.h>
 #include <Eigen/Dense>
 #include <fstream>
 #include <iostream>
-#include <ros/ros.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -74,5 +74,5 @@ bool load_ground_truth_data(const std::string &location_data_path,
   }
   return true;
 }
-}
-}
+}  // namespace utils
+}  // namespace sampling
