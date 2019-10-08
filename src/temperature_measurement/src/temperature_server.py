@@ -311,8 +311,8 @@ class Temper(object):
       return True
     if vendorid == 6790 and productid == 29987:
       return True
-    # if vendorid == 7531 and productid == 1:
-    #   return True
+    if vendorid == 1027 and productid == 24577:
+      return True
 
     # The id is not known to this program.
     return False
