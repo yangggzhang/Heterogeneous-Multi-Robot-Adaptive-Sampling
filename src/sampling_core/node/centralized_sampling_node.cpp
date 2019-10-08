@@ -33,19 +33,16 @@ class CentralizedSamplingNode {
     visualization_node_.update_map(ground_truth_visualization_offset_x_,
                                    ground_truth_temperature_.col(0),
                                    heat_map_truth_);
+    gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
   }
 
   void fit_ground_truth_data() {
-    gt_model_.numGaussian = ground_truth_num_gaussian_;
-    gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.rows(),
-                                          ground_truth_num_gaussian_);
-    gt_model_.R = gt_model_.R.array().abs();
-    gmm::expectation_maximization(ground_truth_temperature_, max_iteration_,
-                                  convergence_threshold_, gt_model_);
+    gp_node_.add_training_data(ground_truth_location_, ground_truth_temperature_);
+    gp_node_.expectation_maximization(max_iteration_,
+                                  convergence_threshold_);
 
-    gmm::GaussianProcessMixture_predict(
-        ground_truth_location_, ground_truth_temperature_,
-        ground_truth_location_, gt_model_, mean_prediction_, var_prediction_);
+    gp_node_.GaussianProcessMixture_predict(
+        ground_truth_location_, mean_prediction_, var_prediction_);
     visualization_node_.update_map(prediction_mean_visualization_offset_x_,
                                    mean_prediction_, heat_map_pred_);
     visualization_node_.update_map(prediction_var_visualization_offset_x_,
@@ -200,6 +197,16 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("num_gaussian", num_gaussian_)) {
+      ROS_INFO_STREAM("Error! Missing number of gaussian process!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("gp_hyperparameter", gp_hyperparameter_)) {
+      ROS_INFO_STREAM("Error! Missing gaussian process hyperparameter!");
+      succeess = false;
+    }
+
     ROS_INFO_STREAM("Finish loading data!");
 
     /// todo subscribe pelican goal channel
@@ -231,6 +238,10 @@ class CentralizedSamplingNode {
   Eigen::VectorXd mean_prediction_;
   Eigen::VectorXd var_prediction_;
 
+  // GP parameter
+  int num_gaussian_;
+  std::vector<double> gp_hyperparameter_;
+  gmm::Gaussian_Mixture_Model gp_node_;
   gmm::Model gt_model_;
   gmm::Model model_;
 

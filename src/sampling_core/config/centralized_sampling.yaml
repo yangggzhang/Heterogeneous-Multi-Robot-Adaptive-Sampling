@@ -31,3 +31,7 @@ visualization_scale_z: 0.1
 
 temperature_update_channel: "/temp"
 
+# gp parameter
+num_gaussian: 3
+gp_hyperparameter: [ 0.5, 0.5, -2.0]
+
