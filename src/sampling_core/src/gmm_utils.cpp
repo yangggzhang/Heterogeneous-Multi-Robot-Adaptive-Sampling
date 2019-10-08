@@ -4,8 +4,7 @@
 namespace sampling {
 namespace gmm {
 
-Eigen::MatrixXd Gaussian_Mixture_Model::repmat(const Eigen::VectorXd &X,
-                                               const int &n) {
+Eigen::MatrixXd Gaussian_Mixture_Model::repmat(const Eigen::VectorXd &X, const int &n) {
   /*
    *Input: X: m x 1
    *Output: Y: m x n, all columns are the same to X
@@ -17,15 +16,14 @@ Eigen::MatrixXd Gaussian_Mixture_Model::repmat(const Eigen::VectorXd &X,
   return Y;
 }
 
-Eigen::MatrixXd Gaussian_Mixture_Model::repmat(const Eigen::MatrixXd &x,
-                                               const int &n) {
+Eigen::MatrixXd Gaussian_Mixture_Model::repmat(const Eigen::MatrixXd &x, const int &n) {
   Eigen::VectorXd vector_data = x.col(0);
   return repmat(vector_data, n);
 }
 
-Eigen::MatrixXd Gaussian_Mixture_Model::loggausspdf(
-    const Eigen::MatrixXd &data, const Eigen::MatrixXd &mu,
-    const Eigen::MatrixXd &Sigma) {
+Eigen::MatrixXd Gaussian_Mixture_Model::loggausspdf(const Eigen::MatrixXd &data,
+                            const Eigen::MatrixXd &mu,
+                            const Eigen::MatrixXd &Sigma) {
   Eigen::MatrixXd unbiased_data = data;
   for (int i = 0; i < data.rows(); i++) {
     unbiased_data.row(i) = data.row(i).array() - mu(i, 0);
@@ -40,8 +38,7 @@ Eigen::MatrixXd Gaussian_Mixture_Model::loggausspdf(
   return y.transpose();
 }
 
-void Gaussian_Mixture_Model::expectation(const Eigen::MatrixXd &data,
-                                         double &exp) {
+void Gaussian_Mixture_Model::expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp) {
   int d = data.rows();
   int n = data.cols();
   int k = model_.mu.cols();
@@ -64,7 +61,7 @@ void Gaussian_Mixture_Model::expectation(const Eigen::MatrixXd &data,
   model_.R = model_.R.array().exp();
 }
 
-void Gaussian_Mixture_Model::maximization(const Eigen::MatrixXd data) {
+void Gaussian_Mixture_Model::maximization(const Eigen::MatrixXd& data, Model &gp_model) {
   double n = (double)data.cols();
   Eigen::MatrixXd nk = model_.R.colwise().sum();
   model_.Sigma = Eigen::MatrixXd::Zero(1, model_.numGaussian);
@@ -81,8 +78,26 @@ void Gaussian_Mixture_Model::maximization(const Eigen::MatrixXd data) {
   }
 }
 
-void Gaussian_Mixture_Model::GaussianMixture_prediction(
-    Eigen::VectorXi &label) {
+void Gaussian_Mixture_Model::expectation_maximization( const int &max_iteration, const double &tolerance) {
+  double last_llh, current_llh;
+  for (int iter = 0; iter < max_iteration; iter++) {
+    maximization(transpose_training_feature_, model_);
+    expectation(transpose_training_feature_, model_, current_llh);
+    if (iter == 0) {
+      last_llh = current_llh;
+      continue;
+    } else {
+      if (fabs(last_llh - current_llh) < tolerance) {
+        double diff = abs(last_llh - current_llh);
+        break;
+      } else {
+        last_llh = current_llh;
+      }
+    }
+  }
+}
+
+void Gaussian_Mixture_Model::GaussianMixture_prediction(const Model &gp_model, Eigen::VectorXi &label) {
   Eigen::MatrixXd::Index max_index;
   assert(label.size() == model_.R.rows());
   for (int i = 0; i < model_.R.rows(); i++) {
@@ -91,11 +106,9 @@ void Gaussian_Mixture_Model::GaussianMixture_prediction(
   }
 }
 
-void Gaussian_Mixture_Model::gp_compute(const Eigen::MatrixXd &X,
-                                        const Eigen::VectorXd &Y,
-                                        const Eigen::MatrixXd &Xtest,
-                                        Eigen::VectorXd &mu,
-                                        Eigen::VectorXd &s2) {
+void Gaussian_Mixture_Model::gp_compute(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y,
+                const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
+                Eigen::VectorXd &s2) {
   double y;
   gp_model_->clear_sampleset();
 
@@ -126,26 +139,18 @@ output:
     s2 - N_test x 1   Variance of prediction on all testing grids
     //rms - 1 x 1     RMS error from ground truth
 */
-void Gaussian_Mixture_Model::gpml_rms(const Eigen::MatrixXd &Xs_train,
-                                      const Eigen::MatrixXd &Fs_train,
-                                      const Eigen::MatrixXd &X_test,
-                                      Eigen::VectorXd &mu,
-                                      Eigen::VectorXd &s2) {
-  Eigen::VectorXd Fs_train_mtz;
-  Fs_train_mtz =
-      Fs_train.row(0).array() - Fs_train.row(0).mean();  // mean value equals to
+void Gaussian_Mixture_Model::gpml_rms(const Eigen::MatrixXd &Xs_train, const Eigen::MatrixXd &Fs_train,
+              const Eigen::MatrixXd &X_test, Eigen::VectorXd &mu,
+              Eigen::VectorXd &s2) {
+  Eigen::MatrixXd Fs_train_mtz;
+  Fs_train_mtz = Fs_train.array() - Fs_train.mean(); // mean value equals to
   gp_compute(Xs_train, Fs_train_mtz, X_test, mu, s2);
   mu = mu.array() + Fs_train.mean();
 }
 
 bool Gaussian_Mixture_Model::prepare_MixtureGaussianProcessd_data(
-    const Eigen::VectorXi &label, const Eigen::MatrixXd &location,
-    const Eigen::MatrixXd &data,
-    std::vector<Eigen::MatrixXd> &training_location,
-    std::vector<Eigen::MatrixXd> &training_data,
     std::vector<Eigen::MatrixXd> &probability) {
   if (label.size() != location.rows() || label.size() != data.rows()) {
-    ROS_INFO_STREAM("Prediction size is not consistant with data size!");
     return false;
   }
 
@@ -190,15 +195,19 @@ bool Gaussian_Mixture_Model::prepare_MixtureGaussianProcessd_data(
       PP_out:   standard normalize with + and - (sum is 1)
       PP:   raw data of gp predicted probability (sum maybe close to 1)
 */
-void Gaussian_Mixture_Model::GaussianProcess_fix(Eigen::MatrixXd &mu,
-                                                 Eigen::MatrixXd &s2) {
-  mu = Eigen::MatrixXd::Zero(testing_location_.rows(),
-                             model_.numGaussian);  // Sample_size x 3
-  s2 = Eigen::MatrixXd::Zero(testing_location_.rows(),
-                             model_.numGaussian);  // Sample_size x 3
+void Gaussian_Mixture_Model::GaussianProcess_fix(const Model &gp_model,
+                         const std::vector<Eigen::MatrixXd> &training_location,
+                         const std::vector<Eigen::MatrixXd> &training_data,
+                         const Eigen::MatrixXd &test_data, Eigen::MatrixXd &mu,
+                         Eigen::MatrixXd &s2) {
 
-  for (int k = 0; k < model_.numGaussian; k++) {
-    if (training_location_vec_[k].rows() == 0) {
+  mu = Eigen::MatrixXd::Zero(test_data.rows(),
+                             gp_model.numGaussian); // Sample_size x 3
+  s2 = Eigen::MatrixXd::Zero(test_data.rows(),
+                             gp_model.numGaussian); // Sample_size x 3
+
+  for (int k = 0; k < gp_model.numGaussian; k++) {
+    if (training_location[k].rows() == 0) {
       continue;
     }
     Eigen::VectorXd mu_vec(testing_location_.rows());
@@ -210,8 +219,8 @@ void Gaussian_Mixture_Model::GaussianProcess_fix(Eigen::MatrixXd &mu,
   }
 }
 
-Eigen::MatrixXd Gaussian_Mixture_Model::validate_matrix(
-    const double &num, const Eigen::MatrixXd &matrix) {
+Eigen::MatrixXd Gaussian_Mixture_Model::validate_matrix(const double &num,
+                                const Eigen::MatrixXd &matrix) {
   Eigen::MatrixXd nonnan_matrix = matrix;
   for (int i = 0; i < matrix.rows(); i++) {
     for (int j = 0; j < matrix.cols(); j++) {
@@ -224,8 +233,7 @@ Eigen::MatrixXd Gaussian_Mixture_Model::validate_matrix(
 }
 
 /// mask for nan
-Eigen::MatrixXd Gaussian_Mixture_Model::boolen_mask(
-    const Eigen::MatrixXd &matrix) {
+Eigen::MatrixXd Gaussian_Mixture_Model::boolen_mask(const Eigen::MatrixXd &matrix) {
   Eigen::MatrixXd mask = matrix;
   for (int i = 0; i < matrix.rows(); i++) {
     for (int j = 0; j < matrix.cols(); j++) {
@@ -235,8 +243,7 @@ Eigen::MatrixXd Gaussian_Mixture_Model::boolen_mask(
   return mask;
 }
 
-void Gaussian_Mixture_Model::normalize_matrix(const bool &row,
-                                              Eigen::MatrixXd &matrix) {
+void Gaussian_Mixture_Model::normalize_matrix(const bool &row, Eigen::MatrixXd &matrix) {
   if (row) {
     for (int i = 0; i < matrix.rows(); i++) {
       matrix.row(i) = matrix.row(i).array() / matrix.row(i).sum();
@@ -262,8 +269,10 @@ output:
     PP_out:   standard normalize with + and - (sum is 1)
     PP:   raw data of gp predicted probability (sum maybe close to 1)
 */
-Eigen::MatrixXd Gaussian_Mixture_Model::GaussianProcess_predict(
-    const Eigen::MatrixXd &data, const Eigen::MatrixXd &test_data) {
+Eigen::MatrixXd Gaussian_Mixture_Model::GaussianProcess_predict(const Model &gp_model,
+                                        const Eigen::MatrixXd &data,
+                                        const Eigen::MatrixXd &test_data) {
+
   int n_test = test_data.rows();
 
   Eigen::MatrixXd prediction_probability =
@@ -284,11 +293,9 @@ Eigen::MatrixXd Gaussian_Mixture_Model::GaussianProcess_predict(
   return prediction_probability;
 }
 
-void Gaussian_Mixture_Model::apply_GP(const Eigen::MatrixXd &mu,
-                                      const Eigen::MatrixXd &s2,
-                                      const Eigen::MatrixXd &probability,
-                                      Eigen::VectorXd &mean,
-                                      Eigen::VectorXd &variance) {
+void Gaussian_Mixture_Model::apply_GP(const Model &gp_model, const Eigen::MatrixXd &mu,
+              const Eigen::MatrixXd &s2, const Eigen::MatrixXd &probability,
+              Eigen::VectorXd &mean, Eigen::VectorXd &variance) {
   Eigen::MatrixXd mu_mask = boolen_mask(mu);
 
   /// Mean
@@ -305,57 +312,28 @@ void Gaussian_Mixture_Model::apply_GP(const Eigen::MatrixXd &mu,
   variance = (probability.array() * pred_s2_mat.array()).rowwise().sum();
 }
 
-Gaussian_Mixture_Model::Gaussian_Mixture_Model(
-    const int &num_gaussian, const std::vector<double> &gp_hyperparameter,
-    const Eigen::MatrixXd &training_location,
-    const Eigen::MatrixXd &training_feature,
-    const Eigen::MatrixXd &testing_location)
-    : testing_location_(testing_location) {
-  model_.numGaussian = num_gaussian;
-  add_training_data(training_location, training_feature);
-  assert(gp_hyperparameter.size() == 3);
-  gp_model_ = new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)");
-  Eigen::VectorXd params(3);
-  params << gp_hyperparameter[0], gp_hyperparameter[1], gp_hyperparameter[2];
-  gp_model_->covf().set_loghyper(params);
-}
-
-void Gaussian_Mixture_Model::expectation_maximization(const int &max_iteration,
-                                                      const double &tolerance) {
-  double last_llh, current_llh;
-  for (int iter = 0; iter < max_iteration; iter++) {
-    maximization(transpose_training_feature_);
-    expectation(transpose_training_feature_, current_llh);
-    if (iter == 0) {
-      last_llh = current_llh;
-      continue;
-    } else {
-      if (fabs(last_llh - current_llh) < tolerance) {
-        double diff = abs(last_llh - current_llh);
-        break;
-      } else {
-        last_llh = current_llh;
-      }
-    }
-  }
-}
-
 void Gaussian_Mixture_Model::GaussianProcessMixture_predict(
-    Eigen::VectorXd &pred_h, Eigen::VectorXd &pred_Var) {
-  GaussianMixture_prediction(label_);
+                                    const Eigen::MatrixXd &All_Xss, Eigen::VectorXd &pred_h,
+                                    Eigen::VectorXd &pred_Var) {
+  Eigen::VectorXi label;
+  GaussianMixture_prediction(model_, label);
 
   std::vector<Eigen::MatrixXd> training_location, training_data, probability;
-  if (!prepare_MixtureGaussianProcessd_data(
-          label_, training_location_, training_feature_, training_location_vec_,
-          training_feature_vec_, probability_vec_)) {
+  if (!prepare_MixtureGaussianProcessd_data(model_, label, training_location_, training_feature_,
+                                            training_location, training_data,
+                                            probability)) {
     ROS_INFO_STREAM("Can not prepare training data");
   }
 
   Eigen::MatrixXd mu, s2;
-  GaussianProcess_fix(mu, s2);
+
+  GaussianProcess_fix(model_, training_location, training_data, All_Xss, mu,
+                      s2);
+
   Eigen::MatrixXd gp_probability =
-      GaussianProcess_predict(training_location_, testing_location_);
-  apply_GP(mu, s2, gp_probability, pred_h, pred_Var);
+      GaussianProcess_predict(model_, training_location_, All_Xss);
+
+  apply_GP(model_, mu, s2, gp_probability, pred_h, pred_Var);
 }
 
 void Gaussian_Mixture_Model::add_training_data(
@@ -379,8 +357,20 @@ void Gaussian_Mixture_Model::add_training_data(
     training_feature_.row(original_datasize + i) = new_training_feature.row(i);
     model_.R.row(original_datasize + i) = random_probability.row(0);
   }
-  transpose_training_feature_ = training_location_.transpose();
-  label_.conservativeResize(training_location_.rows());
+  transpose_training_feature_ = training_feature_.transpose();
+  // label_.conservativeResize(training_location_.rows());
+}
+
+Gaussian_Mixture_Model::Gaussian_Mixture_Model(const int& num_gaussian, const std::vector<double> &gp_hyperparameter)
+{
+  model_.numGaussian = num_gaussian;
+  assert(gp_hyperparameter.size() == 3);
+  gp_model_ = new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)");
+  Eigen::VectorXd params(3);
+  params << gp_hyperparameter[0], gp_hyperparameter[1], gp_hyperparameter[2];
+  gp_model_->covf().set_loghyper(params);
+}
+
 }
 
 }  // namespace gmm

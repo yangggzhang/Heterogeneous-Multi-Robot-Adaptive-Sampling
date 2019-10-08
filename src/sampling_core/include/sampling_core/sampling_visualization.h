@@ -5,6 +5,10 @@
 
 namespace sampling {
 namespace visualization {
+<<<<<<< HEAD
+=======
+const double K_GPS_RESOLUTION = 1;
+>>>>>>> 83a437be214d22f2316716eaec1fd31b2915c56f
 const int K_NUM_COLOR = 5;
 const double K_COLOR[K_NUM_COLOR][3] = {
     {0, 0, 1}, {0, 1, 1}, {1, 1, 0}, {1, 0, 0}, {0.6, 0, 0}};
