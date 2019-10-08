@@ -1,10 +1,10 @@
 #Configuation for centralized sampling
 #
-ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/GPS.txt"
-ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/temperature.txt"
+ground_truth_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/GPS.txt"
+ground_truth_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/temperature.txt"
 
-initial_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/GPS_init.txt"
-initial_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/temperature_init.txt"
+initial_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/GPS_init.txt"
+initial_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/temperature_init.txt"
 
 ugv_max_speed: 10
 ugv_goal_channel: "test"
@@ -37,7 +37,7 @@ visualization_scale_y: 0.5
 visualization_scale_z: 0.1
 map_resolution: 0.000001
 
-temperature_update_channel: "/temp"
+temperature_update_channel: "temperature_update_channel"
 
 # gp parameter
 num_gaussian: 3
