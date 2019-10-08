@@ -22,10 +22,9 @@ struct map_location {
   double y;
 };
 
-bool load_ground_truth_data(const std::string &location_data_path,
-                            const std::string &temperature_data_path,
-                            Eigen::MatrixXd &location,
-                            Eigen::MatrixXd &temperature);
+bool load_data(const std::string &location_data_path,
+               const std::string &temperature_data_path,
+               Eigen::MatrixXd &location, Eigen::MatrixXd &temperature);
 
 void MsgToMatrix(const sampling_msgs::measurement &msg,
                  Eigen::MatrixXd &location, Eigen::MatrixXd &feature);

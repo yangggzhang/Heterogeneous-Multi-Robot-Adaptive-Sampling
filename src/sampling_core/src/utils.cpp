@@ -9,10 +9,9 @@
 
 namespace sampling {
 namespace utils {
-bool load_ground_truth_data(const std::string &location_data_path,
-                            const std::string &temperature_data_path,
-                            Eigen::MatrixXd &location,
-                            Eigen::MatrixXd &temperature) {
+bool load_data(const std::string &location_data_path,
+               const std::string &temperature_data_path,
+               Eigen::MatrixXd &location, Eigen::MatrixXd &temperature) {
   std::ifstream finFss(temperature_data_path.c_str(), std::ifstream::in);
 
   if (!finFss.is_open()) {

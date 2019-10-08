@@ -3,6 +3,9 @@
 ground_truth_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/GPS.txt"
 ground_truth_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/temperature.txt"
 
+initial_location_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/GPS_init.txt"
+initial_temperature_path: "/home/yang/heterogeneous-sampling/src/sampling_core/data/temperature_init.txt"
+
 ugv_max_speed: 10
 ugv_goal_channel: "test"
 uav_max_speed: 10
@@ -41,4 +44,7 @@ num_gaussian: 3
 gp_hyperparameter: [ 0.0000005, 0.0000005, -2.0]
 
 interest_point_request_service_channel: "interest_point"
+# 0 Variance 
+# \todo yang add more modes
+heuristic_mode : 0
 

@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
 #include <algorithm>  // std::min_element, std::max_element
+#include <queue>
 #include <string>
 #include "sampling_core/gmm_utils.h"
 #include "sampling_core/sampling_visualization.h"
@@ -28,10 +29,34 @@ class CentralizedSamplingNode {
         visualization_scale_z_, map_resolution_);
     initialize_visualization();
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
+    if (init_sample_temperature_.rows() > 0) {
+      gp_node_.add_training_data(init_sample_location_,
+                                 init_sample_temperature_);
+      update_gp_model();
+      update_visualization();
+      update_heuristic();
+      ROS_INFO_STREAM("Initialize GP model with initial data points");
+    }
   }
 
   bool assign_interest_point(sampling_msgs::RequestGoal::Request &req,
                              sampling_msgs::RequestGoal::Response &res) {
+    // todo \yang add hetegeneous functionality
+    if (heuristic_pq_.empty()) {
+      gp_node_.GaussianProcessMixture_predict(test_location_, mean_prediction_,
+                                              var_prediction_);
+      update_heuristic();
+    }
+
+    if (heuristic_pq_.empty()) {
+      ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
+      return false;
+    }
+    std::pair<double, int> interest_point_pair = heuristic_pq_.top();
+    res.latitude = test_location_(interest_point_pair.second, 0);
+    res.longitude = test_location_(interest_point_pair.second, 1);
+    heuristic_pq_.pop();
+
     return true;
   }
 
@@ -83,15 +108,32 @@ class CentralizedSamplingNode {
     if (mean_prediction_.size() == 0 || var_prediction_.size() == 0) {
       return;
     }
-
     distribution_visualization_pub_.publish(heat_map_pred_);
     distribution_visualization_pub_.publish(heat_map_var_);
     distribution_visualization_pub_.publish(heat_map_truth_);
   }
 
+  void update_heuristic() {
+    switch (heuristic_mode_) {
+      case 0: {
+        heuristic_pq_ =
+            std::priority_queue<std::pair<double, int>,
+                                std::vector<std::pair<double, int>>,
+                                std::less<std::pair<double, int>>>();
+        for (int i = 0; i < test_location_.rows(); ++i) {
+          heuristic_pq_.push(std::make_pair(var_prediction_(i), i));
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
   bool load_parameter() {
     bool succeess = true;
-    std::string ground_truth_location_path, ground_truth_temperature_path;
+    std::string ground_truth_location_path, ground_truth_temperature_path,
+        initial_location_path, initial_temperature_path;
 
     if (!rh_.getParam("ground_truth_location_path",
                       ground_truth_location_path)) {
@@ -105,11 +147,24 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
-    if (!utils::load_ground_truth_data(
-            ground_truth_location_path, ground_truth_temperature_path,
-            ground_truth_location_, ground_truth_temperature_)) {
+    if (!utils::load_data(ground_truth_location_path,
+                          ground_truth_temperature_path, ground_truth_location_,
+                          ground_truth_temperature_)) {
       ROS_INFO_STREAM("Error! Can not load ground truth data!");
       succeess = false;
+    }
+
+    if (!rh_.getParam("initial_location_path", initial_location_path)) {
+      ROS_INFO_STREAM("Error! Missing initial location data!");
+    }
+
+    if (!rh_.getParam("initial_temperature_path", initial_temperature_path)) {
+      ROS_INFO_STREAM("Error! Missing initial temperature data!");
+    }
+
+    if (!utils::load_data(initial_location_path, initial_temperature_path,
+                          init_sample_location_, init_sample_temperature_)) {
+      ROS_INFO_STREAM("Error! Can not initialize sampling data!");
     }
 
     if (!rh_.getParam("convergence_threshold", convergence_threshold_)) {
@@ -240,6 +295,11 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("heuristic_mode", heuristic_mode_)) {
+      ROS_INFO_STREAM("Error! Missing interest assignment heuristic mode!");
+      succeess = false;
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -266,6 +326,30 @@ class CentralizedSamplingNode {
     return succeess;
   }
 
+  void update_gp_model() {
+    gp_node_.expectation_maximization(max_iteration_, convergence_threshold_);
+    gp_node_.GaussianProcessMixture_predict(ground_truth_location_,
+                                            mean_prediction_, var_prediction_);
+  }
+
+  void update_visualization() {
+    visualization_node_.update_map(prediction_mean_visualization_offset_,
+                                   mean_prediction_, heat_map_pred_);
+    visualization_node_.update_map(prediction_var_visualization_offset_,
+                                   var_prediction_, heat_map_var_);
+  }
+
+  // main loop
+  void run() {
+    if (update_flag_) {
+      update_flag_ = false;
+      update_gp_model();
+      update_visualization();
+      update_heuristic();
+    }
+    visualize_distribution();
+  }
+
  private:
   ros::NodeHandle nh_, rh_;
   ros::Publisher distribution_visualization_pub_;
@@ -274,10 +358,15 @@ class CentralizedSamplingNode {
   // interest point assignment
   std::string interest_point_service_channel_;
   ros::ServiceServer interest_point_assignment_ser_;
+  int heuristic_mode_;
 
   // gp parameter
   int gp_num_gaussian_;
   std::vector<double> gp_hyperparam_;
+  std::priority_queue<std::pair<double, int>,
+                      std::vector<std::pair<double, int>>,
+                      std::less<std::pair<double, int>>>
+      heuristic_pq_;
 
   // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
@@ -293,8 +382,7 @@ class CentralizedSamplingNode {
   Eigen::MatrixXd ground_truth_location_;
   Eigen::MatrixXd ground_truth_temperature_;
 
-  Eigen::MatrixXd sample_location_;
-  Eigen::MatrixXd sample_temperature_;
+  Eigen::MatrixXd init_sample_location_, init_sample_temperature_;
   Eigen::MatrixXd test_location_;
 
   Eigen::VectorXd mean_prediction_;
@@ -332,9 +420,9 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh, rh("~");
   ros::Rate r(10);
   sampling::CentralizedSamplingNode node(nh, rh);
-  node.fit_ground_truth_data();
+  // node.fit_ground_truth_data();
   while (ros::ok()) {
-    node.visualize_distribution();
+    node.run();
     ros::spinOnce();
     r.sleep();
   }
