@@ -1,5 +1,5 @@
 <launch>
-  <arg name="simulation" value="true" />
+  <arg name="simulation" value="false" />
   <arg name="jackal" value="true" />
   <arg name="pelican" value="false" />
 
