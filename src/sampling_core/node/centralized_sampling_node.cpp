@@ -5,6 +5,7 @@
 #include "sampling_core/gmm_utils.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
+#include "sampling_msgs/RequestGoal.h"
 
 namespace sampling {
 class CentralizedSamplingNode {
@@ -14,8 +15,11 @@ class CentralizedSamplingNode {
     if (!load_parameter()) {
       ROS_ERROR_STREAM("Missing required ros parameter");
     }
-    distribution_visualization_pub_ = nh_.advertise<visualization_msgs::Marker>(
-        "visualization_marker", 10000);
+    distribution_visualization_pub_ =
+        nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+    interest_point_assignment_ser_ = nh_.advertiseService(
+        interest_point_service_channel_,
+        &CentralizedSamplingNode::assign_interest_point, this);
     update_flag_ = false;
     sample_size_ = 0;
     /// initialize visualization
@@ -24,6 +28,11 @@ class CentralizedSamplingNode {
         visualization_scale_z_, map_resolution_);
     initialize_visualization();
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
+  }
+
+  bool assign_interest_point(sampling_msgs::RequestGoal::Request &req,
+                             sampling_msgs::RequestGoal::Response &res) {
+    return true;
   }
 
   void initialize_visualization() {
@@ -225,6 +234,12 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("interest_point_request_service_channel",
+                      interest_point_service_channel_)) {
+      ROS_INFO_STREAM("Error! Missing interest point request service channel!");
+      succeess = false;
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -255,6 +270,10 @@ class CentralizedSamplingNode {
   ros::NodeHandle nh_, rh_;
   ros::Publisher distribution_visualization_pub_;
   ros::Subscriber sample_sub_;
+
+  // interest point assignment
+  std::string interest_point_service_channel_;
+  ros::ServiceServer interest_point_assignment_ser_;
 
   // gp parameter
   int gp_num_gaussian_;

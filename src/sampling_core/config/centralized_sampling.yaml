@@ -40,3 +40,5 @@ temperature_update_channel: "/temp"
 num_gaussian: 3
 gp_hyperparameter: [ 0.0000005, 0.0000005, -2.0]
 
+interest_point_request_service_channel: "interest_point"
+

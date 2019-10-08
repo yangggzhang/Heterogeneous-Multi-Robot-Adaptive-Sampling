@@ -7,7 +7,6 @@ namespace sampling {
 namespace agent {
 AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     : nh_(nh), rh_(rh) {
-
   if (!rh_.getParam("ros_queue_size", ros_queue_size_)) {
     ROS_ERROR("Error! Missing default ros queue size!");
   }
@@ -99,68 +98,69 @@ void AgentNode::report_temperature_sample() {
 
 void AgentNode::collect_sample() {
   switch (agent_state_) {
-  case IDLE: {
-    agent_state_ = REQUEST;
-    break;
-  }
-  case REQUEST: {
-    if (!request_target_from_master()) {
-      ROS_INFO_STREAM("Robot : "
-                      << agent_id_
-                      << " failed to request target from master computer");
-      ROS_INFO_STREAM("Retrying ... ... ...");
+    case IDLE: {
+      agent_state_ = REQUEST;
       break;
-    } else {
-      ROS_INFO_STREAM("Robot : " << agent_id_ << " succeeded in receiving "
-                                                 "target from master "
-                                                 "computer : ");
-      ROS_INFO_STREAM("Latitude : " << goal_rtk_latitude_
-                                    << " Longitude : " << goal_rtk_longitude_);
-
-      if (!update_goal_from_gps()) {
-        ROS_INFO_STREAM(
-            "Failed to update local goal from GPS target location !");
-        /// todo \yang keeps requesting?
+    }
+    case REQUEST: {
+      if (!request_target_from_master()) {
+        ROS_INFO_STREAM("Robot : "
+                        << agent_id_
+                        << " failed to request target from master computer");
+        ROS_INFO_STREAM("Retrying ... ... ...");
         break;
       } else {
-        ROS_INFO_STREAM("Successfully updated local map goal");
+        ROS_INFO_STREAM("Robot : " << agent_id_
+                                   << " succeeded in receiving "
+                                      "target from master "
+                                      "computer : ");
+        ROS_INFO_STREAM("Latitude : " << goal_rtk_latitude_ << " Longitude : "
+                                      << goal_rtk_longitude_);
+
+        if (!update_goal_from_gps()) {
+          ROS_INFO_STREAM(
+              "Failed to update local goal from GPS target location !");
+          /// todo \yang keeps requesting?
+          break;
+        } else {
+          ROS_INFO_STREAM("Successfully updated local map goal");
+        }
+        agent_state_ = NAVIGATE;
       }
-      agent_state_ = NAVIGATE;
-    }
-    break;
-  }
-  case NAVIGATE: {
-    /// Infinite timing allowance rn
-    if (navigate()) {
-      ROS_INFO_STREAM("Hooray, robot " << agent_id_
-                                       << " reached the target location!");
-      agent_state_ = REPORT;
       break;
-    } else {
-      ROS_INFO_STREAM("Robot " << agent_id_
-                               << " failed to reach the target location.s ");
+    }
+    case NAVIGATE: {
+      /// Infinite timing allowance rn
+      if (navigate()) {
+        ROS_INFO_STREAM("Hooray, robot " << agent_id_
+                                         << " reached the target location!");
+        agent_state_ = REPORT;
+        break;
+      } else {
+        ROS_INFO_STREAM("Robot " << agent_id_
+                                 << " failed to reach the target location.s ");
+        agent_state_ = REQUEST;
+        break;
+      }
+    }
+    case REPORT: {
+      if (!collect_temperature_sample()) {
+        ROS_INFO_STREAM("Robot : " << agent_id_
+                                   << " failed to measure temperature!");
+        ROS_INFO_STREAM("Retrying ... ... ...");
+      } else {
+        ROS_INFO_STREAM("Robot " << agent_id_
+                                 << " received new temperature measurement : "
+                                 << temperature_measurement_);
+        report_temperature_sample();
+        agent_state_ = REQUEST;
+      }
+    }
+    default: {
       agent_state_ = REQUEST;
       break;
     }
-  }
-  case REPORT: {
-    if (!collect_temperature_sample()) {
-      ROS_INFO_STREAM("Robot : " << agent_id_
-                                 << " failed to measure temperature!");
-      ROS_INFO_STREAM("Retrying ... ... ...");
-    } else {
-      ROS_INFO_STREAM("Robot " << agent_id_
-                               << " received new temperature measurement : "
-                               << temperature_measurement_);
-      report_temperature_sample();
-      agent_state_ = REQUEST;
-    }
-  }
-  default: {
-    agent_state_ = REQUEST;
-    break;
-  }
   }
 }
-} // namespace agent
-} // namespace sampling
+}  // namespace agent
+}  // namespace sampling
