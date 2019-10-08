@@ -34,9 +34,11 @@ bool JackalNode::update_goal_from_gps() {
   move_base_goal_.target_pose.header.frame_id = jackal_movebase_goal_frame_id_;
   move_base_goal_.target_pose.header.stamp = ros::Time::now();
 
+  geometry_msgs::PointStamped utm_goal =
+      GPStoUTM(goal_rtk_latitude_, goal_rtk_longitude_);
+  geometry_msgs::PointStamped map_goal = UTMtoMapPoint(utm_goal);
   /// to do Use utm to update gps to "map"
-  move_base_goal_.target_pose.pose.position.x = goal_rtk_latitude_;
-  move_base_goal_.target_pose.pose.position.y = goal_rtk_longitude_;
+  move_base_goal_.target_pose.pose.position = map_goal.point;
 
   /// todo \yang calculate
   move_base_goal_.target_pose.pose.orientation.w = 1.0;
@@ -65,5 +67,46 @@ void JackalNode::update_GPS_location_callback(
   current_longitude_ = msg.longitude;
 }
 
-} // namespace agent
-} // namespace sampling
+geometry_msgs::PointStamped JackalNode::GPStoUTM(const double &latitude,
+                                                 const double &longitude) {
+  double utm_x = 0, utm_y = 0;
+  geometry_msgs::PointStamped UTM_point_output;
+  std::string utm_zone;
+
+  // convert lat/long to utm
+  RobotLocalization::NavsatConversions::LLtoUTM(latitude, longitude, utm_y,
+                                                utm_x, utm_zone);
+
+  // Construct UTM_point and map_point geometry messages
+  UTM_point_output.header.frame_id = "utm";
+  UTM_point_output.header.stamp = ros::Time::now();
+  UTM_point_output.point.x = utm_x;
+  UTM_point_output.point.y = utm_y;
+  UTM_point_output.point.z = 0;
+
+  return UTM_point_output;
+}
+
+geometry_msgs::PointStamped JackalNode::UTMtoMapPoint(
+    const geometry_msgs::PointStamped &UTM_input) {
+  geometry_msgs::PointStamped map_point_output;
+  bool notDone = true;
+  tf::TransformListener
+      listener;  // create transformlistener object called listener
+  ros::Time time_now = ros::Time::now();
+  while (notDone) {
+    try {
+      map_point_output.header.stamp = ros::Time::now();
+      listener.waitForTransform("odom", "utm", time_now, ros::Duration(3.0));
+      listener.transformPoint("odom", UTM_input, map_point_output);
+      notDone = false;
+    } catch (tf::TransformException &ex) {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(0.01).sleep();
+    }
+  }
+  return map_point_output;
+}
+
+}  // namespace agent
+}  // namespace sampling

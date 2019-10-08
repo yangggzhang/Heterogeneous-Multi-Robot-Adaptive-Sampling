@@ -22,5 +22,6 @@
   <depend>actionlib_msgs</depend>
   <depend>temperature_measurement</depend>
   <depend>sampling_msgs</depend>
-
+  <depend>robot_localization</depend>
+  <depend>tf</depend>
 </package>
