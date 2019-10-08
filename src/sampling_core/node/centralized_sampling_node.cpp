@@ -138,6 +138,11 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("map_resolution", map_resolution_)) {
+      ROS_INFO_STREAM("Error! Missing visualization map resolution!");
+      succeess = false;
+    }
+
     if (!rh_.getParam("ground_truth_visualization_id",
                       ground_truth_visualization_id_)) {
       ROS_INFO_STREAM("Error! Missing ground truth visualization map id!");
