@@ -2,10 +2,10 @@
 
 ros_queue_size: 10
 agent_id: jackal
-request_target_channel: "jackal_target"
+request_target_channel: "interest_point"
 temperature_measurement_channel: "jackal_temperature_measurement_channel"
 temperature_update_channel: "jackal_temperature_update_channel"
 gps_location_channel: "jackal/fix"
 jackal_movebase_channel: "move_base"
-jackal_movebase_goal_frame_id: "odom"
+jackal_movebase_goal_frame_id: "map"
 jackal_moving_duration_threshold_s: 30

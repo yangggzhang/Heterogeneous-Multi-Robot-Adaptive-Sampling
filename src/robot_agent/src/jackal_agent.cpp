@@ -97,8 +97,10 @@ geometry_msgs::PointStamped JackalNode::UTMtoMapPoint(
   while (notDone) {
     try {
       map_point_output.header.stamp = ros::Time::now();
-      listener.waitForTransform("odom", "utm", time_now, ros::Duration(3.0));
-      listener.transformPoint("odom", UTM_input, map_point_output);
+      listener.waitForTransform(jackal_movebase_goal_frame_id_, "utm", time_now,
+                                ros::Duration(3.0));
+      listener.transformPoint(jackal_movebase_goal_frame_id_, UTM_input,
+                              map_point_output);
       notDone = false;
     } catch (tf::TransformException &ex) {
       ROS_WARN("%s", ex.what());

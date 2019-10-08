@@ -60,6 +60,8 @@ bool AgentNode::request_target_from_master() {
   srv.request.robot_id = agent_id_;
   srv.request.robot_latitude = current_latitude_;
   srv.request.robot_longitude = current_longitude_;
+  ROS_INFO_STREAM("Robot " << agent_id_ << " current location : "
+                           << current_latitude_ << " " << current_longitude_);
 
   if (request_target_client_.call(srv)) {
     goal_rtk_latitude_ = srv.response.latitude;
