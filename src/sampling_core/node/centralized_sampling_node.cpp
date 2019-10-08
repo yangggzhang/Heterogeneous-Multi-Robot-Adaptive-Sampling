@@ -19,8 +19,8 @@ class CentralizedSamplingNode {
 
     /// initialize visualization
     visualization_node_ = visualization::sampling_visualization(
-        ground_truth_location_, map_resolution_, visualization_scale_x_,
-        visualization_scale_y_, visualization_scale_z_);
+        ground_truth_location_, visualization_scale_x_, visualization_scale_y_,
+        visualization_scale_z_, map_resolution_);
     visualization_node_.initialize_map(
         visualization_frame_id_, visualization_namespace_,
         ground_truth_visualization_id_, heat_map_truth_);
@@ -33,40 +33,20 @@ class CentralizedSamplingNode {
     visualization_node_.update_map(ground_truth_visualization_offset_,
                                    ground_truth_temperature_.col(0),
                                    heat_map_truth_);
-<<<<<<< HEAD
-    gp_node_ = gmm::Gaussian_Mixture_Model(
-        gp_num_gaussian_, gp_hyperparam_, sample_location_, sample_temperature_,
-        ground_truth_location_);
-  }
-
-  void fit_ground_truth_data() {
-    //   gt_model_.numGaussian = ground_truth_num_gaussian_;
-    //   gt_model_.R = Eigen::MatrixXd::Random(ground_truth_temperature_.rows(),
-    //                                         ground_truth_num_gaussian_);
-    //   gt_model_.R = gt_model_.R.array().abs();
-    //   gmm::expectation_maximization(ground_truth_temperature_,
-    //   max_iteration_,
-    //                                 convergence_threshold_, gt_model_);
-    //   gmm::GaussianProcessMixture_predict(
-    //       ground_truth_location_, ground_truth_temperature_,
-    //       ground_truth_location_, gt_model_, mean_prediction_,
-    //       var_prediction_);
-=======
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
   }
 
   void fit_ground_truth_data() {
-    gp_node_.add_training_data(ground_truth_location_, ground_truth_temperature_);
-    gp_node_.expectation_maximization(max_iteration_,
-                                  convergence_threshold_);
+    gp_node_.add_training_data(ground_truth_location_,
+                               ground_truth_temperature_);
+    gp_node_.expectation_maximization(max_iteration_, convergence_threshold_);
 
-    gp_node_.GaussianProcessMixture_predict(
-        ground_truth_location_, mean_prediction_, var_prediction_);
-    visualization_node_.update_map(prediction_mean_visualization_offset_x_,
+    gp_node_.GaussianProcessMixture_predict(ground_truth_location_,
+                                            mean_prediction_, var_prediction_);
+    visualization_node_.update_map(prediction_mean_visualization_offset_,
                                    mean_prediction_, heat_map_pred_);
-    visualization_node_.update_map(prediction_var_visualization_offset_x_,
+    visualization_node_.update_map(prediction_var_visualization_offset_,
                                    var_prediction_, heat_map_var_);
->>>>>>> 83a437be214d22f2316716eaec1fd31b2915c56f
   }
 
   void collect_sample_callback(const sampling_msgs::measurement &msg) {
@@ -92,26 +72,8 @@ class CentralizedSamplingNode {
       return;
     }
 
-<<<<<<< HEAD
-    // distribution_visualization_pub_.publish(seed_point_);
-
-    // for (const auto &point : heat_map_truth_.points) {
-    //   if (point.y > 13) {
-    //     ROS_INFO_STREAM("x : " << point.x << " "
-    //                            << "y : " << point.y);
-    //   }
-    // }
-    ROS_INFO_STREAM(var_prediction_);
-    visualization_node_.update_map(prediction_mean_visualization_offset_,
-                                   mean_prediction_, heat_map_pred_);
-    visualization_node_.update_map(prediction_var_visualization_offset_,
-                                   var_prediction_, heat_map_var_);
     distribution_visualization_pub_.publish(heat_map_pred_);
     distribution_visualization_pub_.publish(heat_map_var_);
-=======
-    distribution_visualization_pub_.publish(heat_map_pred_);
-    // distribution_visualization_pub_.publish(heat_map_var_);
->>>>>>> 83a437be214d22f2316716eaec1fd31b2915c56f
     distribution_visualization_pub_.publish(heat_map_truth_);
   }
 
@@ -145,17 +107,6 @@ class CentralizedSamplingNode {
 
     if (!rh_.getParam("max_iteration", max_iteration_)) {
       ROS_INFO_STREAM("Error! Missing EM maximum iteration!");
-      succeess = false;
-    }
-
-    if (!rh_.getParam("gp_num_gaussian", gp_num_gaussian_)) {
-      ROS_INFO_STREAM(
-          "Error! Missing gaussian process number of gaussian process!");
-      succeess = false;
-    }
-
-    if (!rh_.getParam("gp_hyperparam", gp_hyperparam_)) {
-      ROS_INFO_STREAM("Error! Missing gaussian process hyperparameter!");
       succeess = false;
     }
 
@@ -195,9 +146,7 @@ class CentralizedSamplingNode {
 
     if (!rh_.getParam("ground_truth_visualization_offset",
                       ground_truth_visualization_offset_)) {
-      ROS_INFO_STREAM(
-          "Error! Missing ground truth visualization map offset! "
-          "direction!");
+      ROS_INFO_STREAM("Error! Missing ground truth visualization map offset! ");
       succeess = false;
     }
 
@@ -246,10 +195,6 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
-<<<<<<< HEAD
-    if (!rh_.getParam("map_resolution", map_resolution_)) {
-      ROS_INFO_STREAM("Error! Missing visualization map resolution!");
-=======
     if (!rh_.getParam("num_gaussian", num_gaussian_)) {
       ROS_INFO_STREAM("Error! Missing number of gaussian process!");
       succeess = false;
@@ -257,7 +202,6 @@ class CentralizedSamplingNode {
 
     if (!rh_.getParam("gp_hyperparameter", gp_hyperparameter_)) {
       ROS_INFO_STREAM("Error! Missing gaussian process hyperparameter!");
->>>>>>> 83a437be214d22f2316716eaec1fd31b2915c56f
       succeess = false;
     }
 
@@ -272,7 +216,6 @@ class CentralizedSamplingNode {
   ros::Publisher distribution_visualization_pub_;
   ros::Subscriber sample_sub_;
 
-  gmm::Gaussian_Mixture_Model gp_node_;
   // gp parameter
   int gp_num_gaussian_;
   std::vector<double> gp_hyperparam_;
