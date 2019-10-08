@@ -74,5 +74,14 @@ bool load_ground_truth_data(const std::string &location_data_path,
   }
   return true;
 }
+
+void MsgToMatrix(const sampling_msgs::measurement &msg,
+                 Eigen::MatrixXd &location, Eigen::MatrixXd &feature) {
+  location = Eigen::MatrixXd::Zero(1, 2);
+  feature = Eigen::MatrixXd::Zero(1, 1);
+  location(0, 0) = msg.latitude;
+  location(0, 1) = msg.longitude;
+  feature(0, 0) = msg.measurement;
+}
 }  // namespace utils
 }  // namespace sampling

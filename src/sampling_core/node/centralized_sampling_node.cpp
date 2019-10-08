@@ -16,11 +16,15 @@ class CentralizedSamplingNode {
     distribution_visualization_pub_ = nh_.advertise<visualization_msgs::Marker>(
         "visualization_marker", 10000);
     update_flag_ = false;
-
     /// initialize visualization
     visualization_node_ = visualization::sampling_visualization(
         ground_truth_location_, visualization_scale_x_, visualization_scale_y_,
         visualization_scale_z_, map_resolution_);
+    initialize_visualization();
+    gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
+  }
+
+  void initialize_visualization() {
     visualization_node_.initialize_map(
         visualization_frame_id_, visualization_namespace_,
         ground_truth_visualization_id_, heat_map_truth_);
@@ -33,7 +37,6 @@ class CentralizedSamplingNode {
     visualization_node_.update_map(ground_truth_visualization_offset_,
                                    ground_truth_temperature_.col(0),
                                    heat_map_truth_);
-    gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
   }
 
   void fit_ground_truth_data() {
@@ -55,11 +58,9 @@ class CentralizedSamplingNode {
       if (sample_size_ % update_flag_ == 0) {
         update_flag_ = true;
       }
-      sample_temperature_.conservativeResize(sample_size_, 1);
-      sample_location_.conservativeResize(sample_size_, 2);
-      sample_temperature_(sample_size_, 0) = msg.measurement;
-      sample_location_(sample_size_, 0) = msg.latitude;
-      sample_location_(sample_size_, 1) = msg.longitude;
+      Eigen::MatrixXd new_location, new_feature;
+      utils::MsgToMatrix(msg, new_location, new_feature);
+      gp_node_.add_training_data(new_location, new_feature);
       ROS_INFO_STREAM("Master computer successfully collected data!");
     } else {
       ROS_INFO_STREAM(

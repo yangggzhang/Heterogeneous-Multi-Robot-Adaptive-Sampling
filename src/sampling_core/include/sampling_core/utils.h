@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include <sampling_msgs/measurement.h>
 #include <Eigen/Dense>
 #include <string>
 
@@ -25,5 +26,8 @@ bool load_ground_truth_data(const std::string &location_data_path,
                             const std::string &temperature_data_path,
                             Eigen::MatrixXd &location,
                             Eigen::MatrixXd &temperature);
-}
-}
+
+void MsgToMatrix(const sampling_msgs::measurement &msg,
+                 Eigen::MatrixXd &location, Eigen::MatrixXd &feature);
+}  // namespace utils
+}  // namespace sampling
