@@ -8,6 +8,10 @@ ugv_goal_channel: "test"
 uav_max_speed: 10
 uav_goal_channel: "test"
 
+# test field
+latitude_range: [40.443517, 40.443531]
+longitude_range: [-79.946504, -79.946569]
+
 # ground truth model information
 ground_truth_num_gaussian: 3
 

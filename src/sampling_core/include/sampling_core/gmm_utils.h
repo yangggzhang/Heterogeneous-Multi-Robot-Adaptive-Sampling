@@ -28,16 +28,18 @@ class Gaussian_Mixture_Model {
  public:
   Gaussian_Mixture_Model(){};
 
-  Gaussian_Mixture_Model(const int& num_gaussian, const std::vector<double> &gp_hyperparameter);
+  Gaussian_Mixture_Model(const int &num_gaussian,
+                         const std::vector<double> &gp_hyperparameter);
 
   void expectation_maximization(const int &max_iteration,
                                 const double &tolerance);
 
-  void GaussianProcessMixture_predict(const Eigen::MatrixXd &All_Xss,Eigen::VectorXd &pred_h,
+  void GaussianProcessMixture_predict(const Eigen::MatrixXd &All_Xss,
+                                      Eigen::VectorXd &pred_h,
                                       Eigen::VectorXd &pred_Var);
 
   void add_training_data(const Eigen::MatrixXd &new_training_location,
-                                      const Eigen::MatrixXd &new_training_feature);
+                         const Eigen::MatrixXd &new_training_feature);
 
  private:
   Eigen::MatrixXd repmat(const Eigen::VectorXd &X, const int &n);
@@ -50,11 +52,11 @@ class Gaussian_Mixture_Model {
 
   void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp);
 
-  void maximization(const Eigen::MatrixXd& data, Model &gp_model);
+  void maximization(const Eigen::MatrixXd &data, Model &gp_model);
 
   void gp_compute(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y,
-                const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
-                Eigen::VectorXd &s2);
+                  const Eigen::MatrixXd &Xtest, Eigen::VectorXd &mu,
+                  Eigen::VectorXd &s2);
 
   void gpml_rms(const Eigen::MatrixXd &Xs_train,
                 const Eigen::MatrixXd &Fs_train, const Eigen::MatrixXd &X_test,
@@ -78,7 +80,7 @@ class Gaussian_Mixture_Model {
       Eigen::MatrixXd &s2);
 
   Eigen::MatrixXd boolen_mask(const Eigen::MatrixXd &matrix);
-  
+
   void normalize_matrix(const bool &row, Eigen::MatrixXd &matrix);
 
   Eigen::MatrixXd validate_matrix(const double &num,
@@ -93,13 +95,11 @@ class Gaussian_Mixture_Model {
                                           const Eigen::MatrixXd &test_data);
 
   Model model_;
-  libgp::GaussianProcess* gp_model_;
+  libgp::GaussianProcess *gp_model_;
 
   Eigen::MatrixXd training_location_;
   Eigen::MatrixXd training_feature_;
   Eigen::MatrixXd transpose_training_feature_;
-
-
 };
 }  // namespace gmm
 }  // namespace sampling

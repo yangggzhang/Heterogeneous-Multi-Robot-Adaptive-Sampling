@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
+#include <algorithm>  // std::min_element, std::max_element
 #include <string>
 #include "sampling_core/gmm_utils.h"
 #include "sampling_core/sampling_visualization.h"
@@ -16,6 +17,7 @@ class CentralizedSamplingNode {
     distribution_visualization_pub_ = nh_.advertise<visualization_msgs::Marker>(
         "visualization_marker", 10000);
     update_flag_ = false;
+    sample_size_ = 0;
     /// initialize visualization
     visualization_node_ = visualization::sampling_visualization(
         ground_truth_location_, visualization_scale_x_, visualization_scale_y_,
@@ -211,6 +213,38 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    std::vector<double> latitude_range, longitude_range;
+
+    if (!rh_.getParam("latitude_range", latitude_range)) {
+      ROS_INFO_STREAM("Error! Missing test field latitude_range!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("longitude_range", longitude_range)) {
+      ROS_INFO_STREAM("Error! Missing test field longitude range!");
+      succeess = false;
+    }
+
+    double min_latitude =
+        *std::min_element(latitude_range.begin(), latitude_range.end());
+    double max_latitude =
+        *std::max_element(latitude_range.begin(), latitude_range.end());
+    double min_longitude =
+        *std::min_element(longitude_range.begin(), longitude_range.end());
+    double max_longitude =
+        *std::max_element(longitude_range.begin(), longitude_range.end());
+    int num_latitude =
+        std::round((max_latitude - min_latitude) / map_resolution_) + 1;
+    int num_longitude =
+        std::round((max_longitude - min_longitude) / map_resolution_) + 1;
+    test_location_ = Eigen::MatrixXd::Zero(num_latitude * num_longitude, 2);
+    for (int i = 0; i < num_latitude; ++i) {
+      for (int j = 0; j < num_longitude; ++j) {
+        int count = i * num_longitude + j;
+        test_location_(count, 0) = (double)i * map_resolution_ + min_latitude;
+        test_location_(count, 1) = (double)i * map_resolution_ + min_longitude;
+      }
+    }
     ROS_INFO_STREAM("Finish loading data!");
 
     /// todo subscribe pelican goal channel
@@ -233,6 +267,7 @@ class CentralizedSamplingNode {
 
   int model_update_rate_;
   bool update_flag_;
+  int sample_size_;
 
   std::string temperature_update_channel_;
 
@@ -241,7 +276,7 @@ class CentralizedSamplingNode {
 
   Eigen::MatrixXd sample_location_;
   Eigen::MatrixXd sample_temperature_;
-  size_t sample_size_;
+  Eigen::MatrixXd test_location_;
 
   Eigen::VectorXd mean_prediction_;
   Eigen::VectorXd var_prediction_;

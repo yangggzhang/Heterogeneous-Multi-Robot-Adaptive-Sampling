@@ -20,9 +20,6 @@ sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location,
       y_scale_(y_scale),
       z_scale_(z_scale) {
   assert(location.cols() == 2);
-  ROS_INFO_STREAM("visualization " << location.col(0).maxCoeff() << " "
-                                   << location.col(0).minCoeff() << " "
-                                   << map_resolution);
   latitude_range_ =
       std::round((location.col(0).maxCoeff() - location.col(0).minCoeff()) /
                  map_resolution) +
@@ -74,8 +71,6 @@ void sampling_visualization::initialize_map(
 void sampling_visualization::update_map(const int &offset,
                                         const Eigen::VectorXd &filling_value,
                                         visualization_msgs::Marker &map) {
-  ROS_INFO_STREAM(filling_value.size()
-                  << " " << latitude_range_ << " " << longitude_range_);
   assert(filling_value.size() == latitude_range_ * longitude_range_);
   map.header.stamp = ros::Time::now();
   double upper_bound = filling_value.maxCoeff();
