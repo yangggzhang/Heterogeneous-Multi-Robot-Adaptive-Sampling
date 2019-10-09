@@ -96,7 +96,6 @@ void AgentNode::report_temperature_sample() {
   msg.longitude = current_longitude_;
   msg.measurement = temperature_measurement_;
   temperature_sample_pub_.publish(msg);
-  ROS_INFO_STREAM("REPORT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
 void AgentNode::collect_sample() {
