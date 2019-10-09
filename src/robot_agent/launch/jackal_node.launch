@@ -1,0 +1,5 @@
+<launch>   
+   <node pkg="robot_agent" type="jackal_node" name="jackal" output="screen" >
+        <rosparam command="load" file="$(find robot_agent)/config/jackal_config.yaml" />
+     </node>
+    </launch>

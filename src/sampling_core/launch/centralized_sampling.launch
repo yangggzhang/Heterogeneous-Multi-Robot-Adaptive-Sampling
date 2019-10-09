@@ -1,16 +1,12 @@
 <launch>
   <arg name="simulation" value="false" />
-  <arg name="jackal" value="true" />
+  <arg name="jackal" value="false" />
   <arg name="pelican" value="false" />
 
 
   <!-- <node name="controller_spawner" pkg="controller_manager" type="spawner"
         args="jackal_joint_publisher jackal_velocity_controller" /> -->
   
-  <node pkg="sampling_core" type="centralized_sampling_node" name="sampling_core" output="screen"> 
-    <rosparam command="load" file="$(find sampling_core)/config/centralized_sampling.yaml" />
-  </node>
-
   <group if="$(arg jackal)">
     <node pkg="robot_agent" type="jackal_node" name="jackal" output="screen" >
         <rosparam command="load" file="$(find robot_agent)/config/jackal_config.yaml" />
@@ -24,11 +20,17 @@
     </group>
   </group>
  
+
+  <node pkg="sampling_core" type="centralized_sampling_node" name="sampling_core" output="screen"> 
+    <rosparam command="load" file="$(find sampling_core)/config/centralized_sampling.yaml" />
+  </node>
+
+
   <group if="$(arg pelican)">
     <node pkg="robot_agent" type="pelican_node" name="pelican_node" output="screen" /> 
   </group>
 
-  <node name="rviz" pkg="rviz" type="rviz"/>
+  <!-- <node name="rviz" pkg="rviz" type="rviz"/> -->
 
 
 </launch>

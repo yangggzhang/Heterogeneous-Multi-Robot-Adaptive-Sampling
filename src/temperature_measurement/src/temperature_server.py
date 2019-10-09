@@ -45,10 +45,10 @@ class Temper(object):
         temp_std = np.std(list(self.fused_temp_window))
         return (temp_std < thre)
         
-    def collect_temperature_sample(req):
+    def collect_temperature_sample(self, req):
         while (not self.is_converged()):
           rospy.loginfo("Waiting for temperature measurement to converge")
-        return AddTwoIntsResponse(self.fused_temp)
+        return RequestTemperatureMeasurementResponse(self.fused_temp)
         
     def main(self):
         # pub = rospy.Publisher('temp', Temperature, queue_size=1)

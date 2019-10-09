@@ -96,6 +96,7 @@ void AgentNode::report_temperature_sample() {
   msg.longitude = current_longitude_;
   msg.measurement = temperature_measurement_;
   temperature_sample_pub_.publish(msg);
+  ROS_INFO_STREAM("REPORT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
 void AgentNode::collect_sample() {
@@ -137,6 +138,7 @@ void AgentNode::collect_sample() {
         ROS_INFO_STREAM("Hooray, robot " << agent_id_
                                          << " reached the target location!");
         agent_state_ = REPORT;
+        ROS_INFO_STREAM("Next state : REPORT!");
         break;
       } else {
         ROS_INFO_STREAM("Robot " << agent_id_

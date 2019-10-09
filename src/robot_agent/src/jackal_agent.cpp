@@ -17,6 +17,7 @@ JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
                     jackal_moving_duration_threshold_s_)) {
     ROS_ERROR("Error! Missing jackal navigation time threshold!");
   }
+  ROS_INFO_STREAM("Finish Jackal Loading!");
 
   jackal_action_client_ =
       new actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>(
@@ -25,6 +26,7 @@ JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_INFO_STREAM(
         "Waiting for the move_base action server for jackal to come up");
   }
+  ROS_INFO_STREAM("Jackal move base server came up! READY!!!");
 }
 
 bool JackalNode::update_goal_from_gps() {
@@ -42,16 +44,16 @@ bool JackalNode::update_goal_from_gps() {
 
   /// todo \yang calculate
   move_base_goal_.target_pose.pose.orientation.w = 1.0;
+  return true;
 };
 
 bool JackalNode::navigate() {
+  ROS_INFO_STREAM("JACKAL STARTED NAVIGATION!");
   jackal_action_client_->sendGoal(move_base_goal_);
   jackal_action_client_->waitForResult(
       ros::Duration(jackal_moving_duration_threshold_s_));
   if (jackal_action_client_->getState() ==
       actionlib::SimpleClientGoalState::SUCCEEDED) {
-    ROS_INFO_STREAM("Hooray, robot " << agent_id_
-                                     << " reached the target location!");
     return true;
   } else {
     ROS_INFO_STREAM("Robot "

@@ -71,6 +71,7 @@ void sampling_visualization::initialize_map(
 void sampling_visualization::update_map(const int &offset,
                                         const Eigen::VectorXd &filling_value,
                                         visualization_msgs::Marker &map) {
+  ROS_INFO_STREAM("Size : "<<filling_value.size()<<" "<<latitude_range_<<" "<<longitude_range_);
   assert(filling_value.size() == latitude_range_ * longitude_range_);
   map.header.stamp = ros::Time::now();
   double upper_bound = filling_value.maxCoeff();
