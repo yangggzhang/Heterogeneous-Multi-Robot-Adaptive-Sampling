@@ -26,7 +26,7 @@ JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_INFO_STREAM(
         "Waiting for the move_base action server for jackal to come up");
   }
-  ROS_INFO_STREAM("Jackal move base server came up! READY!!!");
+  ROS_INFO_STREAM("Jackal move base server came up! READY TO GO!!!");
 }
 
 bool JackalNode::update_goal_from_gps() {
@@ -48,7 +48,6 @@ bool JackalNode::update_goal_from_gps() {
 };
 
 bool JackalNode::navigate() {
-  ROS_INFO_STREAM("JACKAL STARTED NAVIGATION!");
   jackal_action_client_->sendGoal(move_base_goal_);
   jackal_action_client_->waitForResult(
       ros::Duration(jackal_moving_duration_threshold_s_));

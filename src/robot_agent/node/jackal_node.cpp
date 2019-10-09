@@ -6,7 +6,6 @@ int main(int argc, char **argv) {
   ros::Rate r(10);
   sampling::agent::JackalNode node(nh, rh);
   while (ros::ok()) {
-    ROS_INFO_STREAM("JACKAL UPDATING!");
     node.collect_sample();
     ros::spinOnce();
     r.sleep();

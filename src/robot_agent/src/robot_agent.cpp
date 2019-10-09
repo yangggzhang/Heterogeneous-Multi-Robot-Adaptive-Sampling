@@ -138,11 +138,10 @@ void AgentNode::collect_sample() {
         ROS_INFO_STREAM("Hooray, robot " << agent_id_
                                          << " reached the target location!");
         agent_state_ = REPORT;
-        ROS_INFO_STREAM("Next state : REPORT!");
         break;
       } else {
         ROS_INFO_STREAM("Robot " << agent_id_
-                                 << " failed to reach the target location.s ");
+                                 << " failed to reach the target location. ");
         agent_state_ = REQUEST;
         break;
       }

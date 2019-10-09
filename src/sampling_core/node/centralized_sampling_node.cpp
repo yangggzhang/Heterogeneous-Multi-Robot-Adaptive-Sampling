@@ -21,7 +21,9 @@ class CentralizedSamplingNode {
     interest_point_assignment_ser_ = nh_.advertiseService(
         interest_point_service_channel_,
         &CentralizedSamplingNode::assign_interest_point, this);
-    sample_sub_ = nh_.subscribe(temperature_update_channel_, 1, &CentralizedSamplingNode::collect_sample_callback, this);
+    sample_sub_ =
+        nh_.subscribe(temperature_update_channel_, 1,
+                      &CentralizedSamplingNode::collect_sample_callback, this);
     update_flag_ = false;
     sample_size_ = 0;
     /// initialize visualization
@@ -43,7 +45,8 @@ class CentralizedSamplingNode {
   bool assign_interest_point(sampling_msgs::RequestGoal::Request &req,
                              sampling_msgs::RequestGoal::Response &res) {
     // todo \yang add hetegeneous functionality
-    ROS_INFO_STREAM("Master Computer received reuest from robot : "<<req.robot_id);
+    ROS_INFO_STREAM(
+        "Master Computer received request from robot : " << req.robot_id);
     if (heuristic_pq_.empty()) {
       gp_node_.GaussianProcessMixture_predict(test_location_, mean_prediction_,
                                               var_prediction_);
@@ -91,9 +94,8 @@ class CentralizedSamplingNode {
   }
 
   void collect_sample_callback(const sampling_msgs::measurement &msg) {
-    ROS_INFO_STREAM("Master callback!");
     if (msg.valid) {
-      ROS_INFO_STREAM("Master received temperature : "<<msg.measurement);
+      ROS_INFO_STREAM("Master received temperature : " << msg.measurement);
       sample_size_++;
       if (sample_size_ % model_update_rate_ == 0) {
         update_flag_ = true;
@@ -101,7 +103,6 @@ class CentralizedSamplingNode {
       Eigen::MatrixXd new_location, new_feature;
       utils::MsgToMatrix(msg, new_location, new_feature);
       gp_node_.add_training_data(new_location, new_feature);
-      ROS_INFO_STREAM("Master computer successfully collected data!");
     } else {
       ROS_INFO_STREAM(
           "Master computer received invalid sample from : " << msg.robot_id);
@@ -316,7 +317,6 @@ class CentralizedSamplingNode {
         std::round((max_latitude - min_latitude) / map_resolution_) + 1;
     int num_longitude =
         std::round((max_longitude - min_longitude) / map_resolution_) + 1;
-        ROS_INFO_STREAM("test calculation : "<< num_latitude <<" "<<num_longitude );
     test_location_ = Eigen::MatrixXd::Zero(num_latitude * num_longitude, 2);
     for (int i = 0; i < num_latitude; ++i) {
       for (int j = 0; j < num_longitude; ++j) {
@@ -325,7 +325,7 @@ class CentralizedSamplingNode {
         test_location_(count, 1) = (double)i * map_resolution_ + min_longitude;
       }
     }
-
+    // todo \yang
     test_location_ = ground_truth_location_;
 
     ROS_INFO_STREAM("Finish loading data!");
@@ -336,8 +336,8 @@ class CentralizedSamplingNode {
 
   void update_gp_model() {
     gp_node_.expectation_maximization(max_iteration_, convergence_threshold_);
-    gp_node_.GaussianProcessMixture_predict(test_location_,
-                                            mean_prediction_, var_prediction_);
+    gp_node_.GaussianProcessMixture_predict(test_location_, mean_prediction_,
+                                            var_prediction_);
   }
 
   void update_visualization() {

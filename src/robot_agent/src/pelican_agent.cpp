@@ -169,5 +169,5 @@ void PelicanNode::update_GPS_location_callback(
   }
 }
 
-} // namespace agent
-} // namespace sampling
+}  // namespace agent
+}  // namespace sampling

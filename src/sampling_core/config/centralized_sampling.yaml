@@ -37,7 +37,7 @@ visualization_scale_y: 0.5
 visualization_scale_z: 0.1
 map_resolution: 0.00001
 
-temperature_update_channel: "tempp"
+temperature_update_channel: "temperature_update_channel"
 
 # gp parameter
 num_gaussian: 3
