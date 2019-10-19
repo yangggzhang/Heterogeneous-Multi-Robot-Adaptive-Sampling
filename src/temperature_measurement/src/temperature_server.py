@@ -9,11 +9,6 @@ import numpy as np
 from sampling_msgs.msg import temperature_measurement
 from sampling_msgs.srv import RequestTemperatureMeasurement, RequestTemperatureMeasurementResponse
 
-
-ser = serial.Serial('/dev/ttyUSB2', 38400, timeout=1, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS )  # open serial port
-#ser.flushInput()
-print(ser.name)         # check which port was really used
-
 class Temper(object):
 
     def __init__(self):
