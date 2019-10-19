@@ -27,7 +27,8 @@
 
 
   <group if="$(arg pelican)">
-    <node pkg="robot_agent" type="pelican_node" name="pelican_node" output="screen" /> 
+    <node pkg="robot_agent" type="pelican_node" name="pelican_node" output="screen" />
+    <rosparam command="load" file="$(find robot_agent)/config/pelican_config.yaml" />
   </group>
 
   <!-- <node name="rviz" pkg="rviz" type="rviz"/> -->

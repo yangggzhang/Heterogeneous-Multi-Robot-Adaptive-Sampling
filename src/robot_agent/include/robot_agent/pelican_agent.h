@@ -51,9 +51,13 @@ private:
   int nagivate_loop_rate_int_;
 
   double height_waiting_threshold_;
-
+  double navigate_waiting_threshold_; //waiting time before detecting convergence
+  double maximum_navigation_time_;
   double last_latitude_;
   double last_longitude_;
+
+  double longitude_origin_;
+  double latitude_origin_;
 };
 } // namespace agent
 } // namespace sampling

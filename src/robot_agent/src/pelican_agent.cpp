@@ -16,6 +16,14 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing pelican height waiting time threshold!");
   }
 
+  if (!rh_.getParam("navigate_waiting_threshold", navigate_waiting_threshold_)) {
+    ROS_ERROR("Error! Missing pelican navigation waiting time threshold!");
+  }
+
+  if (!rh_.getParam("maximum_navigation_time", maximum_navigation_time_)) {
+    ROS_ERROR("Error! Missing pelican navigation waiting time threshold!");
+  }
+
   if (!rh_.getParam("hover_height", hover_height_)) {
     ROS_ERROR("Error! Missing pelican hover height!");
   }
@@ -35,6 +43,13 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   if (!rh_.getParam("nagivate_loop_rate", nagivate_loop_rate_int_)) {
     ROS_ERROR("Error! Missing loop rate during navigation!");
   }
+  if (!rh_.getParam("latitude_origin", latitude_origin_)) {
+    ROS_ERROR("Error! Missing latitude origin (take off point)!");
+  }
+
+  if (!rh_.getParam("longitude_origin", longitude_origin_)) {
+    ROS_ERROR("Error! Missing longitude origin (take off point)!");
+  }
 
   converge_count_ = 0;
   last_latitude_ = 0.0;
@@ -49,7 +64,7 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   ROS_INFO_STREAM("Launching Pelican waypoint navigation.");
 }
 
-/// todo check feedback
+/// todo check feedback // pelican connection etc.
 bool PelicanNode::initialize_pelican() {
   std_msgs::String msg;
   msg.data = "launch_waypoint";
@@ -61,8 +76,13 @@ bool PelicanNode::update_goal_from_gps() {
   /// transform gps signal from rtk frame to pelican local frame
 
   /*TODO: Frame Transformation*/
-  cmd_latitude_ = goal_rtk_latitude_;
-  cmd_longitude_ = goal_rtk_longitude_;
+  // cmd_latitude_ = goal_rtk_latitude_;
+  // cmd_longitude_ = goal_rtk_longitude_;
+
+  // calculate relative command use origin:
+  cmd_latitude_ = (goal_rtk_latitude_ - latitude_origin_)*pow(10,7);
+  cmd_longitude_ = (goal_rtk_longitude_ - longitude_origin_)*pow(10,7);
+
   return true;
 };
 
@@ -98,7 +118,8 @@ bool PelicanNode::navigate() {
   /// todo \paul \yunfei
   /// solution when it fails
   gps_converg_flag_ = false;
-  if (!waypoint_navigate(cmd_latitude_, cmd_longitude_, hover_height_, 0.0)) {
+  if (!waypoint_navigate(cmd_latitude_, cmd_longitude_, hover_height_, 
+                         navigate_waiting_threshold_)) {
     ROS_INFO_STREAM("Pelican failed to navigate to next location");
     return false;
   }
@@ -108,10 +129,19 @@ bool PelicanNode::navigate() {
   /// can not converge forever?
   converge_count_ = 0;
   ros::Rate navigate_loop_rate(nagivate_loop_rate_int_);
-
-  while (ros::ok() && !gps_converg_flag_) {
+  ros::Time begin = ros::Time::now();
+  ros::Duration navigationTime = ros::Time::now()- begin;
+  while (ros::ok() && // ros is still alive
+         !gps_converg_flag_ && // gps not converged
+         navigationTime.toSec() <= maximum_navigation_time_) {
     ros::spinOnce();
     navigate_loop_rate.sleep();
+    navigationTime = ros::Time::now()- begin;
+  }
+  if (navigationTime.toSec() > maximum_navigation_time_)
+  {
+      ROS_INFO_STREAM("Pelican Navigation Time Out");
+      return false;
   }
 
   /// step4 update command
@@ -156,13 +186,15 @@ void PelicanNode::update_GPS_location_callback(
   /// todo \paul \yunfei
   /// update the local gps signal back to rtk frame
   /*TODO: Frame Transformation*/
+  // currently use the same orginal uav gps, will need an offset and scale after testing
   last_latitude_ = current_latitude_;
   last_longitude_ = current_longitude_;
-  current_latitude_ = msg.latitude * pow(10, 7);
-  current_longitude_ = msg.longitude * pow(10, 7);
+  current_latitude_ = msg.latitude;
+  current_longitude_ = msg.longitude;
 
   gps_converg_flag_ = gps_is_converged(
-      last_latitude_, last_longitude_, current_latitude_, current_longitude_,
+      (last_latitude_*pow(10, 7)), (last_longitude_*pow(10, 7)), 
+      (current_latitude_*pow(10, 7)), (current_longitude_*pow(10, 7)),
       gps_converge_threshold_, gps_converge_buffer_size_, converge_count_);
   if (gps_converg_flag_) {
     ROS_INFO_STREAM("Pelican GPS waypoint navigation converged!");
