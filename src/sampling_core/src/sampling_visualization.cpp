@@ -10,25 +10,16 @@ sampling_visualization::sampling_visualization() {
   z_scale_ = 1.0;
 }
 
-sampling_visualization::sampling_visualization(const Eigen::MatrixXd &location,
-                                               const double &x_scale,
+sampling_visualization::sampling_visualization(const double &x_scale,
                                                const double &y_scale,
                                                const double &z_scale,
-                                               const double &map_resolution)
-    : location_(location),
-      x_scale_(x_scale),
+                                               const int &latitude_range,
+                                               const int &longitude_range)
+    : x_scale_(x_scale),
       y_scale_(y_scale),
-      z_scale_(z_scale) {
-  assert(location.cols() == 2);
-  latitude_range_ =
-      std::round((location.col(0).maxCoeff() - location.col(0).minCoeff()) /
-                 map_resolution) +
-      1;
-  longitude_range_ =
-      std::round((location.col(1).maxCoeff() - location.col(1).minCoeff()) /
-                 map_resolution) +
-      1;
-}
+      z_scale_(z_scale),
+      latitude_range_(latitude_range),
+      longitude_range_(longitude_range) {}
 
 void sampling_visualization::get_heatmap_color(const double &norm,
                                                std_msgs::ColorRGBA &color) {

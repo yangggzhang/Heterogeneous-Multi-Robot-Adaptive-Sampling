@@ -13,9 +13,9 @@ class sampling_visualization {
  public:
   sampling_visualization();
 
-  sampling_visualization(const Eigen::MatrixXd &location, const double &x_scale,
-                         const double &y_scale, const double &z_scale,
-                         const double &map_resolution);
+  sampling_visualization(const double &x_scale, const double &y_scale,
+                         const double &z_scale, const int &latitude_range,
+                         const int &longitude_range);
 
   void initialize_map(const std::string &visualization_frame,
                       const std::string &name_space, const int &map_id,
@@ -25,8 +25,6 @@ class sampling_visualization {
                   visualization_msgs::Marker &map);
 
  private:
-  Eigen::MatrixXd location_;
-
   int latitude_range_, longitude_range_;
 
   double x_scale_, y_scale_, z_scale_;

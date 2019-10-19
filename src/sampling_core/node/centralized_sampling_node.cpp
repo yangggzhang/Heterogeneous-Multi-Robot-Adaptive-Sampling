@@ -26,12 +26,17 @@ class CentralizedSamplingNode {
                       &CentralizedSamplingNode::collect_sample_callback, this);
     update_flag_ = false;
     sample_size_ = 0;
-    /// initialize visualization
     visualization_node_ = visualization::sampling_visualization(
-        test_location_, visualization_scale_x_, visualization_scale_y_,
-        visualization_scale_z_, map_resolution_);
-    initialize_visualization();
+        visualization_scale_x_, visualization_scale_y_, visualization_scale_z_,
+        num_lat_, num_lng_);
+    visualization_node_.initialize_map(
+        visualization_frame_id_, visualization_namespace_,
+        prediction_mean_visualization_id_, heat_map_pred_);
+    visualization_node_.initialize_map(
+        visualization_frame_id_, visualization_namespace_,
+        ground_truth_visualization_id_, heat_map_var_);
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
+    gt_gp_node_ = gp_node_;
     if (init_sample_temperature_.rows() > 0) {
       gp_node_.add_training_data(init_sample_location_,
                                  init_sample_temperature_);
@@ -39,6 +44,20 @@ class CentralizedSamplingNode {
       update_visualization();
       update_heuristic();
       ROS_INFO_STREAM("Initialize GP model with initial data points");
+    }
+    if (ground_truth_location_.rows() > 0 &&
+        ground_truth_temperature_.rows() > 0) {
+      visualization_node_.initialize_map(
+          visualization_frame_id_, visualization_namespace_,
+          ground_truth_visualization_id_, heat_map_truth_);
+      gt_gp_node_.add_training_data(ground_truth_location_,
+                                    ground_truth_temperature_);
+      gt_gp_node_.expectation_maximization(max_iteration_,
+                                           convergence_threshold_);
+      gt_gp_node_.GaussianProcessMixture_predict(test_location_, gt_mean_,
+                                                 gt_var_);
+      visualization_node_.update_map(prediction_mean_visualization_offset_,
+                                     gt_mean_, heat_map_truth_);
     }
   }
 
@@ -65,34 +84,6 @@ class CentralizedSamplingNode {
     return true;
   }
 
-  void initialize_visualization() {
-    visualization_node_.initialize_map(
-        visualization_frame_id_, visualization_namespace_,
-        ground_truth_visualization_id_, heat_map_truth_);
-    visualization_node_.initialize_map(
-        visualization_frame_id_, visualization_namespace_,
-        prediction_mean_visualization_id_, heat_map_pred_);
-    visualization_node_.initialize_map(
-        visualization_frame_id_, visualization_namespace_,
-        ground_truth_visualization_id_, heat_map_var_);
-    // visualization_node_.update_map(ground_truth_visualization_offset_,
-    //                                ground_truth_temperature_.col(0),
-    //                                heat_map_truth_);
-  }
-
-  void fit_ground_truth_data() {
-    gp_node_.add_training_data(ground_truth_location_,
-                               ground_truth_temperature_);
-    gp_node_.expectation_maximization(max_iteration_, convergence_threshold_);
-
-    gp_node_.GaussianProcessMixture_predict(ground_truth_location_,
-                                            mean_prediction_, var_prediction_);
-    visualization_node_.update_map(prediction_mean_visualization_offset_,
-                                   mean_prediction_, heat_map_pred_);
-    visualization_node_.update_map(prediction_var_visualization_offset_,
-                                   var_prediction_, heat_map_var_);
-  }
-
   void collect_sample_callback(const sampling_msgs::measurement &msg) {
     if (msg.valid) {
       ROS_INFO_STREAM("Master received temperature : " << msg.measurement);
@@ -114,8 +105,7 @@ class CentralizedSamplingNode {
       return;
     }
     distribution_visualization_pub_.publish(heat_map_pred_);
-    // distribution_visualization_pub_.publish(heat_map_var_);
-    // distribution_visualization_pub_.publish(heat_map_truth_);
+    distribution_visualization_pub_.publish(heat_map_var_);
   }
 
   void update_heuristic() {
@@ -143,20 +133,20 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("ground_truth_location_path",
                       ground_truth_location_path)) {
       ROS_INFO_STREAM("Error! Missing ground truth location data!");
-      succeess = false;
     }
 
     if (!rh_.getParam("ground_truth_temperature_path",
                       ground_truth_temperature_path)) {
       ROS_INFO_STREAM("Error! Missing ground truth temperature data!");
-      succeess = false;
     }
 
-    if (!utils::load_data(ground_truth_location_path,
-                          ground_truth_temperature_path, ground_truth_location_,
-                          ground_truth_temperature_)) {
-      ROS_INFO_STREAM("Error! Can not load ground truth data!");
-      succeess = false;
+    if (!ground_truth_location_path.empty() &&
+        !ground_truth_temperature_path.empty()) {
+      if (!utils::load_data(
+              ground_truth_location_path, ground_truth_temperature_path,
+              ground_truth_location_, ground_truth_temperature_)) {
+        ROS_INFO_STREAM("Error! Can not load ground truth data!");
+      }
     }
 
     if (!rh_.getParam("initial_location_path", initial_location_path)) {
@@ -237,7 +227,8 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("prediction_mean_visualization_offset",
                       prediction_mean_visualization_offset_)) {
       ROS_INFO_STREAM(
-          "Error! Missing prediction mean value visualization map offset in x "
+          "Error! Missing prediction mean value visualization map offset in "
+          "x "
           "direction!");
       succeess = false;
     }
@@ -313,20 +304,18 @@ class CentralizedSamplingNode {
         *std::min_element(longitude_range.begin(), longitude_range.end());
     double max_longitude =
         *std::max_element(longitude_range.begin(), longitude_range.end());
-    int num_latitude =
-        std::round((max_latitude - min_latitude) / map_resolution_) + 1;
-    int num_longitude =
+    num_lat_ = std::round((max_latitude - min_latitude) / map_resolution_) + 1;
+    num_lng_ =
         std::round((max_longitude - min_longitude) / map_resolution_) + 1;
-    test_location_ = Eigen::MatrixXd::Zero(num_latitude * num_longitude, 2);
-    for (int i = 0; i < num_latitude; ++i) {
-      for (int j = 0; j < num_longitude; ++j) {
-        int count = i * num_longitude + j;
+
+    test_location_ = Eigen::MatrixXd::Zero(num_lat_ * num_lng_, 2);
+    for (int i = 0; i < num_lat_; ++i) {
+      for (int j = 0; j < num_lng_; ++j) {
+        int count = i * num_lng_ + j;
         test_location_(count, 0) = (double)i * map_resolution_ + min_latitude;
         test_location_(count, 1) = (double)i * map_resolution_ + min_longitude;
       }
     }
-    // todo \yang
-    test_location_ = ground_truth_location_;
 
     ROS_INFO_STREAM("Finish loading data!");
 
@@ -376,6 +365,8 @@ class CentralizedSamplingNode {
                       std::less<std::pair<double, int>>>
       heuristic_pq_;
 
+  int num_lat_, num_lng_;
+
   // GroundTruthData ground_truth_data_;
   double convergence_threshold_;
   int max_iteration_;
@@ -393,6 +384,9 @@ class CentralizedSamplingNode {
   Eigen::MatrixXd init_sample_location_, init_sample_temperature_;
   Eigen::MatrixXd test_location_;
 
+  Eigen::VectorXd gt_mean_;
+  Eigen::VectorXd gt_var_;
+
   Eigen::VectorXd mean_prediction_;
   Eigen::VectorXd var_prediction_;
 
@@ -400,6 +394,7 @@ class CentralizedSamplingNode {
   int num_gaussian_;
   std::vector<double> gp_hyperparameter_;
   gmm::Gaussian_Mixture_Model gp_node_;
+  gmm::Gaussian_Mixture_Model gt_gp_node_;
   gmm::Model gt_model_;
   gmm::Model model_;
 
@@ -420,7 +415,7 @@ class CentralizedSamplingNode {
       map_resolution_;
 
   visualization::sampling_visualization visualization_node_;
-};
+};  // namespace sampling
 }  // namespace sampling
 
 int main(int argc, char **argv) {
