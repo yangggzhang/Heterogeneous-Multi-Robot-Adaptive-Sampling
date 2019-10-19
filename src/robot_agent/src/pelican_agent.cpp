@@ -66,9 +66,13 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
 
 /// todo check feedback // pelican connection etc.
 bool PelicanNode::initialize_pelican() {
+  //Wait for initialization of publisher
+  ros::Duration(5).sleep();
   std_msgs::String msg;
   msg.data = "launch_waypoint";
   xb_command_pub_.publish(msg);
+  //Wait for initialization of waypint navigation
+  ros::Duration(10).sleep();
 }
 
 bool PelicanNode::update_goal_from_gps() {
