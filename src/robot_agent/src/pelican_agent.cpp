@@ -80,8 +80,8 @@ bool PelicanNode::update_goal_from_gps() {
   // cmd_longitude_ = goal_rtk_longitude_;
 
   // calculate relative command use origin:
-  cmd_latitude_ = (goal_rtk_latitude_ - latitude_origin_)*pow(10,7);
-  cmd_longitude_ = (goal_rtk_longitude_ - longitude_origin_)*pow(10,7);
+  cmd_latitude_ = (goal_rtk_latitude_ - latitude_origin_)*std::pow(10,7);
+  cmd_longitude_ = (goal_rtk_longitude_ - longitude_origin_)*std::pow(10,7);
 
   return true;
 };
