@@ -170,8 +170,8 @@ bool PelicanNode::gps_is_converged(const double &last_latitude,
                                    const double &current_longitude,
                                    const double &difference_threshold,
                                    const int &buffer_size, int &count) {
-  double distance = std::sqrt(pow(last_latitude - last_longitude, 2) +
-                              pow(current_latitude - current_longitude, 2));
+  double distance = std::sqrt(pow(last_latitude - current_latitude , 2) +
+                              pow(last_longitude - current_longitude, 2));
   if (distance >= difference_threshold) {
     count = 0;
     return false;
@@ -191,6 +191,8 @@ void PelicanNode::update_GPS_location_callback(
   /// update the local gps signal back to rtk frame
   /*TODO: Frame Transformation*/
   // currently use the same orginal uav gps, will need an offset and scale after testing
+  ROS_INFO_STREAM("Pelican Callback!!!!!!!!");
+
   last_latitude_ = current_latitude_;
   last_longitude_ = current_longitude_;
   current_latitude_ = msg.latitude;

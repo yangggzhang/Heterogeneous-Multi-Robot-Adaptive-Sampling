@@ -3,8 +3,8 @@
 ground_truth_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_GPS.txt"
 ground_truth_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_temperature.txt"
 
-initial_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/GPS_init.txt"
-initial_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/temperature_init.txt"
+initial_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_GPS.txt"
+initial_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_temperature.txt"
 
 ugv_max_speed: 10
 ugv_goal_channel: "test"
@@ -12,8 +12,19 @@ uav_max_speed: 10
 uav_goal_channel: "test"
 
 # test field
-latitude_range: [40.443576, 40.443657]
-longitude_range: [-79.943069, -79.943009]
+# latitude_range: [40.443576, 40.443657]
+# longitude_range: [-79.943069, -79.943009]
+#pelican
+# latitude_range: [40.4436987, 40.4436065]
+# longitude_range: [-79.9429164, -79.9428501]
+# latitude: 40.4438410117
+# longitude: -79.94305924
+# latitude: 40.4438152983
+# longitude: -79.9430513717
+
+latitude_range: [40.443815, 40.443841]
+longitude_range: [-79.943059, -79.943051]
+
 
 # ground truth model information
 ground_truth_num_gaussian: 3
@@ -21,7 +32,7 @@ ground_truth_num_gaussian: 3
 # learning criteria
 convergence_threshold: 0.01
 max_iteration: 100
-model_update_rate: 5
+model_update_rate: 1
 
 # visualization
 visualization_frame_id: "/map"
