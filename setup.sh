@@ -8,3 +8,4 @@ cd build
 cmake ..
 make
 pip install pyspread openpyxl scipy cvxopt scandir --user
+ln -s /usr/include/eigen3/Eigen /usr/local/include/Eigen

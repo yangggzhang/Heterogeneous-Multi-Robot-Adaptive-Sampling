@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_runtime
   temperature_measurement
   sampling_msgs
-  robot_localization
   tf
 )
 
