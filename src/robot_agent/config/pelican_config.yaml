@@ -1,6 +1,6 @@
 #Configuation for pelican agent
 ros_queue_size: 10
-agent_id: pelican
+agent_id: "Pelican"
 request_target_channel: "interest_point"
 temperature_measurement_channel: "pelican_temperature_measurement"
 temperature_update_channel: "temperature_update_channel"
@@ -19,3 +19,4 @@ latitude_origin: 40.443696
 longitude_origin: -79.943044
 
 GPS_transformation_matrix: [  1,  0,  0,  1]
+report_gps_location_channel: "Pelican_GPS"

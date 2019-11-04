@@ -1,6 +1,6 @@
 #Configuation for jackal agent
 ros_queue_size: 10
-agent_id: jackal
+agent_id: "Jackal"
 request_target_channel: "interest_point"
 temperature_measurement_channel: "jackal_temperature_measurement"
 temperature_update_channel: "temperature_update_channel"
@@ -8,3 +8,4 @@ gps_location_channel: "fix"
 jackal_movebase_channel: "move_base"
 jackal_movebase_goal_frame_id: "map"
 jackal_moving_duration_threshold_s: 30
+report_gps_location_channel: "Jackal_GPS"

@@ -3,6 +3,7 @@
 #include <algorithm>  // std::min_element, std::max_element
 #include <queue>
 #include <string>
+#include <unordered_map>
 #include "sampling_core/gmm_utils.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
@@ -11,6 +12,15 @@
 #include "sampling_msgs/RequestLocation.h"
 
 namespace sampling {
+
+enum HeuristicMode { VARIANCE, UCB, DISTANCE_UCB };
+
+class GPSHashFunction {
+ public:
+  double operator()(const std::pair<double, double> &GPS) const {
+    return (GPS.second + 180.0) * 180 + GPS.first;
+  }
+};
 
 using pq = std::priority_queue<std::pair<double, int>,
                                std::vector<std::pair<double, int>>,
@@ -84,7 +94,7 @@ class CentralizedSamplingNode {
         "Master Computer received request from robot : " << req.robot_id);
     // todo \yang add hetegeneous functionality
     switch (heuristic_mode_) {
-      case 0: {
+      case VARIANCE: {
         if (heuristic_pq_.empty()) {
           gp_node_.GaussianProcessMixture_predict(
               test_location_, mean_prediction_, var_prediction_);
@@ -100,7 +110,23 @@ class CentralizedSamplingNode {
         heuristic_pq_.pop();
         return true;
       }
-      case 1: {
+      case UCB: {
+        if (heuristic_pq_.empty()) {
+          gp_node_.GaussianProcessMixture_predict(
+              test_location_, mean_prediction_, var_prediction_);
+          update_heuristic();
+          if (heuristic_pq_.empty()) {
+            ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
+            return false;
+          }
+        }
+        std::pair<double, int> interest_point_pair = heuristic_pq_.top();
+        res.latitude = test_location_(interest_point_pair.second, 0);
+        res.longitude = test_location_(interest_point_pair.second, 1);
+        heuristic_pq_.pop();
+        return true;
+      }
+      case DISTANCE_UCB: {
         if (heuristic_pq_v_.empty()) {
           gp_node_.GaussianProcessMixture_predict(
               test_location_, mean_prediction_, var_prediction_);
@@ -150,6 +176,7 @@ class CentralizedSamplingNode {
       }
       Eigen::MatrixXd new_location, new_feature;
       utils::MsgToMatrix(msg, new_location, new_feature);
+      sample_count_[std::make_pair(msg.latitude, msg.longitude)]++;
       gp_node_.add_training_data(new_location, new_feature);
     } else {
       ROS_INFO_STREAM(
@@ -167,7 +194,7 @@ class CentralizedSamplingNode {
 
   void update_heuristic() {
     switch (heuristic_mode_) {
-      case 0: {
+      case VARIANCE: {
         heuristic_pq_ =
             std::priority_queue<std::pair<double, int>,
                                 std::vector<std::pair<double, int>>,
@@ -177,7 +204,23 @@ class CentralizedSamplingNode {
         }
         break;
       }
-      case 1: {
+      case UCB: {
+        heuristic_pq_ =
+            std::priority_queue<std::pair<double, int>,
+                                std::vector<std::pair<double, int>>,
+                                std::less<std::pair<double, int>>>();
+        for (int i = 0; i < test_location_.rows(); ++i) {
+          heuristic_pq_.push(std::make_pair(
+              mean_prediction_(i) +
+                  variance_coeff_ /
+                      std::sqrt(sample_count_[std::make_pair(
+                          test_location_(i, 0), test_location_(i, 1))]) *
+                      var_prediction_(i),
+              i));
+        }
+        break;
+      }
+      case DISTANCE_UCB: {
         heuristic_pq_v_.clear();
         Eigen::MatrixXd robot_locations = Eigen::MatrixXd::Zero(2, 2);
         sampling_msgs::RequestLocation srv;
@@ -201,8 +244,13 @@ class CentralizedSamplingNode {
         voronoi_cell_.UpdateVoronoiMap(robot_locations, distance_scale_factor_,
                                        label, distance);
         for (size_t i = 0; i < label.size(); i++) {
-          heuristic_pq_v_[label(i)].push(
-              std::make_pair(var_prediction_(i) * distance(i, label(i)), i));
+          double q = (mean_prediction_(i) +
+                      variance_coeff_ /
+                          std::sqrt(sample_count_[std::make_pair(
+                              test_location_(i, 0), test_location_(i, 1))]) *
+                          var_prediction_(i)) *
+                     distance(i, label(i));
+          heuristic_pq_v_[label(i)].push(std::make_pair(q, i));
         }
         break;
       }
@@ -261,7 +309,8 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("ground_truth_num_gaussian",
                       ground_truth_num_gaussian_)) {
       ROS_INFO_STREAM(
-          "Error! Missing ground truth data number of gaussian process!");
+          "Error! Missing ground truth data number of gaussian "
+          "process!");
       succeess = false;
     }
 
@@ -313,7 +362,9 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("prediction_mean_visualization_offset",
                       prediction_mean_visualization_offset_)) {
       ROS_INFO_STREAM(
-          "Error! Missing prediction mean value visualization map offset in "
+          "Error! Missing prediction mean value visualization map "
+          "offset "
+          "in "
           "x "
           "direction!");
       succeess = false;
@@ -322,14 +373,16 @@ class CentralizedSamplingNode {
     if (!rh_.getParam("prediction_var_visualization_id",
                       prediction_var_visualization_id_)) {
       ROS_INFO_STREAM(
-          "Error! Missing prediction variance value visualization map id!");
+          "Error! Missing prediction variance value visualization map "
+          "id!");
       succeess = false;
     }
 
     if (!rh_.getParam("prediction_var_visualization_offset",
                       prediction_var_visualization_offset_)) {
       ROS_INFO_STREAM(
-          "Error! Missing prediction variance value visualization map offset "
+          "Error! Missing prediction variance value visualization map "
+          "offset "
           "in x direction!");
       succeess = false;
     }
@@ -377,9 +430,29 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
-    if (!rh_.getParam("heuristic_mode", heuristic_mode_)) {
+    int heuristic_mode_int;
+
+    if (!rh_.getParam("heuristic_mode", heuristic_mode_int)) {
       ROS_INFO_STREAM("Error! Missing interest assignment heuristic mode!");
       succeess = false;
+    }
+    switch (heuristic_mode_int) {
+      case 0: {
+        heuristic_mode_ = VARIANCE;
+        break;
+      }
+      case 1: {
+        heuristic_mode_ = UCB;
+        break;
+      }
+      case 2: {
+        heuristic_mode_ = DISTANCE_UCB;
+        break;
+      }
+      default: {
+        heuristic_mode_ = VARIANCE;
+        break;
+      }
     }
 
     if (!rh_.getParam("Jackal_request_GPS_channel",
@@ -414,6 +487,11 @@ class CentralizedSamplingNode {
       distance_scale_factor_(i) = scale_factor_v[i];
     }
 
+    if (!rh_.getParam("variable_coeff", variance_coeff_)) {
+      ROS_INFO_STREAM("Error! Missing variance coefficient for UCB!");
+      succeess = false;
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -433,6 +511,8 @@ class CentralizedSamplingNode {
         int count = i * num_lng_ + j;
         test_location_(count, 0) = (double)i * map_resolution_ + min_latitude;
         test_location_(count, 1) = (double)j * map_resolution_ + min_longitude;
+        sample_count_[std::make_pair(test_location_(count, 0),
+                                     test_location_(count, 1))] = 1.0;
       }
     }
 
@@ -474,7 +554,7 @@ class CentralizedSamplingNode {
   // interest point assignment
   std::string interest_point_service_channel_;
   ros::ServiceServer interest_point_assignment_ser_;
-  int heuristic_mode_;
+  HeuristicMode heuristic_mode_;
 
   // gp parameter
   int gp_num_gaussian_;
@@ -539,6 +619,10 @@ class CentralizedSamplingNode {
   ros::ServiceClient Jackal_GPS_client_;
   ros::ServiceClient Pelican_GPS_client_;
   Eigen::VectorXd distance_scale_factor_;
+  double variance_coeff_;
+
+  std::unordered_map<std::pair<double, double>, double, GPSHashFunction>
+      sample_count_;
 
 };  // namespace sampling
 }  // namespace sampling

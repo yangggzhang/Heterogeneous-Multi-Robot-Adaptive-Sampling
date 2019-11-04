@@ -6,26 +6,6 @@ ground_truth_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src
 initial_location_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_GPS.txt"
 initial_temperature_path: "/home/yunfei/Projects/heterogeneous-sampling/src/sampling_core/data/random_temperature.txt"
 
-ugv_max_speed: 10
-ugv_goal_channel: "test"
-uav_max_speed: 10
-uav_goal_channel: "test"
-
-# test field
-# latitude_range: [40.443576, 40.443657]
-# longitude_range: [-79.943069, -79.943009]
-#pelican
-# latitude_range: [40.4436987, 40.4436065]
-# longitude_range: [-79.9429164, -79.9428501]
-# latitude: 40.4438410117
-# longitude: -79.94305924
-# latitude: 40.4438152983
-# longitude: -79.9430513717
-
-# min_lat = 40.443696
-# max_lat = 40.443720
-# min_lng = -79.942998
-# max_lng = -79.943044
 
 latitude_range: [40.4436052, 40.4436346]
 longitude_range: [-79.9429624, -79.9429142]
@@ -64,4 +44,9 @@ interest_point_request_service_channel: "interest_point"
 # \todo yang add more modes
 heuristic_mode : 0
 
-
+Jackal_request_GPS_channel: "Jackal_GPS"
+Pelican_request_GPS_channel: "Pelican_GPS"
+Jackal_id: "Jackal"
+Pelican_id: "Pelican"
+scale_factor: [1.0, 0,5]
+variable_coeff: 0.5
