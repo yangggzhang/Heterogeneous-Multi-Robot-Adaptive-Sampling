@@ -26,7 +26,7 @@ class GPSCalibrationNode {
       ROS_INFO_STREAM("Error! Missing RTK GPS channel!");
     }
 
-    if (!rh_.getParam("calibration_result_file", calibration_result_file_)) {
+    if (!rh_.getParam("calibration_result_dir", calibration_result_dir_)) {
       ROS_INFO_STREAM("Error! Missing Calibration result file!");
     }
 
@@ -60,7 +60,7 @@ class GPSCalibrationNode {
         rtk_gps_.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV)
             .solve(pelican_gps_);
     std::ofstream calibration_result;
-    calibration_result.open(calibration_result_file_);
+    calibration_result.open(calibration_result_dir_);
     calibration_result << transform;
     calibration_result.close();
   }
@@ -78,7 +78,7 @@ class GPSCalibrationNode {
 
   Eigen::MatrixXf rtk_gps_, pelican_gps_;
 
-  std::string calibration_result_file_;
+  std::string calibration_result_dir_;
 };
 }  // namespace sampling
 
