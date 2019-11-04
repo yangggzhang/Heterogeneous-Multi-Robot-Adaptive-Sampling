@@ -17,3 +17,5 @@ nagivate_loop_rate: 10
 
 latitude_origin: 40.443696
 longitude_origin: -79.943044
+
+GPS_transformation_matrix: [  1,  0,  0,  1]

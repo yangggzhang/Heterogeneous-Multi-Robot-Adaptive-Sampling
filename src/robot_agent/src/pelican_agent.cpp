@@ -1,5 +1,6 @@
 #include "robot_agent/pelican_agent.h"
 #include <math.h>
+#include <vector>
 
 namespace sampling {
 namespace agent {
@@ -16,7 +17,8 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing pelican height waiting time threshold!");
   }
 
-  if (!rh_.getParam("navigate_waiting_threshold", navigate_waiting_threshold_)) {
+  if (!rh_.getParam("navigate_waiting_threshold",
+                    navigate_waiting_threshold_)) {
     ROS_ERROR("Error! Missing pelican navigation waiting time threshold!");
   }
 
@@ -51,6 +53,21 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing longitude origin (take off point)!");
   }
 
+  std::vector<double> GPS_transformation_vector;
+  if (!rh_.getParam("GPS_transformation_matrix", GPS_transformation_vector)) {
+    ROS_ERROR("Error! Missing GPS transformation matrix!");
+    ROS_ERROR("Calibrate GPS transformation!");
+  }
+
+  assert(GPS_transformation_vector.size() == 4);
+  calibration_matrix_ = Eigen::MatrixXf::Zero(2, 2);
+  for (int i = 0; i < calibration_matrix_.rows(); ++i) {
+    for (int j = 0; j < calibration_matrix_.cols(); ++j) {
+      int count = i * 2 + j;
+      calibration_matrix_(i, j) = GPS_transformation_vector[count];
+    }
+  }
+
   converge_count_ = 0;
   last_latitude_ = 0.0;
   last_longitude_ = 0.0;
@@ -66,26 +83,33 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
 
 /// todo check feedback // pelican connection etc.
 bool PelicanNode::initialize_pelican() {
-  //Wait for initialization of publisher
+  // Wait for initialization of publisher
   ros::Duration(5).sleep();
   std_msgs::String msg;
   msg.data = "launch_waypoint";
   xb_command_pub_.publish(msg);
-  //Wait for initialization of waypint navigation
+  // Wait for initialization of waypint navigation
   ros::Duration(10).sleep();
 }
 
 bool PelicanNode::update_goal_from_gps() {
   /// todo \paul \yunfei
-  /// transform gps signal from rtk frame to pelican local frame
-
-  /*TODO: Frame Transformation*/
   // cmd_latitude_ = goal_rtk_latitude_;
   // cmd_longitude_ = goal_rtk_longitude_;
+  double relative_rtk_latitude = goal_rtk_latitude_ - latitude_origin_;
+  double relative_rtk_longitude = goal_rtk_longitude_ - longitude_origin_;
+
+  Eigen::MatrixXf pelican_gps_matrix, rtk_gps_matrix;
+  rtk_gps_matrix << relative_rtk_latitude, relative_rtk_latitude;
+  assert(calibration_matrix_.rows() == 2);
+  assert(calibration_matrix_.cols() == 2);
+  pelican_gps_matrix = rtk_gps_matrix * calibration_matrix_;
+  assert(pelican_gps_matrix.rows() == 1);
+  assert(pelican_gps_matrix.cols() == 2);
 
   // calculate relative command use origin:
-  cmd_latitude_ = (goal_rtk_latitude_ - latitude_origin_)*std::pow(10,7);
-  cmd_longitude_ = (goal_rtk_longitude_ - longitude_origin_)*std::pow(10,7);
+  cmd_latitude_ = pelican_gps_matrix(0, 0) * std::pow(10, 7);
+  cmd_longitude_ = pelican_gps_matrix(0, 1) * std::pow(10, 7);
 
   return true;
 };
@@ -122,7 +146,7 @@ bool PelicanNode::navigate() {
   /// todo \paul \yunfei
   /// solution when it fails
   gps_converg_flag_ = false;
-  if (!waypoint_navigate(cmd_latitude_, cmd_longitude_, hover_height_, 
+  if (!waypoint_navigate(cmd_latitude_, cmd_longitude_, hover_height_,
                          navigate_waiting_threshold_)) {
     ROS_INFO_STREAM("Pelican failed to navigate to next location");
     return false;
@@ -134,18 +158,17 @@ bool PelicanNode::navigate() {
   converge_count_ = 0;
   ros::Rate navigate_loop_rate(nagivate_loop_rate_int_);
   ros::Time begin = ros::Time::now();
-  ros::Duration navigationTime = ros::Time::now()- begin;
-  while (ros::ok() && // ros is still alive
-         !gps_converg_flag_ && // gps not converged
+  ros::Duration navigationTime = ros::Time::now() - begin;
+  while (ros::ok() &&           // ros is still alive
+         !gps_converg_flag_ &&  // gps not converged
          navigationTime.toSec() <= maximum_navigation_time_) {
     ros::spinOnce();
     navigate_loop_rate.sleep();
-    navigationTime = ros::Time::now()- begin;
+    navigationTime = ros::Time::now() - begin;
   }
-  if (navigationTime.toSec() > maximum_navigation_time_)
-  {
-      ROS_INFO_STREAM("Pelican Navigation Time Out");
-      return false;
+  if (navigationTime.toSec() > maximum_navigation_time_) {
+    ROS_INFO_STREAM("Pelican Navigation Time Out");
+    return false;
   }
 
   /// step4 update command
@@ -170,7 +193,7 @@ bool PelicanNode::gps_is_converged(const double &last_latitude,
                                    const double &current_longitude,
                                    const double &difference_threshold,
                                    const int &buffer_size, int &count) {
-  double distance = std::sqrt(pow(last_latitude - current_latitude , 2) +
+  double distance = std::sqrt(pow(last_latitude - current_latitude, 2) +
                               pow(last_longitude - current_longitude, 2));
   if (distance >= difference_threshold) {
     count = 0;
@@ -190,7 +213,8 @@ void PelicanNode::update_GPS_location_callback(
   /// todo \paul \yunfei
   /// update the local gps signal back to rtk frame
   /*TODO: Frame Transformation*/
-  // currently use the same orginal uav gps, will need an offset and scale after testing
+  // currently use the same orginal uav gps, will need an offset and scale after
+  // testing
   ROS_INFO_STREAM("Pelican Callback!!!!!!!!");
 
   last_latitude_ = current_latitude_;
@@ -199,8 +223,8 @@ void PelicanNode::update_GPS_location_callback(
   current_longitude_ = msg.longitude;
 
   gps_converg_flag_ = gps_is_converged(
-      (last_latitude_*pow(10, 7)), (last_longitude_*pow(10, 7)), 
-      (current_latitude_*pow(10, 7)), (current_longitude_*pow(10, 7)),
+      (last_latitude_ * pow(10, 7)), (last_longitude_ * pow(10, 7)),
+      (current_latitude_ * pow(10, 7)), (current_longitude_ * pow(10, 7)),
       gps_converge_threshold_, gps_converge_buffer_size_, converge_count_);
   if (gps_converg_flag_) {
     ROS_INFO_STREAM("Pelican GPS waypoint navigation converged!");

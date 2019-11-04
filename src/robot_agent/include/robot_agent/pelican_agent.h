@@ -1,7 +1,8 @@
 #pragma once
 
-#include "robot_agent/robot_agent.h"
 #include <std_msgs/String.h>
+#include <Eigen/Dense>
+#include "robot_agent/robot_agent.h"
 
 /// todo \Paul \Yunfei
 /// basic function of Pelican execution
@@ -11,7 +12,7 @@ namespace sampling {
 namespace agent {
 
 class PelicanNode : public AgentNode {
-public:
+ public:
   PelicanNode(){};
 
   PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
@@ -34,7 +35,7 @@ public:
   bool waypoint_navigate(const double &latitude, const double &longitude,
                          const int &height, const double &converge_duration);
 
-private:
+ private:
   ros::Publisher xb_command_pub_;
   std::string xb_command_channel_;
 
@@ -47,17 +48,20 @@ private:
   double gps_converge_threshold_;
   int converge_count_;
   int gps_converge_buffer_size_;
-  bool gps_converg_flag_; // flag to detect the converge of GPS sensor
+  bool gps_converg_flag_;  // flag to detect the converge of GPS sensor
   int nagivate_loop_rate_int_;
 
   double height_waiting_threshold_;
-  double navigate_waiting_threshold_; //waiting time before detecting convergence
+  double
+      navigate_waiting_threshold_;  // waiting time before detecting convergence
   double maximum_navigation_time_;
   double last_latitude_;
   double last_longitude_;
 
   double longitude_origin_;
   double latitude_origin_;
+
+  Eigen::MatrixXf calibration_matrix_;
 };
-} // namespace agent
-} // namespace sampling
+}  // namespace agent
+}  // namespace sampling
