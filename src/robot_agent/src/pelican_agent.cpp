@@ -60,13 +60,15 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   }
 
   assert(GPS_transformation_vector.size() == 4);
-  calibration_matrix_ = Eigen::MatrixXf::Zero(2, 2);
+
   for (int i = 0; i < calibration_matrix_.rows(); ++i) {
     for (int j = 0; j < calibration_matrix_.cols(); ++j) {
       int count = i * 2 + j;
       calibration_matrix_(i, j) = GPS_transformation_vector[count];
     }
   }
+
+  inverse_calibration_matrix_ = calibration_matrix_.inverse();
 
   converge_count_ = 0;
   last_latitude_ = 0.0;
@@ -233,5 +235,22 @@ void PelicanNode::update_GPS_location_callback(
   }
 }
 
+bool PelicanNode::ReportGPSService(
+    sampling_msgs::RequestLocation::Request &req,
+    sampling_msgs::RequestLocation::Response &res) {
+  if (agent_id_.compare(req.robot_id) != 0) {
+    return false;
+  } else {
+    Eigen::MatrixXd GPS_matrix = Eigen::MatrixXd::Zero(1, 2);
+    GPS_matrix(0, 0) = current_latitude_;
+    GPS_matrix(0, 1) = current_longitude_;
+    res.latitude = current_latitude_ * inverse_calibration_matrix_(0, 0) +
+                   current_longitude_ * inverse_calibration_matrix_(1, 0);
+    res.longitude = current_latitude_ * inverse_calibration_matrix_(0, 1) +
+                    current_longitude_ * inverse_calibration_matrix_(1, 1);
+    ;
+    return true;
+  }
+}
 }  // namespace agent
 }  // namespace sampling

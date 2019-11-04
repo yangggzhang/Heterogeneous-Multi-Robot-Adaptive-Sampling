@@ -33,6 +33,11 @@ AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing robot agent gps location channel!");
   }
 
+  if (!rh_.getParam("report_gps_location_channel",
+                    report_gps_location_channel_)) {
+    ROS_ERROR("Error! Missing robot agent report gps location channel!");
+  }
+
   agent_state_ = IDLE;
   request_target_client_ =
       nh_.serviceClient<sampling_msgs::RequestGoal>(request_target_channel_);
@@ -47,12 +52,27 @@ AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   gps_location_sub_ =
       nh_.subscribe(gps_location_channel_, ros_queue_size_,
                     &AgentNode::update_GPS_location_callback, this);
+
+  gps_location_server_ = nh_.advertiseService(
+      report_gps_location_channel_, &AgentNode::ReportGPSService, this);
 }
 
 void AgentNode::update_GPS_location_callback(
     const sensor_msgs::NavSatFix &msg) {
   current_latitude_ = msg.latitude;
   current_longitude_ = msg.longitude;
+}
+
+bool AgentNode::ReportGPSService(
+    sampling_msgs::RequestLocation::Request &req,
+    sampling_msgs::RequestLocation::Response &res) {
+  if (agent_id_.compare(req.robot_id) != 0) {
+    return false;
+  } else {
+    res.latitude = current_latitude_;
+    res.longitude = current_longitude_;
+    return true;
+  }
 }
 
 bool AgentNode::request_target_from_master() {

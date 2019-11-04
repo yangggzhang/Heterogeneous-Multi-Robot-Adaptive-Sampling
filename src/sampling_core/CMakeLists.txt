@@ -42,6 +42,7 @@ add_library(${PROJECT_NAME}
   src/gmm_utils.cpp
   src/utils.cpp
   src/sampling_visualization.cpp
+  src/voronoi.cpp
 )
 
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)

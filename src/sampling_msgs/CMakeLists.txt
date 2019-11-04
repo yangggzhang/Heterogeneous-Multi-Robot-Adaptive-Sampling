@@ -14,6 +14,7 @@ add_message_files(
 
 add_service_files(
   FILES
+  RequestLocation.srv
   RequestGoal.srv
   RequestTemperatureMeasurement.srv
 )

@@ -35,6 +35,9 @@ class PelicanNode : public AgentNode {
   bool waypoint_navigate(const double &latitude, const double &longitude,
                          const int &height, const double &converge_duration);
 
+  bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
+                        sampling_msgs::RequestLocation::Response &res) override;
+
  private:
   ros::Publisher xb_command_pub_;
   std::string xb_command_channel_;
@@ -61,7 +64,7 @@ class PelicanNode : public AgentNode {
   double longitude_origin_;
   double latitude_origin_;
 
-  Eigen::MatrixXf calibration_matrix_;
+  Eigen::Matrix2f calibration_matrix_, inverse_calibration_matrix_;
 };
 }  // namespace agent
 }  // namespace sampling

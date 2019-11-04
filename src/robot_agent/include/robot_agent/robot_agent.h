@@ -1,6 +1,8 @@
 #pragma once
 
 #include <ros/ros.h>
+#include <sampling_msgs/RequestGoal.h>
+#include <sampling_msgs/RequestLocation.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <string>
@@ -17,7 +19,7 @@ namespace agent {
 enum STATE { IDLE, REQUEST, NAVIGATE, REPORT };
 
 class AgentNode {
-public:
+ public:
   AgentNode(){};
 
   AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
@@ -34,10 +36,17 @@ public:
 
   void report_temperature_sample();
 
+  bool collect_temperature_sample(
+      sampling_msgs::RequestTemperatureMeasurement::Request &req,
+      sampling_msgs::RequestTemperatureMeasurement::Response &res);
+
+  virtual bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
+                                sampling_msgs::RequestLocation::Response &res);
+
   /// State machine
   void collect_sample();
 
-protected:
+ protected:
   STATE agent_state_;
   std::string agent_id_;
 
@@ -47,11 +56,13 @@ protected:
   ros::ServiceClient temperature_measurement_client_;
   ros::Publisher temperature_sample_pub_;
   ros::Subscriber gps_location_sub_;
+  ros::ServiceServer gps_location_server_;
 
   std::string request_target_channel_;
   std::string temperature_measurement_channel_;
   std::string temperature_update_channel_;
   std::string gps_location_channel_;
+  std::string report_gps_location_channel_;
 
   double temperature_measurement_;
   double current_latitude_;
@@ -59,5 +70,5 @@ protected:
   double goal_rtk_latitude_;
   double goal_rtk_longitude_;
 };
-} // namespace agent
-} // namespace sampling
+}  // namespace agent
+}  // namespace sampling

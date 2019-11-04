@@ -6,9 +6,15 @@
 #include "sampling_core/gmm_utils.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
+#include "sampling_core/voronoi.h"
 #include "sampling_msgs/RequestGoal.h"
+#include "sampling_msgs/RequestLocation.h"
 
 namespace sampling {
+
+using pq = std::priority_queue<std::pair<double, int>,
+                               std::vector<std::pair<double, int>>,
+                               std::less<std::pair<double, int>>>;
 class CentralizedSamplingNode {
  public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
@@ -16,6 +22,8 @@ class CentralizedSamplingNode {
     if (!load_parameter()) {
       ROS_ERROR_STREAM("Missing required ros parameter");
     }
+    voronoi_cell_ = voronoi::Voronoi(test_location_);
+
     distribution_visualization_pub_ =
         nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
     interest_point_assignment_ser_ = nh_.advertiseService(
@@ -24,6 +32,13 @@ class CentralizedSamplingNode {
     sample_sub_ =
         nh_.subscribe(temperature_update_channel_, 1,
                       &CentralizedSamplingNode::collect_sample_callback, this);
+
+    Jackal_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
+        Jackal_request_GPS_channel_);
+
+    Pelican_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
+        Pelican_request_GPS_channel_);
+
     update_flag_ = false;
     sample_size_ = 0;
     visualization_node_ = visualization::sampling_visualization(
@@ -37,6 +52,7 @@ class CentralizedSamplingNode {
         ground_truth_visualization_id_, heat_map_var_);
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
     gt_gp_node_ = gp_node_;
+
     if (init_sample_temperature_.rows() > 0) {
       gp_node_.add_training_data(init_sample_location_,
                                  init_sample_temperature_);
@@ -45,6 +61,7 @@ class CentralizedSamplingNode {
       update_heuristic();
       ROS_INFO_STREAM("Initialize GP model with initial data points");
     }
+
     if (ground_truth_location_.rows() > 0 &&
         ground_truth_temperature_.rows() > 0) {
       visualization_node_.initialize_map(
@@ -63,24 +80,64 @@ class CentralizedSamplingNode {
 
   bool assign_interest_point(sampling_msgs::RequestGoal::Request &req,
                              sampling_msgs::RequestGoal::Response &res) {
-    // todo \yang add hetegeneous functionality
     ROS_INFO_STREAM(
         "Master Computer received request from robot : " << req.robot_id);
-    if (heuristic_pq_.empty()) {
-      gp_node_.GaussianProcessMixture_predict(test_location_, mean_prediction_,
-                                              var_prediction_);
-      update_heuristic();
+    // todo \yang add hetegeneous functionality
+    switch (heuristic_mode_) {
+      case 0: {
+        if (heuristic_pq_.empty()) {
+          gp_node_.GaussianProcessMixture_predict(
+              test_location_, mean_prediction_, var_prediction_);
+          update_heuristic();
+          if (heuristic_pq_.empty()) {
+            ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
+            return false;
+          }
+        }
+        std::pair<double, int> interest_point_pair = heuristic_pq_.top();
+        res.latitude = test_location_(interest_point_pair.second, 0);
+        res.longitude = test_location_(interest_point_pair.second, 1);
+        heuristic_pq_.pop();
+        return true;
+      }
+      case 1: {
+        if (heuristic_pq_v_.empty()) {
+          gp_node_.GaussianProcessMixture_predict(
+              test_location_, mean_prediction_, var_prediction_);
+          update_heuristic();
+          if (heuristic_pq_v_.empty()) {
+            ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
+            return false;
+          }
+        }
+        if (!req.robot_id.compare(Jackal_id_) == 0) {
+          if (!heuristic_pq_v_[0].empty()) {
+            std::pair<double, int> interest_point_pair =
+                heuristic_pq_v_[0].top();
+            res.latitude = test_location_(interest_point_pair.second, 0);
+            res.longitude = test_location_(interest_point_pair.second, 1);
+            heuristic_pq_v_[0].pop();
+            return true;
+          } else {
+            return false;
+          }
+        } else if (!req.robot_id.compare(Pelican_id_) == 0) {
+          if (!heuristic_pq_v_[1].empty()) {
+            std::pair<double, int> interest_point_pair =
+                heuristic_pq_v_[1].top();
+            res.latitude = test_location_(interest_point_pair.second, 0);
+            res.longitude = test_location_(interest_point_pair.second, 1);
+            heuristic_pq_v_[1].pop();
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      }
+      default: { return false; }
     }
-
-    if (heuristic_pq_.empty()) {
-      ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
-      return false;
-    }
-    std::pair<double, int> interest_point_pair = heuristic_pq_.top();
-    res.latitude = test_location_(interest_point_pair.second, 0);
-    res.longitude = test_location_(interest_point_pair.second, 1);
-    heuristic_pq_.pop();
-
     return true;
   }
 
@@ -117,6 +174,35 @@ class CentralizedSamplingNode {
                                 std::less<std::pair<double, int>>>();
         for (int i = 0; i < test_location_.rows(); ++i) {
           heuristic_pq_.push(std::make_pair(var_prediction_(i), i));
+        }
+        break;
+      }
+      case 1: {
+        heuristic_pq_v_.clear();
+        Eigen::MatrixXd robot_locations = Eigen::MatrixXd::Zero(2, 2);
+        sampling_msgs::RequestLocation srv;
+        srv.request.robot_id = Jackal_id_;
+        if (!Jackal_GPS_client_.call(srv)) {
+          ROS_INFO_STREAM("Can not get Jackal GPS location!");
+          break;
+        }
+        robot_locations(0, 0) = srv.response.latitude;
+        robot_locations(0, 1) = srv.response.longitude;
+        srv.request.robot_id = Pelican_id_;
+        if (!Pelican_GPS_client_.call(srv)) {
+          ROS_INFO_STREAM("Can not get Pelican GPS location!");
+          break;
+        }
+        robot_locations(1, 0) = srv.response.latitude;
+        robot_locations(1, 1) = srv.response.longitude;
+
+        Eigen::VectorXi label;
+        Eigen::MatrixXd distance;
+        voronoi_cell_.UpdateVoronoiMap(robot_locations, distance_scale_factor_,
+                                       label, distance);
+        for (size_t i = 0; i < label.size(); i++) {
+          heuristic_pq_v_[label(i)].push(
+              std::make_pair(var_prediction_(i) * distance(i, label(i)), i));
         }
         break;
       }
@@ -296,6 +382,38 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("Jackal_request_GPS_channel",
+                      Jackal_request_GPS_channel_)) {
+      ROS_INFO_STREAM("Error! Missing Jackal request GPS channel!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("Pelican_request_GPS_channel",
+                      Pelican_request_GPS_channel_)) {
+      ROS_INFO_STREAM("Error! Missing Pelican request GPS channel!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("Jackal_id", Jackal_id_)) {
+      ROS_INFO_STREAM("Error! Missing Jackal id!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("Pelican_id", Pelican_id_)) {
+      ROS_INFO_STREAM("Error! Missing Pelican id!");
+      succeess = false;
+    }
+
+    std::vector<double> scale_factor_v;
+    if (!rh_.getParam("scale_factor", scale_factor_v)) {
+      ROS_INFO_STREAM("Error! Missing scale factor!");
+      succeess = false;
+    }
+    distance_scale_factor_.resize(scale_factor_v.size());
+    for (size_t i = 0; i < scale_factor_v.size(); ++i) {
+      distance_scale_factor_(i) = scale_factor_v[i];
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -361,10 +479,8 @@ class CentralizedSamplingNode {
   // gp parameter
   int gp_num_gaussian_;
   std::vector<double> gp_hyperparam_;
-  std::priority_queue<std::pair<double, int>,
-                      std::vector<std::pair<double, int>>,
-                      std::less<std::pair<double, int>>>
-      heuristic_pq_;
+  pq heuristic_pq_;
+  std::vector<pq> heuristic_pq_v_;
 
   int num_lat_, num_lng_;
 
@@ -416,6 +532,14 @@ class CentralizedSamplingNode {
       map_resolution_;
 
   visualization::sampling_visualization visualization_node_;
+
+  voronoi::Voronoi voronoi_cell_;
+  std::string Jackal_request_GPS_channel_, Pelican_request_GPS_channel_,
+      Jackal_id_, Pelican_id_;
+  ros::ServiceClient Jackal_GPS_client_;
+  ros::ServiceClient Pelican_GPS_client_;
+  Eigen::VectorXd distance_scale_factor_;
+
 };  // namespace sampling
 }  // namespace sampling
 
