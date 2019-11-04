@@ -313,7 +313,7 @@ class CentralizedSamplingNode {
       for (int j = 0; j < num_lng_; ++j) {
         int count = i * num_lng_ + j;
         test_location_(count, 0) = (double)i * map_resolution_ + min_latitude;
-        test_location_(count, 1) = (double)i * map_resolution_ + min_longitude;
+        test_location_(count, 1) = (double)j * map_resolution_ + min_longitude;
       }
     }
 
