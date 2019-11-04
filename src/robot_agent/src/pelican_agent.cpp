@@ -96,8 +96,8 @@ bool PelicanNode::waypoint_navigate(const double &latitude,
   /// todo \paul \yunfei height control
   /// improve ros duration
   std_msgs::String msg;
-  msg.data = "waypoint_height_auto," + std::to_string(latitude) + "," +
-             std::to_string(longitude) + "," + std::to_string(height);
+  msg.data = "waypoint_height_auto," + std::to_string(longitude) + "," +
+             std::to_string(latitude) + "," + std::to_string(height);
   xb_command_pub_.publish(msg);
   if (converge_duration > 0) {
     ros::Duration(converge_duration).sleep();

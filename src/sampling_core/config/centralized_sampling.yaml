@@ -22,16 +22,21 @@ uav_goal_channel: "test"
 # latitude: 40.4438152983
 # longitude: -79.9430513717
 
-latitude_range: [40.443815, 40.443841]
-longitude_range: [-79.943059, -79.943051]
+# min_lat = 40.443696
+# max_lat = 40.443720
+# min_lng = -79.942998
+# max_lng = -79.943044
+
+latitude_range: [40.4436052, 40.4436346]
+longitude_range: [-79.9429624, -79.9429142]
 
 
 # ground truth model information
 ground_truth_num_gaussian: 3
 
 # learning criteria
-convergence_threshold: 0.01
-max_iteration: 100
+convergence_threshold: 0.1
+max_iteration: 10
 model_update_rate: 1
 
 # visualization
@@ -46,7 +51,7 @@ prediction_var_visualization_offset: 10
 visualization_scale_x: 1.0
 visualization_scale_y: 0.5
 visualization_scale_z: 0.1
-map_resolution: 0.00001
+map_resolution: 0.000001
 
 temperature_update_channel: "temperature_update_channel"
 

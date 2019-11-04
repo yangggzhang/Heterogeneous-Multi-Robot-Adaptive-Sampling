@@ -15,5 +15,5 @@ gps_converge_threshold: 1500 #1.5m
 gps_converge_buffer_size: 5
 nagivate_loop_rate: 10
 
-latitude_origin: 40.443576
-longitude_origin: -79.943069
+latitude_origin: 40.443696
+longitude_origin: -79.943044

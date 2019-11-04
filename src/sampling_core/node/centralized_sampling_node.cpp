@@ -304,6 +304,7 @@ class CentralizedSamplingNode {
         *std::min_element(longitude_range.begin(), longitude_range.end());
     double max_longitude =
         *std::max_element(longitude_range.begin(), longitude_range.end());
+
     num_lat_ = std::round((max_latitude - min_latitude) / map_resolution_) + 1;
     num_lng_ =
         std::round((max_longitude - min_longitude) / map_resolution_) + 1;
@@ -421,7 +422,7 @@ class CentralizedSamplingNode {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
-  ros::Rate r(10);
+  ros::Rate r(60);
   sampling::CentralizedSamplingNode node(nh, rh);
   // node.fit_ground_truth_data();
   while (ros::ok()) {
