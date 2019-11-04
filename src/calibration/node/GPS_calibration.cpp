@@ -44,18 +44,19 @@ class GPSCalibrationNode {
 
     GPS_synchronizer_->registerCallback(boost::bind(
         &GPSCalibrationNode::GPSSynchronizerCallback, this, _1, _2));
+    ROS_INFO_STREAM("Finish initializing GPS calibration node!");
   }
 
   void GPSSynchronizerCallback(
       const sensor_msgs::NavSatFixConstPtr &rtk_gps_msg,
       const sensor_msgs::NavSatFixConstPtr &pelican_gps_msg) {
     rtk_gps_.conservativeResize(rtk_gps_.rows() + 1, rtk_gps_.cols());
-    rtk_gps_(rtk_gps_.rows(), 0) = rtk_gps_msg->latitude;
-    rtk_gps_(rtk_gps_.rows(), 1) = rtk_gps_msg->longitude;
+    rtk_gps_(rtk_gps_.rows() - 1, 0) = rtk_gps_msg->latitude;
+    rtk_gps_(rtk_gps_.rows() - 1, 1) = rtk_gps_msg->longitude;
     pelican_gps_.conservativeResize(pelican_gps_.rows() + 1,
                                     pelican_gps_.cols());
-    pelican_gps_(rtk_gps_.rows(), 0) = pelican_gps_msg->latitude;
-    pelican_gps_(rtk_gps_.rows(), 1) = pelican_gps_msg->longitude;
+    pelican_gps_(rtk_gps_.rows() - 1, 0) = pelican_gps_msg->latitude;
+    pelican_gps_(rtk_gps_.rows() - 1, 1) = pelican_gps_msg->longitude;
     Eigen::MatrixXf transform =
         rtk_gps_.bdcSvd(Eigen::ComputeThinU | Eigen::ComputeThinV)
             .solve(pelican_gps_);

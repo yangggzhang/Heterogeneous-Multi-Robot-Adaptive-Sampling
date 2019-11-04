@@ -99,8 +99,10 @@ bool PelicanNode::update_goal_from_gps() {
   double relative_rtk_latitude = goal_rtk_latitude_ - latitude_origin_;
   double relative_rtk_longitude = goal_rtk_longitude_ - longitude_origin_;
 
-  Eigen::MatrixXf pelican_gps_matrix, rtk_gps_matrix;
-  rtk_gps_matrix << relative_rtk_latitude, relative_rtk_latitude;
+  Eigen::MatrixXf pelican_gps_matrix,
+      rtk_gps_matrix = Eigen::MatrixXf::Zero(1, 2);
+  rtk_gps_matrix(0, 0) = relative_rtk_latitude;
+  rtk_gps_matrix(0, 1) = relative_rtk_latitude;
   assert(calibration_matrix_.rows() == 2);
   assert(calibration_matrix_.cols() == 2);
   pelican_gps_matrix = rtk_gps_matrix * calibration_matrix_;
