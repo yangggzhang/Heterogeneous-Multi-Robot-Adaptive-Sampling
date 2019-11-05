@@ -18,7 +18,7 @@ class Voronoi {
 
   bool UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
                         const Eigen::VectorXd &scale_factor,
-                        Eigen::VectorXi &labels,
+                        std::vector<std::vector<int>> &labels,
                         Eigen::MatrixXd &distance_matrix);
 
   Eigen::MatrixXd GetLocation();

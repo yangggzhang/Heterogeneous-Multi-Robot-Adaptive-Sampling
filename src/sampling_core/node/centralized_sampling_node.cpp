@@ -17,8 +17,8 @@ enum HeuristicMode { VARIANCE, UCB, DISTANCE_UCB };
 
 class GPSHashFunction {
  public:
-  double operator()(const std::pair<double, double> &GPS) const {
-    return (GPS.second + 180.0) * 180 + GPS.first;
+  double operator()(const Eigen::MatrixXd &GPS) const {
+    return (GPS(0, 1) + 180.0) * 180 + GPS(0, 0);
   }
 };
 
@@ -176,7 +176,7 @@ class CentralizedSamplingNode {
       }
       Eigen::MatrixXd new_location, new_feature;
       utils::MsgToMatrix(msg, new_location, new_feature);
-      sample_count_[std::make_pair(msg.latitude, msg.longitude)]++;
+      sample_count_[new_location]++;
       gp_node_.add_training_data(new_location, new_feature);
     } else {
       ROS_INFO_STREAM(
@@ -213,8 +213,7 @@ class CentralizedSamplingNode {
           heuristic_pq_.push(std::make_pair(
               mean_prediction_(i) +
                   variance_coeff_ /
-                      std::sqrt(sample_count_[std::make_pair(
-                          test_location_(i, 0), test_location_(i, 1))]) *
+                      std::sqrt(sample_count_[test_location_.row(i)]) *
                       var_prediction_(i),
               i));
         }
@@ -239,24 +238,39 @@ class CentralizedSamplingNode {
         robot_locations(1, 0) = srv.response.latitude;
         robot_locations(1, 1) = srv.response.longitude;
 
-        Eigen::VectorXi label;
+        std::vector<std::vector<int>> labels;
         Eigen::MatrixXd distance;
         voronoi_cell_.UpdateVoronoiMap(robot_locations, distance_scale_factor_,
-                                       label, distance);
-        for (size_t i = 0; i < label.size(); i++) {
-          double q = (mean_prediction_(i) +
-                      variance_coeff_ /
-                          std::sqrt(sample_count_[std::make_pair(
-                              test_location_(i, 0), test_location_(i, 1))]) *
-                          var_prediction_(i)) *
-                     distance(i, label(i));
-          heuristic_pq_v_[label(i)].push(std::make_pair(q, i));
+                                       labels, distance);
+        for (size_t i = 0; i < labels.size(); ++i) {
+          for (size_t j = 0; j < labels[i].size(); ++j) {
+            double q = 0.0;
+            const Eigen::MatrixXd point_location =
+                test_location_.row(labels[i][j]);
+            for (const auto &index : labels[i]) {
+              double confidence_bound =
+                  mean_prediction_(index) +
+                  variance_coeff_ /
+                      std::sqrt(sample_count_[test_location_.row(index)]) *
+                      var_prediction_(index);
+              q = q + L2Distance(point_location, test_location_.row(index)) *
+                          confidence_bound;
+            }
+            heuristic_pq_v_[i].push(std::make_pair(q, labels[i][j]));
+          }
         }
         break;
       }
       default:
         break;
     }
+  }
+
+  inline double L2Distance(const Eigen::MatrixXd &location0,
+                           const Eigen::MatrixXd &location1) {
+    double dx = location0(0, 0) - location1(0, 0);
+    double dy = location0(0, 1) - location1(0, 1);
+    return dx * dx + dy * dy;
   }
 
   bool load_parameter() {
@@ -511,8 +525,7 @@ class CentralizedSamplingNode {
         int count = i * num_lng_ + j;
         test_location_(count, 0) = (double)i * map_resolution_ + min_latitude;
         test_location_(count, 1) = (double)j * map_resolution_ + min_longitude;
-        sample_count_[std::make_pair(test_location_(count, 0),
-                                     test_location_(count, 1))] = 1.0;
+        sample_count_[test_location_.row(count)] = 1.0;
       }
     }
 
@@ -621,8 +634,7 @@ class CentralizedSamplingNode {
   Eigen::VectorXd distance_scale_factor_;
   double variance_coeff_;
 
-  std::unordered_map<std::pair<double, double>, double, GPSHashFunction>
-      sample_count_;
+  std::unordered_map<Eigen::MatrixXd, double, GPSHashFunction> sample_count_;
 
 };  // namespace sampling
 }  // namespace sampling

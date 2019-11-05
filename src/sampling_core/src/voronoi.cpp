@@ -10,14 +10,14 @@ Voronoi::Voronoi(const Eigen::MatrixXd &location) : location_(location) {}
 
 bool Voronoi::UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
                                const Eigen::VectorXd &scale_factor,
-                               Eigen::VectorXi &labels,
+                               std::vector<std::vector<int>> &labels,
                                Eigen::MatrixXd &distance_matrix) {
   if (location_.rows() == 0 || agent_locations.rows() != scale_factor.rows()) {
     ROS_ERROR("Can not construct voronoi map!");
     return false;
   }
-
-  labels.resize(location_.rows());
+  labels.clear();
+  labels.resize(agent_locations.rows());
   distance_matrix =
       Eigen::MatrixXd::Zero(location_.rows(), agent_locations.rows());
 
@@ -31,7 +31,7 @@ bool Voronoi::UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
     distance = distance.array().sqrt();
     distance *= scale_factor;
     distance_matrix.row(i) = distance;
-    labels(i) = distance.minCoeff();
+    labels[distance.minCoeff()].push_back(i);
   }
   return true;
 }
