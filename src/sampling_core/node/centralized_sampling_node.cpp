@@ -630,7 +630,7 @@ class CentralizedSamplingNode {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
-  ros::Rate r(60);
+  ros::Rate r(10);
   sampling::CentralizedSamplingNode node(nh, rh);
   // node.fit_ground_truth_data();
   while (ros::ok()) {
