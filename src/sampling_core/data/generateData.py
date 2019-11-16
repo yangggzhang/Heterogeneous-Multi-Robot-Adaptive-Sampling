@@ -14,20 +14,20 @@ import random
 # latitude: 40.4436962533
 # longitude: -79.9430444017
 
-# latitude: 40.4436052
-# longitude: -79.9429624
+latitude1 = 40.4436052
+longitude1 = -79.9429624
 
+latitude2 = 40.4436346
+longitude2  -79.9429142
 
-# latitude: 40.4436346
-# longitude: -79.9429142
-
-
-
-min_lat = 40.4436052
-max_lat = 40.4436346
-min_lng = -79.9429624
-max_lng = -79.9429142
+min_lat = min(latitude1, latitude2)
+max_lat = max(latitude1, latitude2)
+min_lng = min(longitude1, longitude2)
+max_lng = max(longitude1, longitude2)
 resolution = 0.000005
+
+print("latitude_range: ["+min_lat+", "+max_lat+"]")
+print("longitude_range: ["+min_lng+", "+max_lng+"]")
 
 gps_file = open("random_GPS.txt", "w")
 temp_file = open("random_temperature.txt","w")
