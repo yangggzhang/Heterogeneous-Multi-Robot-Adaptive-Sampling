@@ -23,11 +23,11 @@ model_update_rate: 1
 visualization_frame_id: "/map"
 visualization_namespace: "visualization"
 ground_truth_visualization_id: 0
-ground_truth_visualization_offset: -10
+ground_truth_visualization_offset: -20
 prediction_mean_visualization_id: 1
 prediction_mean_visualization_offset: 0
 prediction_var_visualization_id: 2
-prediction_var_visualization_offset: 10
+prediction_var_visualization_offset: 20
 visualization_scale_x: 1.0
 visualization_scale_y: 0.5
 visualization_scale_z: 0.1

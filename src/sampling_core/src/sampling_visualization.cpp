@@ -74,8 +74,8 @@ void sampling_visualization::update_map(const int &offset,
     for (int lng = 0; lng < longitude_range_; lng++) {
       int index = lat * longitude_range_ + lng;
       geometry_msgs::Point p;
-      p.x = (lat - latitude_range_ / 2) * map.scale.x;
-      p.y = (lng - longitude_range_ / 2) * map.scale.y + offset;
+      p.x = (lat - latitude_range_ / 2) * map.scale.x + offset;
+      p.y = (lng - longitude_range_ / 2) * map.scale.y;
       p.z = -1.0;
       map.points[index] = p;
 
