@@ -8,7 +8,6 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  Eigen3 REQUIRED
   roscpp
   rospy
   std_msgs
@@ -21,29 +20,33 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
+
 catkin_package(
    INCLUDE_DIRS include
 #  LIBRARIES cmu_swarm
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
+   DEPENDS eigen
    CATKIN_DEPENDS message_runtime
 )
 
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${Eigen3_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
 )
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
-  src/jackal_agent.cpp
+#  src/jackal_agent.cpp
   src/pelican_agent.cpp
 )
 
-add_executable(jackal_node node/jackal_node.cpp)
-target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+#add_executable(jackal_node node/jackal_node.cpp)
+#target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(pelican_node node/pelican_node.cpp)
 target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})

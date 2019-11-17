@@ -22,4 +22,5 @@
   <depend>temperature_measurement</depend>
   <depend>sampling_msgs</depend>
   <depend>tf</depend>
+  <depend>cmake_modules</depend>
 </package>
