@@ -16,7 +16,7 @@ namespace agent {
 /// Request : Request next interest point from master computer
 /// Navigate : navigate to target location
 /// Report : measure temperature and report to master computer
-enum STATE { IDLE, REQUEST, NAVIGATE, REPORT };
+enum STATE { IDLE, LOOP, REQUEST, NAVIGATE, REPORT };
 
 class AgentNode {
  public:
@@ -69,6 +69,12 @@ class AgentNode {
   double current_longitude_;
   double goal_rtk_latitude_;
   double goal_rtk_longitude_;
+
+  /// True if agent need to go to four corner first
+  bool initial_loop_;
+  size_t loop_count_;
+  std::vector<double> latitude_waypoints_;
+  std::vector<double> longitude_waypoints_;
 };
 }  // namespace agent
 }  // namespace sampling

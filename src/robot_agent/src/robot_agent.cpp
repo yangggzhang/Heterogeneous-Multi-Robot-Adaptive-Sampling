@@ -38,7 +38,30 @@ AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing robot agent report gps location channel!");
   }
 
-  agent_state_ = IDLE;
+  if (!rh_.getParam("initial_loop", initial_loop_)) {
+    ROS_ERROR(
+        "Error! Need to specify whether to loop through four corners at the "
+        "very beginning!");
+    initial_loop_ = false;
+  }
+  loop_count_ = 0;
+  if (initial_loop_) {
+    agent_state_ = LOOP;
+    if (!rh_.getParam("latitude_waypoints", latitude_waypoints_)) {
+      ROS_ERROR("Error! Missing latitude waypoints for initial loop!");
+    }
+    if (!rh_.getParam("longitude_waypoints", longitude_waypoints_)) {
+      ROS_ERROR("Error! Missing longitude waypoints for initial loop!");
+    }
+    if (latitude_waypoints_.size() != longitude_waypoints_.size()) {
+      ROS_ERROR("Initial loop waypoints not match!");
+      initial_loop_ = false;
+      latitude_waypoints_.clear();
+      longitude_waypoints_.clear();
+    }
+  } else {
+    agent_state_ = IDLE;
+  }
   request_target_client_ =
       nh_.serviceClient<sampling_msgs::RequestGoal>(request_target_channel_);
 
@@ -120,6 +143,18 @@ void AgentNode::report_temperature_sample() {
 
 void AgentNode::collect_sample() {
   switch (agent_state_) {
+    case LOOP: {
+      if (initial_loop_ && loop_count_ < latitude_waypoints_.size()) {
+        goal_rtk_latitude_ = latitude_waypoints_[loop_count_];
+        goal_rtk_longitude_ = longitude_waypoints_[loop_count_];
+        loop_count_++;
+        agent_state_ = NAVIGATE;
+      } else {
+        initial_loop_ = false;
+        agent_state_ = IDLE;
+      }
+      break;
+    }
     case IDLE: {
       agent_state_ = REQUEST;
       break;
@@ -138,31 +173,48 @@ void AgentNode::collect_sample() {
                                       "computer : ");
         ROS_INFO_STREAM("Latitude : " << goal_rtk_latitude_ << " Longitude : "
                                       << goal_rtk_longitude_);
-
-        if (!update_goal_from_gps()) {
-          ROS_INFO_STREAM(
-              "Failed to update local goal from GPS target location !");
-          /// todo \yang keeps requesting?
-          break;
-        } else {
-          ROS_INFO_STREAM("Successfully updated local map goal");
-        }
         agent_state_ = NAVIGATE;
       }
       break;
     }
     case NAVIGATE: {
-      /// Infinite timing allowance rn
-      if (navigate()) {
-        ROS_INFO_STREAM("Hooray, robot " << agent_id_
-                                         << " reached the target location!");
-        agent_state_ = REPORT;
+      /// Update local goal
+      if (!update_goal_from_gps()) {
+        ROS_INFO_STREAM(
+            "Failed to update local goal from GPS target location !");
+        agent_state_ = REQUEST;
+        /// todo \yang keeps requesting?
         break;
       } else {
-        ROS_INFO_STREAM("Robot " << agent_id_
-                                 << " failed to reach the target location. ");
-        agent_state_ = REQUEST;
-        break;
+        ROS_INFO_STREAM("Successfully updated local map goal");
+      }
+      /// Infinite timing allowance rn
+      if (navigate()) {
+        if (initial_loop_) {
+          ROS_INFO_STREAM("Successfully navigated to waypoint : "
+                          << goal_rtk_latitude_ << " " << goal_rtk_longitude_);
+          agent_state_ = LOOP;
+          break;
+        } else {
+          ROS_INFO_STREAM("Hooray, robot " << agent_id_
+                                           << " reached the target location!");
+          agent_state_ = REPORT;
+          break;
+        }
+      } else {
+        if (initial_loop_) {
+          ROS_INFO_STREAM("Faliled to navigate to waypoint : "
+                          << goal_rtk_latitude_ << " " << goal_rtk_longitude_);
+          loop_count_--;
+          agent_state_ = LOOP;
+          break;
+          ;
+        } else {
+          ROS_INFO_STREAM("Robot " << agent_id_
+                                   << " failed to reach the target location. ");
+          agent_state_ = REQUEST;
+          break;
+        }
       }
     }
     case REPORT: {
@@ -183,6 +235,6 @@ void AgentNode::collect_sample() {
       break;
     }
   }
-}
+}  // namespace agent
 }  // namespace agent
 }  // namespace sampling
