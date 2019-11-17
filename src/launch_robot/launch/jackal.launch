@@ -1,6 +1,6 @@
 <launch>  
     <include file = "$(find temperature_measurement)/launch/temperature_server.launch"/>
-    <include file = "$(find jackal_navigation)/launch/gps_navigation_demo.launch"/>
+    <include file = "$(find jackal_navigation)/launch/gps_navigation.launch"/>
     <include file = "$(find robot_agent)/launch/jackal_node.launch"/>
 </launch>
 
