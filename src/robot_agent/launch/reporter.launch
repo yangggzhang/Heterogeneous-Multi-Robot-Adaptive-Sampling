@@ -1,0 +1,9 @@
+<launch>   
+   <node pkg="robot_agent" type="report_measurement_node" name="reporter" output="screen" >
+         <rosparam>
+            gps_channel: "/fix"
+            temperature_channel: "/jackal/temperature"
+            report_channel: "/temperature_update_channel"
+         </rosparam>
+   </node>
+</launch>

@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_runtime
   temperature_measurement
   sampling_msgs
+  sensor_msgs
   tf
 )
 
@@ -47,3 +48,7 @@ target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_executable(pelican_node node/pelican_node.cpp)
 target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+
+add_executable(report_measurement_node node/report_measurement_node.cpp)
+target_link_libraries(report_measurement_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+
