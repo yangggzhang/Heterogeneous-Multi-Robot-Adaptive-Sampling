@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   message_filters
+  std_srvs
 )
 
 catkin_package(
@@ -28,6 +29,8 @@ include_directories(
   ${Eigen3_INCLUDE_DIRS}
 )
 
-
 add_executable(GPS_calibration_node node/GPS_calibration.cpp)
 target_link_libraries(GPS_calibration_node ${catkin_LIBRARIES} )
+
+add_executable(GPS_recording_node node/GPS_recording.cpp)
+target_link_libraries(GPS_recording_node ${catkin_LIBRARIES} )
