@@ -8,6 +8,8 @@ longitude1 = -79.000000
 latitude2 = 40.000040
 longitude2 = -79.000040
 
+scale = 1000000.0
+
 min_lat = min(latitude1, latitude2)
 max_lat = max(latitude1, latitude2)
 min_lng = min(longitude1, longitude2)
@@ -40,7 +42,7 @@ for lat in np.arange(min_lat, max_lat + resolution, resolution):
 			if d <= max_distance:
 				temperature = temperature + (max_distance - d)/max_distance * (heat_temp - ambient_temp)
 				print(temperature)
-		gps_file.write("%f , %f \n" %(lat,lng))
+		gps_file.write("%f , %f \n" %(lat * scale, lng * scale))
 		temp_file.write("%f\n" % (temperature))
 			
 

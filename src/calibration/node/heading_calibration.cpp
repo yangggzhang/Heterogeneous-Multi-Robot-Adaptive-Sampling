@@ -51,7 +51,7 @@ class HeadingCalibrationNode {
         odom_channel, 1, &HeadingCalibrationNode::OdometeyCallback, this);
 
     event_timer_ = nh_.createTimer(
-        ros::Duration(1.0), &HeadingCalibrationNode::TimerCallback, this);
+        ros::Duration(0.2), &HeadingCalibrationNode::TimerCallback, this);
 
     start_hearding_calibration_server_ = nh_.advertiseService(
         "calibrate_heading", &HeadingCalibrationNode::StartCalibrationService,
@@ -107,13 +107,21 @@ class HeadingCalibrationNode {
         calibration_started_ = false;
         is_calibration_on_going_ = false;
 
-        double heading_error;
-        std::accumulate(heading_errors_.begin(), heading_errors_.end(),
-                        heading_error);
+        double heading_error = 0.0;
+
+        for (const double &error : heading_errors_) {
+          heading_error += error;
+        }
+
         heading_error = heading_error / (double)heading_errors_.size();
         heading_errors_.clear();
 
-        ROS_INFO_STREAM("Heading Error : " << heading_error);
+        ROS_INFO_STREAM(
+            "Original declination : " << magnetic_declination_radians_);
+        ROS_INFO_STREAM("Offset : " << heading_error);
+        double new_magnetic_declination =
+            heading_error + magnetic_declination_radians_;
+        ROS_INFO_STREAM("Heading Error : " << new_magnetic_declination);
         std::ofstream heading_error_file;
         heading_error_file.open(calibration_result_dir_);
         heading_error_file << heading_error;

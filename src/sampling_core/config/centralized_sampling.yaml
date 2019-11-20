@@ -6,8 +6,8 @@ ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-samp
 initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_GPS.txt"
 initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_temperature.txt"
 
-latitude_range: [40.000000, 40.000040]
-longitude_range: [-79.000040, -79.000000]
+latitude_range: [40000000, 40000040]
+longitude_range: [-79000040, -79000000]
 
 # ground truth model information
 ground_truth_num_gaussian: 3
@@ -31,15 +31,15 @@ prediction_var_visualization_offset: 90
 visualization_scale_x: 0.5
 visualization_scale_y: 1.0
 visualization_scale_z: 0.1
-map_resolution: 0.000001
+map_resolution: 1
 lowest_temperature: -5.0
 highest_temperature: 25.0
 
 temperature_update_channel: "temperature_update_channel"
 
 # gp parameter
-num_gaussian: 3
-gp_hyperparameter: [ 0.0000005, 0.0000005, -2.0]
+num_gaussian: 1
+gp_hyperparameter: [ 0.5, 0.5, 0.1]
 
 interest_point_request_service_channel: "interest_point"
 # 0 Variance 

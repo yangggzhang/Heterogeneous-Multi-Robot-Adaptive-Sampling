@@ -1,8 +1,8 @@
 <launch>
   <node pkg="calibration" type="heading_calibration_node" name="heading_calibration" output="screen"> 
     <rosparam>
-        magnetic_declination_radians: "-0.1593"
-        calibration_times: 5
+        magnetic_declination_radians: 1.44512
+        calibration_times: 50
         odom_channel: "/odometry/filtered_map"
         cmd_vel_channel: "/cmd_vel"
         calibration_result_dir: "/home/yang/Documents/Projects/heterogeneous-sampling/src/calibration/data/heading_calibration.txt"
