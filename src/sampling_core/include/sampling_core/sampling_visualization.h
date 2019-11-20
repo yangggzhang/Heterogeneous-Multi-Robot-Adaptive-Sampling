@@ -24,6 +24,10 @@ class sampling_visualization {
   void update_map(const int &offset, const Eigen::VectorXd &filling_value,
                   visualization_msgs::Marker &map);
 
+  void update_map(const int &offset, const Eigen::VectorXd &filling_value,
+                  const double &lower_bound, const double &upper_bound,
+                  visualization_msgs::Marker &map);
+
  private:
   int latitude_range_, longitude_range_;
 

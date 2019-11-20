@@ -2,6 +2,7 @@
 
 namespace sampling {
 namespace visualization {
+
 sampling_visualization::sampling_visualization() {
   latitude_range_ = 0;
   longitude_range_ = 0;
@@ -64,9 +65,8 @@ void sampling_visualization::update_map(const int &offset,
                                         visualization_msgs::Marker &map) {
   assert(filling_value.size() == latitude_range_ * longitude_range_);
   map.header.stamp = ros::Time::now();
-  double upper_bound = filling_value.maxCoeff();
   double lower_bound = filling_value.minCoeff();
-  bool equal = upper_bound == lower_bound;
+  double upper_bound = filling_value.maxCoeff();
   map.points.resize(filling_value.size());
   map.colors.resize(filling_value.size());
 
@@ -81,11 +81,46 @@ void sampling_visualization::update_map(const int &offset,
 
       std_msgs::ColorRGBA color;
       double norm;
-      if (std::isnan(filling_value(index)) || equal) {
+      if (std::isnan(filling_value(index)) || lower_bound == upper_bound) {
         norm = 0;
       } else {
         norm =
             (filling_value(index) - lower_bound) / (upper_bound - lower_bound);
+      }
+      get_heatmap_color(norm, color);
+      map.colors[index] = color;
+    }
+  }
+}
+
+void sampling_visualization::update_map(const int &offset,
+                                        const Eigen::VectorXd &filling_value,
+                                        const double &lower_bound,
+                                        const double &upper_bound,
+                                        visualization_msgs::Marker &map) {
+  assert(filling_value.size() == latitude_range_ * longitude_range_);
+  map.header.stamp = ros::Time::now();
+  double plot_lower_bound = std::min(filling_value.minCoeff(), lower_bound);
+  double plot_upper_bound = std::max(filling_value.maxCoeff(), upper_bound);
+  map.points.resize(filling_value.size());
+  map.colors.resize(filling_value.size());
+
+  for (int lat = 0; lat < latitude_range_; lat++) {
+    for (int lng = 0; lng < longitude_range_; lng++) {
+      int index = lat * longitude_range_ + lng;
+      geometry_msgs::Point p;
+      p.x = (lat - latitude_range_ / 2) * map.scale.x + offset;
+      p.y = (lng - longitude_range_ / 2) * map.scale.y;
+      p.z = -1.0;
+      map.points[index] = p;
+
+      std_msgs::ColorRGBA color;
+      double norm;
+      if (std::isnan(filling_value(index))) {
+        norm = 0;
+      } else {
+        norm = (filling_value(index) - plot_lower_bound) /
+               (plot_upper_bound - plot_lower_bound);
       }
       get_heatmap_color(norm, color);
       map.colors[index] = color;

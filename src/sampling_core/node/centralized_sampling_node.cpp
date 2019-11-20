@@ -29,28 +29,17 @@ class CentralizedSamplingNode {
  public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
+    // Load parameters
     if (!load_parameter()) {
       ROS_ERROR_STREAM("Missing required ros parameter");
     }
-    voronoi_cell_ = voronoi::Voronoi(test_location_);
 
+    // Visualization
     distribution_visualization_pub_ =
         nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
     interest_point_assignment_ser_ = nh_.advertiseService(
         interest_point_service_channel_,
         &CentralizedSamplingNode::assign_interest_point, this);
-    sample_sub_ =
-        nh_.subscribe(temperature_update_channel_, 1,
-                      &CentralizedSamplingNode::collect_sample_callback, this);
-
-    Jackal_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
-        Jackal_request_GPS_channel_);
-
-    Pelican_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
-        Pelican_request_GPS_channel_);
-
-    update_flag_ = false;
-    sample_size_ = 0;
     visualization_node_ = visualization::sampling_visualization(
         visualization_scale_x_, visualization_scale_y_, visualization_scale_z_,
         num_lat_, num_lng_);
@@ -59,21 +48,39 @@ class CentralizedSamplingNode {
         prediction_mean_visualization_id_, heat_map_pred_);
     visualization_node_.initialize_map(
         visualization_frame_id_, visualization_namespace_,
-        ground_truth_visualization_id_, heat_map_var_);
+        prediction_var_visualization_id_, heat_map_var_);
+
+    // Sampling
+    sample_sub_ =
+        nh_.subscribe(temperature_update_channel_, 1,
+                      &CentralizedSamplingNode::collect_sample_callback, this);
+    voronoi_cell_ = voronoi::Voronoi(test_location_);
+    update_flag_ = false;
+    sample_size_ = 0;
+
+    // GP
     gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
     gt_gp_node_ = gp_node_;
 
+    // Robot agent
+    Jackal_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
+        Jackal_request_GPS_channel_);
+
+    Pelican_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
+        Pelican_request_GPS_channel_);
+
+    // Initial data
     if (init_sample_temperature_.rows() > 0) {
       gp_node_.add_training_data(init_sample_location_,
                                  init_sample_temperature_);
       update_gp_model();
-      update_visualization();
       update_heuristic();
       ROS_INFO_STREAM("Initialize GP model with initial data points");
     }
 
     if (ground_truth_location_.rows() > 0 &&
         ground_truth_temperature_.rows() > 0) {
+      ROS_INFO_STREAM("Update ground truth model!");
       visualization_node_.initialize_map(
           visualization_frame_id_, visualization_namespace_,
           ground_truth_visualization_id_, heat_map_truth_);
@@ -83,8 +90,9 @@ class CentralizedSamplingNode {
                                            convergence_threshold_);
       gt_gp_node_.GaussianProcessMixture_predict(test_location_, gt_mean_,
                                                  gt_var_);
-      visualization_node_.update_map(prediction_mean_visualization_offset_,
-                                     gt_mean_, heat_map_truth_);
+      visualization_node_.update_map(ground_truth_visualization_offset_,
+                                     gt_mean_, lowest_temperature_,
+                                     highest_temperature_, heat_map_truth_);
     }
   }
 
@@ -188,8 +196,6 @@ class CentralizedSamplingNode {
     if (mean_prediction_.size() == 0 || var_prediction_.size() == 0) {
       return;
     }
-    distribution_visualization_pub_.publish(heat_map_pred_);
-    distribution_visualization_pub_.publish(heat_map_var_);
   }
 
   void update_heuristic() {
@@ -506,6 +512,16 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("lowest_temperature", lowest_temperature_)) {
+      ROS_INFO_STREAM("Error! Missing lowerest temperature for visualization!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("highest_temperature", highest_temperature_)) {
+      ROS_INFO_STREAM("Error! Missing highest temperature for visualization!");
+      succeess = false;
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -543,20 +559,32 @@ class CentralizedSamplingNode {
 
   void update_visualization() {
     visualization_node_.update_map(prediction_mean_visualization_offset_,
-                                   mean_prediction_, heat_map_pred_);
+                                   mean_prediction_, lowest_temperature_,
+                                   highest_temperature_, heat_map_pred_);
+    if (mean_prediction_.size() > 0) {
+      distribution_visualization_pub_.publish(heat_map_pred_);
+    }
+
     visualization_node_.update_map(prediction_var_visualization_offset_,
                                    var_prediction_, heat_map_var_);
+    if (var_prediction_.size() > 0) {
+      distribution_visualization_pub_.publish(heat_map_var_);
+    }
+
+    if (gt_mean_.size() > 0) {
+      distribution_visualization_pub_.publish(heat_map_truth_);
+    }
   }
 
   // main loop
   void run() {
+    update_visualization();
+
     if (update_flag_) {
       update_flag_ = false;
       update_gp_model();
-      update_visualization();
       update_heuristic();
     }
-    visualize_distribution();
   }
 
  private:
@@ -636,13 +664,16 @@ class CentralizedSamplingNode {
 
   std::unordered_map<Eigen::MatrixXd, double, GPSHashFunction> sample_count_;
 
+  double lowest_temperature_;
+  double highest_temperature_;
+
 };  // namespace sampling
 }  // namespace sampling
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
-  ros::Rate r(10);
+  ros::Rate r(100);
   sampling::CentralizedSamplingNode node(nh, rh);
   // node.fit_ground_truth_data();
   while (ros::ok()) {
