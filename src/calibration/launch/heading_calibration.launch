@@ -3,8 +3,8 @@
     <rosparam>
         magnetic_declination_radians: "/fcu/gps"
         calibration_times: 5
-        odom_channel: ""
-        cmd_vel_channel: ""
+        odom_channel: "/odometry/filtered_map"
+        cmd_vel_channel: "/cmd_vel"
         calibration_result_dir: "/home/yang/Documents/Projects/heterogeneous-sampling/src/calibration/data/heading_calibration.txt"
     </rosparam>
   </node>
