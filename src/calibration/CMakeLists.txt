@@ -34,3 +34,6 @@ target_link_libraries(GPS_calibration_node ${catkin_LIBRARIES} )
 
 add_executable(GPS_recording_node node/GPS_recording.cpp)
 target_link_libraries(GPS_recording_node ${catkin_LIBRARIES} )
+
+add_executable(heading_calibration_node node/heading_calibration.cpp)
+target_link_libraries(heading_calibration_node ${catkin_LIBRARIES} )

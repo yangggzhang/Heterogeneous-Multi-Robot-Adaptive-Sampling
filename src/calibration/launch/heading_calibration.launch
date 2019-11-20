@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="calibration" type="heading_calibration_node" name="heading_calibration" output="screen"> 
+    <rosparam>
+        magnetic_declination_radians: "/fcu/gps"
+        calibration_times: 5
+        odom_channel: ""
+        cmd_vel_channel: ""
+        calibration_result_dir: "/home/yang/Documents/Projects/heterogeneous-sampling/src/calibration/data/heading_calibration.txt"
+    </rosparam>
+  </node>
+
+</launch>
+
