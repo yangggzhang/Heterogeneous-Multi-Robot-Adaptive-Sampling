@@ -63,6 +63,10 @@ void sampling_visualization::initialize_map(
 void sampling_visualization::update_map(const int &offset,
                                         const Eigen::VectorXd &filling_value,
                                         visualization_msgs::Marker &map) {
+  if (filling_value.size() != latitude_range_ * longitude_range_) {
+    ROS_INFO_STREAM("???? " << filling_value.size() << " " << latitude_range_
+                            << " " << longitude_range_);
+  }
   assert(filling_value.size() == latitude_range_ * longitude_range_);
   map.header.stamp = ros::Time::now();
   double lower_bound = filling_value.minCoeff();
@@ -98,6 +102,10 @@ void sampling_visualization::update_map(const int &offset,
                                         const double &lower_bound,
                                         const double &upper_bound,
                                         visualization_msgs::Marker &map) {
+  if (filling_value.size() != latitude_range_ * longitude_range_) {
+    ROS_INFO_STREAM("???? " << filling_value.size() << " " << latitude_range_
+                            << " " << longitude_range_);
+  }
   assert(filling_value.size() == latitude_range_ * longitude_range_);
   map.header.stamp = ros::Time::now();
   double plot_lower_bound = std::min(filling_value.minCoeff(), lower_bound);

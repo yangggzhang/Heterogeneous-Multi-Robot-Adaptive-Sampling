@@ -18,7 +18,7 @@ enum HeuristicMode { VARIANCE, UCB, DISTANCE_UCB };
 class GPSHashFunction {
  public:
   double operator()(const Eigen::MatrixXd &GPS) const {
-    return (GPS(0, 1) + 180.0) * 180 + GPS(0, 0);
+    return (GPS(0, 1) + 180.0) * 180.0 + GPS(0, 0);
   }
 };
 
@@ -43,6 +43,7 @@ class CentralizedSamplingNode {
     visualization_node_ = visualization::sampling_visualization(
         visualization_scale_x_, visualization_scale_y_, visualization_scale_z_,
         num_lat_, num_lng_);
+    ROS_INFO_STREAM("Map range : " << num_lat_ << " " << num_lng_);
     visualization_node_.initialize_map(
         visualization_frame_id_, visualization_namespace_,
         prediction_mean_visualization_id_, heat_map_pred_);
@@ -90,9 +91,20 @@ class CentralizedSamplingNode {
                                            convergence_threshold_);
       gt_gp_node_.GaussianProcessMixture_predict(test_location_, gt_mean_,
                                                  gt_var_);
+      ROS_INFO_STREAM("GP max : " << gt_mean_.maxCoeff()
+                                  << " min value : " << gt_mean_.minCoeff());
       visualization_node_.update_map(ground_truth_visualization_offset_,
                                      gt_mean_, lowest_temperature_,
                                      highest_temperature_, heat_map_truth_);
+
+      raw_data_ = init_sample_temperature_.col(0).array();
+
+      visualization_node_.initialize_map(
+          visualization_frame_id_, visualization_namespace_,
+          raw_data_visualization_id_, heat_map_raw_);
+      visualization_node_.update_map(raw_data_visualization_offset_, raw_data_,
+                                     lowest_temperature_, highest_temperature_,
+                                     heat_map_raw_);
     }
   }
 
@@ -407,6 +419,23 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("raw_data_visualization_id",
+                      raw_data_visualization_id_)) {
+      ROS_INFO_STREAM(
+          "Error! Missing raw data visualization map "
+          "id!");
+      succeess = false;
+    }
+
+    if (!rh_.getParam("raw_data_visualization_offset",
+                      raw_data_visualization_offset_)) {
+      ROS_INFO_STREAM(
+          "Error! Missing raw data value visualization map "
+          "offset "
+          "in x direction!");
+      succeess = false;
+    }
+
     if (!rh_.getParam("visualization_scale_x", visualization_scale_x_)) {
       ROS_INFO_STREAM("Error! Missing visualization scale in x direction!");
       succeess = false;
@@ -573,6 +602,7 @@ class CentralizedSamplingNode {
 
     if (gt_mean_.size() > 0) {
       distribution_visualization_pub_.publish(heat_map_truth_);
+      distribution_visualization_pub_.publish(heat_map_raw_);
     }
   }
 
@@ -628,6 +658,8 @@ class CentralizedSamplingNode {
   Eigen::VectorXd mean_prediction_;
   Eigen::VectorXd var_prediction_;
 
+  Eigen::VectorXd raw_data_;
+
   // GP parameter
   int num_gaussian_;
   std::vector<double> gp_hyperparameter_;
@@ -639,6 +671,7 @@ class CentralizedSamplingNode {
   visualization_msgs::Marker heat_map_pred_;
   visualization_msgs::Marker heat_map_var_;
   visualization_msgs::Marker heat_map_truth_;
+  visualization_msgs::Marker heat_map_raw_;
 
   /// visualization
   std::string visualization_frame_id_;
@@ -649,6 +682,9 @@ class CentralizedSamplingNode {
   int prediction_mean_visualization_offset_;
   int prediction_var_visualization_id_;
   int prediction_var_visualization_offset_;
+  int raw_data_visualization_id_;
+  int raw_data_visualization_offset_;
+
   double visualization_scale_x_, visualization_scale_y_, visualization_scale_z_,
       map_resolution_;
 

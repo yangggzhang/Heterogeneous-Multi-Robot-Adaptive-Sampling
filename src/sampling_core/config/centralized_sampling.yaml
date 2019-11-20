@@ -1,13 +1,13 @@
 #Configuation for centralized sampling
 #
-ground_truth_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/random_GPS.txt"
-ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/random_temperature.txt"
+ground_truth_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_GPS.txt"
+ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_temperature.txt"
 
-initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/random_GPS.txt"
-initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/random_temperature.txt"
+initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_GPS.txt"
+initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_temperature.txt"
 
-latitude_range: [40.4436823433, 40.44369571]
-longitude_range: [-79.9430965933, -79.94304001]
+latitude_range: [40.000000, 40.000040]
+longitude_range: [-79.000040, -79.000000]
 
 # ground truth model information
 ground_truth_num_gaussian: 3
@@ -20,13 +20,15 @@ model_update_rate: 1
 # visualization
 visualization_frame_id: "/map"
 visualization_namespace: "visualization"
-ground_truth_visualization_id: 0
-ground_truth_visualization_offset: 0
-prediction_mean_visualization_id: 1
-prediction_mean_visualization_offset: 15
-prediction_var_visualization_id: 2
-prediction_var_visualization_offset: 30
-visualization_scale_x: 1.0
+raw_data_visualization_id: 0
+raw_data_visualization_offset: 0
+ground_truth_visualization_id: 1
+ground_truth_visualization_offset: 30
+prediction_mean_visualization_id: 2
+prediction_mean_visualization_offset: 60
+prediction_var_visualization_id: 3
+prediction_var_visualization_offset: 90
+visualization_scale_x: 0.5
 visualization_scale_y: 1.0
 visualization_scale_z: 0.1
 map_resolution: 0.000001
@@ -37,7 +39,7 @@ temperature_update_channel: "temperature_update_channel"
 
 # gp parameter
 num_gaussian: 3
-gp_hyperparameter: [ 0.00005, 0.00005, -2.0]
+gp_hyperparameter: [ 0.0000005, 0.0000005, -2.0]
 
 interest_point_request_service_channel: "interest_point"
 # 0 Variance 
