@@ -1,10 +1,10 @@
 #Configuation for centralized sampling
 #
-ground_truth_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_GPS.txt"
-ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_temperature.txt"
+ground_truth_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/gt_GPS.txt"
+ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/gt_temperature.txt"
 
-initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_GPS.txt"
-initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/groundtruth_temperature.txt"
+initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/init_GPS.txt"
+initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/init_temperature.txt"
 
 latitude_range: [40000000, 40000040]
 longitude_range: [-79000040, -79000000]
@@ -31,7 +31,7 @@ prediction_var_visualization_offset: 90
 visualization_scale_x: 0.5
 visualization_scale_y: 1.0
 visualization_scale_z: 0.1
-map_resolution: 1
+map_resolution: 1.0
 lowest_temperature: -5.0
 highest_temperature: 25.0
 
@@ -40,6 +40,7 @@ temperature_update_channel: "temperature_update_channel"
 # gp parameter
 num_gaussian: 1
 gp_hyperparameter: [ 0.5, 0.5, 0.1]
+gp_scale : 1000000.0
 
 interest_point_request_service_channel: "interest_point"
 # 0 Variance 

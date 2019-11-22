@@ -29,6 +29,7 @@ class CentralizedSamplingNode {
  public:
   CentralizedSamplingNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
       : nh_(nh), rh_(rh) {
+    ROS_INFO_STREAM("start node!");
     // Load parameters
     if (!load_parameter()) {
       ROS_ERROR_STREAM("Missing required ros parameter");
@@ -97,14 +98,16 @@ class CentralizedSamplingNode {
                                      gt_mean_, lowest_temperature_,
                                      highest_temperature_, heat_map_truth_);
 
-      raw_data_ = init_sample_temperature_.col(0).array();
+      // raw_data_ = init_sample_temperature_.col(0).array();
 
-      visualization_node_.initialize_map(
-          visualization_frame_id_, visualization_namespace_,
-          raw_data_visualization_id_, heat_map_raw_);
-      visualization_node_.update_map(raw_data_visualization_offset_, raw_data_,
-                                     lowest_temperature_, highest_temperature_,
-                                     heat_map_raw_);
+      // visualization_node_.initialize_map(
+      //     visualization_frame_id_, visualization_namespace_,
+      //     raw_data_visualization_id_, heat_map_raw_);
+      // visualization_node_.update_map(raw_data_visualization_offset_,
+      // raw_data_,
+      //                                lowest_temperature_,
+      //                                highest_temperature_,
+      //  heat_map_raw_);
     }
   }
 
@@ -125,8 +128,10 @@ class CentralizedSamplingNode {
           }
         }
         std::pair<double, int> interest_point_pair = heuristic_pq_.top();
-        res.latitude = test_location_(interest_point_pair.second, 0);
-        res.longitude = test_location_(interest_point_pair.second, 1);
+        res.latitude =
+            test_location_(interest_point_pair.second, 0) / gp_scale_;
+        res.longitude =
+            test_location_(interest_point_pair.second, 1) / gp_scale_;
         heuristic_pq_.pop();
         return true;
       }
@@ -141,8 +146,10 @@ class CentralizedSamplingNode {
           }
         }
         std::pair<double, int> interest_point_pair = heuristic_pq_.top();
-        res.latitude = test_location_(interest_point_pair.second, 0);
-        res.longitude = test_location_(interest_point_pair.second, 1);
+        res.latitude =
+            test_location_(interest_point_pair.second, 0) / gp_scale_;
+        res.longitude =
+            test_location_(interest_point_pair.second, 1) / gp_scale_;
         heuristic_pq_.pop();
         return true;
       }
@@ -160,8 +167,10 @@ class CentralizedSamplingNode {
           if (!heuristic_pq_v_[0].empty()) {
             std::pair<double, int> interest_point_pair =
                 heuristic_pq_v_[0].top();
-            res.latitude = test_location_(interest_point_pair.second, 0);
-            res.longitude = test_location_(interest_point_pair.second, 1);
+            res.latitude =
+                test_location_(interest_point_pair.second, 0) / gp_scale_;
+            res.longitude =
+                test_location_(interest_point_pair.second, 1) / gp_scale_;
             heuristic_pq_v_[0].pop();
             return true;
           } else {
@@ -171,8 +180,10 @@ class CentralizedSamplingNode {
           if (!heuristic_pq_v_[1].empty()) {
             std::pair<double, int> interest_point_pair =
                 heuristic_pq_v_[1].top();
-            res.latitude = test_location_(interest_point_pair.second, 0);
-            res.longitude = test_location_(interest_point_pair.second, 1);
+            res.latitude =
+                test_location_(interest_point_pair.second, 0) / gp_scale_;
+            res.longitude =
+                test_location_(interest_point_pair.second, 1) / gp_scale_;
             heuristic_pq_v_[1].pop();
             return true;
           } else {
@@ -196,6 +207,8 @@ class CentralizedSamplingNode {
       }
       Eigen::MatrixXd new_location, new_feature;
       utils::MsgToMatrix(msg, new_location, new_feature);
+      new_location(0, 0) = new_location(0, 0) * gp_scale_;
+      new_location(0, 1) = new_location(0, 1) * gp_scale_;
       sample_count_[new_location]++;
       gp_node_.add_training_data(new_location, new_feature);
     } else {
@@ -551,6 +564,11 @@ class CentralizedSamplingNode {
       succeess = false;
     }
 
+    if (!rh_.getParam("gp_scale", gp_scale_)) {
+      ROS_INFO_STREAM("Error! Missing gp scale!");
+      succeess = false;
+    }
+
     double min_latitude =
         *std::min_element(latitude_range.begin(), latitude_range.end());
     double max_latitude =
@@ -563,6 +581,8 @@ class CentralizedSamplingNode {
     num_lat_ = std::round((max_latitude - min_latitude) / map_resolution_) + 1;
     num_lng_ =
         std::round((max_longitude - min_longitude) / map_resolution_) + 1;
+
+    ROS_INFO_STREAM("range : " << num_lat_ << " " << num_lng_);
 
     test_location_ = Eigen::MatrixXd::Zero(num_lat_ * num_lng_, 2);
     for (int i = 0; i < num_lat_; ++i) {
@@ -609,7 +629,6 @@ class CentralizedSamplingNode {
   // main loop
   void run() {
     update_visualization();
-
     if (update_flag_) {
       update_flag_ = false;
       update_gp_model();
@@ -703,13 +722,16 @@ class CentralizedSamplingNode {
   double lowest_temperature_;
   double highest_temperature_;
 
+  /// debug
+  double gp_scale_;
+
 };  // namespace sampling
 }  // namespace sampling
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
-  ros::Rate r(100);
+  ros::Rate r(10);
   sampling::CentralizedSamplingNode node(nh, rh);
   // node.fit_ground_truth_data();
   while (ros::ok()) {
