@@ -9,3 +9,7 @@ jackal_movebase_channel: "move_base"
 jackal_movebase_goal_frame_id: "map"
 jackal_moving_duration_threshold_s: 30
 report_gps_location_channel: "Jackal_GPS"
+
+facing_heatsource: true
+heat_source_lat: 40.000010
+heat_source_lng: -79.0000100

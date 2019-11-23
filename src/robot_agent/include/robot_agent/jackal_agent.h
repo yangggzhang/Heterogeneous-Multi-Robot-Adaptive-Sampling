@@ -29,6 +29,9 @@ class JackalNode : public AgentNode {
   move_base_msgs::MoveBaseGoal move_base_goal_;
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>
       *jackal_action_client_;
+  bool facing_heatsource_;
+  double heat_source_lat_;
+  double heat_source_lng_;
 
   geometry_msgs::PointStamped GPStoUTM(const double &latitude,
                                        const double &longitude);

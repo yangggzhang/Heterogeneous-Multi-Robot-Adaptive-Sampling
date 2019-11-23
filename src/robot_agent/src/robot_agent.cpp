@@ -135,6 +135,7 @@ bool AgentNode::collect_temperature_sample() {
 void AgentNode::report_temperature_sample() {
   sampling_msgs::measurement msg;
   msg.valid = true;
+  msg.robot_id = agent_id_;
   msg.latitude = current_latitude_;
   msg.longitude = current_longitude_;
   msg.measurement = temperature_measurement_;
