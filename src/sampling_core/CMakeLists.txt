@@ -41,12 +41,13 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/gmm_utils.cpp
-  src/sampling_visualization.cpp
   src/voronoi.cpp
+  src/sampling_core.cpp
+  src/sampling_visualization.cpp
 )
+
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
 target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
-# add_executable(jackal_node node/jackal_node.cpp)
-# target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})

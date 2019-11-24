@@ -5,8 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-#include "utils.h"
 
+#include "utils.h"
 namespace sampling {
 namespace utils {
 
@@ -107,5 +107,6 @@ bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
   }
   return true;
 }
+
 }  // namespace utils
 }  // namespace sampling

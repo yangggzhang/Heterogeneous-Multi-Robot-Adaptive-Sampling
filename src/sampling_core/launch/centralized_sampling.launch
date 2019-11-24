@@ -2,10 +2,6 @@
   <arg name="simulation" value="false" />
   <arg name="jackal" value="false" />
   <arg name="pelican" value="false" />
-
-
-  <!-- <node name="controller_spawner" pkg="controller_manager" type="spawner"
-        args="jackal_joint_publisher jackal_velocity_controller" /> -->
   
   <group if="$(arg jackal)">
     <node pkg="robot_agent" type="jackal_node" name="jackal" output="screen" >

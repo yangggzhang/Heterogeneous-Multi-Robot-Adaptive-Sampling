@@ -23,11 +23,11 @@ struct MAP_PARAM {
   double upper_bound;
 };
 
-bool GetParam(XmlRpc::XmlRpcValue &YamlNode, MAP_PARAM &param);
-
 class SamplingVisualization {
  public:
   SamplingVisualization();
+
+  // bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode, MAP_PARAM &param);
 
   SamplingVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
                         const Eigen::MatrixXd &map);

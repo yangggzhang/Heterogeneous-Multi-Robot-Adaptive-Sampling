@@ -1,37 +1,7 @@
 #include "sampling_core/sampling_visualization.h"
-#include "sampling_core/utils.h"
 
 namespace sampling {
 namespace visualization {
-
-bool GetParam(XmlRpc::XmlRpcValue &YamlNode, MAP_PARAM &param) {
-  if (!utils::GetParam(YamlNode, "map_frame", param.map_frame)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "map_id", param.map_id)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "x_scale", param.x_scale)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "y_scale", param.y_scale)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "x_offset", param.x_offset)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "y_offset", param.y_offset)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "lower_bound", param.lower_bound)) {
-    return false;
-  }
-  if (!utils::GetParam(YamlNode, "upper_bound", param.upper_bound)) {
-    return false;
-  }
-  return true;
-}
-
 SamplingVisualization::SamplingVisualization() {}
 
 SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
