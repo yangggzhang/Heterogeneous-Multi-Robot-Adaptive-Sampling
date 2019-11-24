@@ -25,7 +25,7 @@
     <remap from="temperature_update_channel" to="temperature_update_channel"/>
     <remap from="interest_point_service_channel" to="interest_point"/>
     <remap from="Jackal_request_GPS_channel" to="Jackal_GPS"/>
-    <remap from="Jackal_request_GPS_channel" to="Pelican_request_GPS_channel"/>
+    <remap from="Pelican_request_GPS_channel" to="Pelican_GPS"/>
   </node>
 
 

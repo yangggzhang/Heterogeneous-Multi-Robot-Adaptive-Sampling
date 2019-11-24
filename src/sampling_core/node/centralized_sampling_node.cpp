@@ -11,7 +11,10 @@ int main(int argc, char **argv) {
     ROS_ERROR("Failed to initialize centralized sampling node!");
     return -1;
   }
+
+  node.UpdateVisualization();
   ros::spinOnce();
+  r.sleep();
 
   while (ros::ok()) {
     node.Update();

@@ -448,6 +448,28 @@ bool SamplingCore::InitializeVisualization() {
               new visualization::SamplingVisualization(nh_, param,
                                                        init_sample_location_));
       visualization_node_[frame]->UpdateMap(init_sample_temperature_.col(0));
+    } else if (frame.compare("Jackal") == 0) {
+      std_msgs::ColorRGBA Jackal_color;
+      Jackal_color.r = 1.0;
+      Jackal_color.g = 1.0;
+      Jackal_color.b = 1.0;
+      Jackal_color.a = 1.0;
+      robot_visualization_node_[frame] =
+          std::unique_ptr<visualization::RobotVisualization>(
+              new visualization::RobotVisualization(
+                  nh_, param, "Jackal_request_GPS_channel", Jackal_color,
+                  location_));
+    } else if (frame.compare("Pelican") == 0) {
+      std_msgs::ColorRGBA Pelican_color;
+      Pelican_color.r = 0.0;
+      Pelican_color.g = 1.0;
+      Pelican_color.b = 0.0;
+      Pelican_color.a = 1.0;
+      robot_visualization_node_[frame] =
+          std::unique_ptr<visualization::RobotVisualization>(
+              new visualization::RobotVisualization(
+                  nh_, param, "Pelican_request_GPS_channel", Pelican_color,
+                  location_));
     } else {
       ROS_ERROR("Known visualization frame!");
       return false;

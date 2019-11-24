@@ -27,8 +27,6 @@ class SamplingVisualization {
  public:
   SamplingVisualization();
 
-  // bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode, MAP_PARAM &param);
-
   SamplingVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
                         const Eigen::MatrixXd &map);
 
@@ -50,6 +48,36 @@ class SamplingVisualization {
   std_msgs::ColorRGBA GetHeatMapColor(const double &norm);
 
   void MapVisualizationCallback(const ros::WallTimerEvent &event);
+};
+
+class RobotVisualization {
+ public:
+  RobotVisualization();
+
+  RobotVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
+                     const std::string &GPS_channel,
+                     const std_msgs::ColorRGBA &color,
+                     const Eigen::MatrixXd &map);
+
+  void UpdateMap(const double &robot_x, const double &robot_y);
+
+ private:
+  MAP_PARAM param_;
+
+  double map_x_origin_;
+  double map_y_origin_;
+  double map_x_scale_;
+  double map_y_scale_;
+
+  visualization_msgs::Marker marker_;
+
+  ros::Publisher robot_visualization_pub_;
+
+  ros::WallTimer timer_;
+
+  void RobotVisualizationCallback(const ros::WallTimerEvent &event);
+
+  ros::ServiceClient robot_GPS_client_;
 };
 }  // namespace visualization
 }  // namespace sampling

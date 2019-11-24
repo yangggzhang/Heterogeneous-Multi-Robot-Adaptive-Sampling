@@ -60,3 +60,19 @@ visualization_parameters:
     y_offset: 0.0
     lower_bound: -5.0
     upper_bound: 30.0
+  - map_frame: "Jackal" 
+    map_id: 4
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 25.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0
+  - map_frame: "Pelican" 
+    map_id: 5
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 25.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0
