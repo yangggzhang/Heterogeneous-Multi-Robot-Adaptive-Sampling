@@ -13,11 +13,13 @@ bool SamplingCore::Init() {
   // Load parameters
   if (!ParseFromRosParam()) {
     ROS_ERROR_STREAM("Missing required ros parameter");
+    return false;
   }
 
   // Initialize visualization
   if (!InitializeVisualization()) {
     ROS_ERROR_STREAM("Failed to initialize visualization");
+    return false;
   }
 
   interest_point_assignment_ser_ =
@@ -46,6 +48,7 @@ bool SamplingCore::Init() {
     gp_node_.AddTrainingData(init_sample_location_, init_sample_temperature_);
     UpdateGPModel();
     UpdateHeuristic();
+    UpdateVisualization();
     ROS_INFO_STREAM("Initialize GP model with initial data points");
   }
 
@@ -57,6 +60,7 @@ bool SamplingCore::Init() {
     gt_gp_node_.GaussianProcessMixturePredict(location_, gt_mean, gt_var);
     visualization_node_["gt"]->UpdateMap(gt_mean);
   }
+  return true;
 }
 
 bool SamplingCore::LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,

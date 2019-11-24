@@ -40,7 +40,7 @@ visualization_parameters:
     map_id: 1
     x_scale: 0.5
     y_scale: 1.0
-    x_offset: 40.0
+    x_offset: 25.0
     y_offset: 0.0
     lower_bound: -5.0
     upper_bound: 30.0
@@ -48,15 +48,15 @@ visualization_parameters:
     map_id: 2
     x_scale: 0.5
     y_scale: 1.0
-    x_offset: 60.0
+    x_offset: 50.0
     y_offset: 0.0
-    lower_bound: -5.0
-    upper_bound: 30.0
+    lower_bound: 0.0
+    upper_bound: 1.0
   - map_frame: "raw"
     map_id: 3
     x_scale: 2.5
     y_scale: 5.0
-    x_offset: -20.0
+    x_offset: -25.0
     y_offset: 0.0
     lower_bound: -5.0
     upper_bound: 30.0
