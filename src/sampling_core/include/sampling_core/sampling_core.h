@@ -93,6 +93,9 @@ class SamplingCore {
   std::unordered_map<std::string,
                      std::unique_ptr<visualization::SamplingVisualization>>
       visualization_node_;
+  std::unordered_map<std::string,
+                     std::unique_ptr<visualization::RobotVisualization>>
+      robot_visualization_node_;
   std::vector<visualization::MAP_PARAM> visualization_params_;
 
   // sampling
