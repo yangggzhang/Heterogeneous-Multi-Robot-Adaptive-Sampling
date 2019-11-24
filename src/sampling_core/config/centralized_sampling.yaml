@@ -1,55 +1,62 @@
 #Configuation for centralized sampling
-#
-ground_truth_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/gt_GPS.txt"
-ground_truth_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/gt_temperature.txt"
+data_path:
+  - location_data: "gt_GPS.txt"
+    ground_truth_temperature_data: "gt_temperature.txt"
+    initial_location_data: "init_GPS.txt"
+    initial_temperature_data: "init_temperature.txt"
 
-initial_location_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/init_GPS.txt"
-initial_temperature_path: "/home/yang/Documents/Projects/heterogeneous-sampling/src/sampling_core/data/init_temperature.txt"
+# learning parameter
+learning_parameters:
+  - convergence_threshold: 0.1
+    max_iteration: 10
+    model_update_rate: 1
 
-latitude_range: [40000000, 40000040]
-longitude_range: [-79000040, -79000000]
+# Gaussian Process parameter:
+gp_parameters:
+  - ground_truth_num_gaussian: 3
+    num_gaussian: 3
+    gp_hyperparameter: [0.5, 0.5, 0.5]
+    gp_scale : 1000000.0
 
-# ground truth model information
-ground_truth_num_gaussian: 3
-
-# learning criteria
-convergence_threshold: 0.1
-max_iteration: 10
-model_update_rate: 1
+# sampling parameter
+sampling_parameters:
+  - heuristic_mode : 0
+    Jackal_id: "Jackal"
+    Pelican_id: "Pelican"
+    scale_factor: [1.0, 0.5]
+    variable_coeff: 0.5
 
 # visualization
-visualization_frame_id: "/map"
-visualization_namespace: "visualization"
-raw_data_visualization_id: 0
-raw_data_visualization_offset: 0
-ground_truth_visualization_id: 1
-ground_truth_visualization_offset: 30
-prediction_mean_visualization_id: 2
-prediction_mean_visualization_offset: 60
-prediction_var_visualization_id: 3
-prediction_var_visualization_offset: 90
-visualization_scale_x: 0.5
-visualization_scale_y: 1.0
-visualization_scale_z: 0.1
-map_resolution: 1.0
-lowest_temperature: -5.0
-highest_temperature: 25.0
-
-temperature_update_channel: "temperature_update_channel"
-
-# gp parameter
-num_gaussian: 1
-gp_hyperparameter: [ 0.5, 0.5, 0.1]
-gp_scale : 1000000.0
-
-interest_point_request_service_channel: "interest_point"
-# 0 Variance 
-# \todo yang add more modes
-heuristic_mode : 0
-
-Jackal_request_GPS_channel: "Jackal_GPS"
-Pelican_request_GPS_channel: "Pelican_GPS"
-Jackal_id: "Jackal"
-Pelican_id: "Pelican"
-scale_factor: [1.0, 0,5]
-variable_coeff: 0.5
+visualization_parameters:
+  - map_frame: "gt" 
+    map_id: 0
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 0.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0
+  - map_frame: "mean"
+    map_id: 1
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 150.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0
+  - map_frame: "variance"
+    map_id: 2
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 300.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0
+  - map_frame: "raw"
+    map_id: 3
+    x_scale: 2.5
+    y_scale: 5.0
+    x_offset: 30.0
+    y_offset: 0.0
+    lower_bound: -5.0
+    upper_bound: 30.0

@@ -5,6 +5,7 @@
  */
 
 #pragma once
+#include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
 #include <Eigen/Dense>
 #include <string>
@@ -12,21 +13,25 @@
 namespace sampling {
 namespace utils {
 
-struct gps_location {
-  double latitude;
-  double longitude;
-};
+bool LoadData(const std::string &path, Eigen::MatrixXd &data);
 
-struct map_location {
-  double x;
-  double y;
-};
+bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
+                  Eigen::MatrixXd &data);
 
-bool load_data(const std::string &location_data_path,
-               const std::string &temperature_data_path,
-               Eigen::MatrixXd &location, Eigen::MatrixXd &temperature);
+template <typename T>
+bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
+              T &data);
+
+template <typename T>
+bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
+              std::vector<T> &data);
+
+bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
+              Eigen::VectorXd &data);
 
 void MsgToMatrix(const sampling_msgs::measurement &msg,
                  Eigen::MatrixXd &location, Eigen::MatrixXd &feature);
+
 }  // namespace utils
 }  // namespace sampling
+#include "utils_impl.h"

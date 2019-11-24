@@ -23,6 +23,10 @@
 
   <node pkg="sampling_core" type="centralized_sampling_node" name="sampling_core" output="screen"> 
     <rosparam command="load" file="$(find sampling_core)/config/centralized_sampling.yaml" />
+    <remap from="temperature_update_channel" to="temperature_update_channel"/>
+    <remap from="interest_point_service_channel" to="interest_point"/>
+    <remap from="Jackal_request_GPS_channel" to="Jackal_GPS"/>
+    <remap from="Jackal_request_GPS_channel" to="Pelican_request_GPS_channel"/>
   </node>
 
 

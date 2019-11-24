@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_runtime
   temperature_measurement
   sampling_msgs
+  roslib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -40,7 +41,6 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/gmm_utils.cpp
-  src/utils.cpp
   src/sampling_visualization.cpp
   src/voronoi.cpp
 )

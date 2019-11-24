@@ -1,0 +1,10 @@
+#Configuation for artifical data
+latitude_range: [40.000000, 40.000040]
+longitude_range: [-79.000040, -79.000000]
+scale: 1000000.0
+heatsource_latitude: [40.000010, 40.000030]
+heatsource_longitude: [-79.000010, -79.000030]
+heatsource_temperature: [30.0, 25.0]
+heatsource_range: [0.000001, 0.000015]
+noise: 2.0
+ambient_temp: 2.5

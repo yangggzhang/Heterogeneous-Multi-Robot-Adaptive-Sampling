@@ -50,7 +50,8 @@ class Gaussian_Mixture_Model {
                               const Eigen::MatrixXd &mu,
                               const Eigen::MatrixXd &Sigma);
 
-  void expectation(const Eigen::MatrixXd &data, Model &gp_model, double &exp);
+  void expectation(const Eigen::MatrixXd &data, Model &gp_model,
+                   double &prob_change);
 
   void maximization(const Eigen::MatrixXd &data, Model &gp_model);
 
