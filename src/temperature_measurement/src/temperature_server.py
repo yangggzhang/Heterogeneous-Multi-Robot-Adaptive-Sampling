@@ -33,10 +33,10 @@ class Temper(object):
                 self.ser.close()
                 return
 
-    def is_converged(self, thre=0.3):
-        if len(self.fused_temp_window) >= 5:
-            self.fused_temp_window.popleft()
-        self.fused_temp_window.append(self.fused_temp)
+    def is_converged(self, thre=0.1):
+        # if len(self.fused_temp_window) >= 5:
+        #     self.fused_temp_window.popleft()
+        # self.fused_temp_window.append(self.fused_temp)
         temp_std = np.std(list(self.fused_temp_window))
         return (temp_std < thre)
         
@@ -55,7 +55,7 @@ class Temper(object):
         temperature_pub = rospy.Publisher(temperature_publish_channel, temperature_measurement, queue_size=10)
         usb_port = rospy.get_param("~USBPort")
         self.ser = serial.Serial(usb_port, 38400, timeout=1, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, bytesize=serial.EIGHTBITS )  # open serial port
-        r = rospy.Rate(10)
+        r = rospy.Rate(50)
         while not rospy.is_shutdown():
             degC = self.read()
             if not (degC is None):
@@ -68,9 +68,11 @@ class Temper(object):
                 self.fused_temp = np.mean(list(self.raw_temp_window))
                 # check if converged
                 now = time.time()
-                if now - converge_timer > 0.5:
+                self.fused_temp_window.append(self.fused_temp)
+                if now - converge_timer > 0.2:
                     self.converged = self.is_converged()
                     converge_timer = time.time()
+                    self.fused_temp_window.clear()
             msg = temperature_measurement()
             msg.header.stamp = rospy.Time.now()
             msg.raw_temperature = self.raw_temp
