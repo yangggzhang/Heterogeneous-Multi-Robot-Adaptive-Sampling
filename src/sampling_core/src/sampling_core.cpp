@@ -43,19 +43,19 @@ bool SamplingCore::Init() {
 
   // Initial data
   if (init_sample_temperature_.rows() > 0) {
-    gp_node_.add_training_data(init_sample_location_, init_sample_temperature_);
+    gp_node_.AddTrainingData(init_sample_location_, init_sample_temperature_);
     UpdateGPModel();
     UpdateHeuristic();
     ROS_INFO_STREAM("Initialize GP model with initial data points");
   }
 
   if (ground_truth_temperature_.rows() > 0) {
-    gt_gp_node_.add_training_data(location_, ground_truth_temperature_);
-    gt_gp_node_.expectation_maximization(max_iteration_,
-                                         convergence_threshold_);
+    gt_gp_node_.AddTrainingData(location_, ground_truth_temperature_);
+    gt_gp_node_.ExpectationAndMaximization(max_iteration_,
+                                           convergence_threshold_);
     Eigen::VectorXd gt_mean, gt_var;
-    gt_gp_node_.GaussianProcessMixture_predict(location_, gt_mean, gt_var);
-    visualization_node_["gt"]->update_map(gt_mean);
+    gt_gp_node_.GaussianProcessMixturePredict(location_, gt_mean, gt_var);
+    visualization_node_["gt"]->UpdateMap(gt_mean);
   }
 }
 
@@ -97,8 +97,8 @@ bool SamplingCore::AssignInterestPoint(
   switch (heuristic_mode_) {
     case VARIANCE: {
       if (heuristic_pq_.empty()) {
-        gp_node_.GaussianProcessMixture_predict(location_, mean_prediction_,
-                                                var_prediction_);
+        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
+                                               var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -113,8 +113,8 @@ bool SamplingCore::AssignInterestPoint(
     }
     case UCB: {
       if (heuristic_pq_.empty()) {
-        gp_node_.GaussianProcessMixture_predict(location_, mean_prediction_,
-                                                var_prediction_);
+        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
+                                               var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -129,8 +129,8 @@ bool SamplingCore::AssignInterestPoint(
     }
     case DISTANCE_UCB: {
       if (heuristic_pq_v_.empty()) {
-        gp_node_.GaussianProcessMixture_predict(location_, mean_prediction_,
-                                                var_prediction_);
+        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
+                                               var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_v_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -179,7 +179,7 @@ void SamplingCore::CollectSampleCallback(
     new_location(0, 0) = new_location(0, 0) * map_scale_;
     new_location(0, 1) = new_location(0, 1) * map_scale_;
     sample_count_[new_location]++;
-    gp_node_.add_training_data(new_location, new_feature);
+    gp_node_.AddTrainingData(new_location, new_feature);
   } else {
     ROS_INFO_STREAM(
         "Master computer received invalid sample from : " << msg.robot_id);
@@ -443,7 +443,7 @@ bool SamplingCore::InitializeVisualization() {
           std::unique_ptr<visualization::SamplingVisualization>(
               new visualization::SamplingVisualization(nh_, param,
                                                        init_sample_location_));
-      visualization_node_[frame]->update_map(init_sample_temperature_.col(0));
+      visualization_node_[frame]->UpdateMap(init_sample_temperature_.col(0));
     } else {
       ROS_ERROR("Known visualization frame!");
       return false;
@@ -453,14 +453,14 @@ bool SamplingCore::InitializeVisualization() {
 }
 
 void SamplingCore::UpdateGPModel() {
-  gp_node_.expectation_maximization(max_iteration_, convergence_threshold_);
-  gp_node_.GaussianProcessMixture_predict(location_, mean_prediction_,
-                                          var_prediction_);
+  gp_node_.ExpectationAndMaximization(max_iteration_, convergence_threshold_);
+  gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
+                                         var_prediction_);
 }
 
 void SamplingCore::UpdateVisualization() {
-  visualization_node_["mean"]->update_map(mean_prediction_);
-  visualization_node_["variance"]->update_map(var_prediction_);
+  visualization_node_["mean"]->UpdateMap(mean_prediction_);
+  visualization_node_["variance"]->UpdateMap(var_prediction_);
 }
 
 void SamplingCore::Update() {

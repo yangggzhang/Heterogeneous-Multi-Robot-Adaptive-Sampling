@@ -63,7 +63,7 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
                               this);
 }
 
-void SamplingVisualization::update_map(const Eigen::VectorXd &filling_value) {
+void SamplingVisualization::UpdateMap(const Eigen::VectorXd &filling_value) {
   if (map_.rows() != filling_value.rows()) {
     ROS_ERROR_STREAM(
         "Map size does not match filling value for map : " << param_.map_frame);
@@ -84,7 +84,7 @@ void SamplingVisualization::update_map(const Eigen::VectorXd &filling_value) {
     } else {
       norm = (filling_value(i) - lower_bound) / (upper_bound - lower_bound);
     }
-    marker_array_.colors[i] = get_heatmap_color(norm);
+    marker_array_.colors[i] = GetHeatMapColor(norm);
   }
 }
 
@@ -96,8 +96,7 @@ void SamplingVisualization::MapVisualizationCallback(
   }
 }
 
-std_msgs::ColorRGBA SamplingVisualization::get_heatmap_color(
-    const double &norm) {
+std_msgs::ColorRGBA SamplingVisualization::GetHeatMapColor(const double &norm) {
   std_msgs::ColorRGBA color;
   int idx1, idx2;
   double fracB = 0;

@@ -32,7 +32,7 @@ class SamplingVisualization {
   SamplingVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
                         const Eigen::MatrixXd &map);
 
-  void update_map(const Eigen::VectorXd &filling_value);
+  void UpdateMap(const Eigen::VectorXd &filling_value);
 
  private:
   MAP_PARAM param_;
@@ -47,7 +47,7 @@ class SamplingVisualization {
 
   // this function gets the color for each pixel given the normalized value
   // of the pixel
-  std_msgs::ColorRGBA get_heatmap_color(const double &norm);
+  std_msgs::ColorRGBA GetHeatMapColor(const double &norm);
 
   void MapVisualizationCallback(const ros::WallTimerEvent &event);
 };
