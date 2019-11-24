@@ -58,7 +58,7 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
     marker_array_.points[i] = waypoint;
     marker_array_.colors[i] = color;
   }
-  timer_ = nh.createWallTimer(ros::WallDuration(0.1),
+  timer_ = nh.createWallTimer(ros::WallDuration(1.0),
                               &SamplingVisualization::MapVisualizationCallback,
                               this);
 }
