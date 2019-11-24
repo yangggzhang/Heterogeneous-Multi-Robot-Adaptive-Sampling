@@ -2,6 +2,9 @@
   <arg name="simulation" value="false" />
   <arg name="jackal" value="false" />
   <arg name="pelican" value="false" />
+
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+  <node pkg="rosduct" name="remote_node" type="test_node.py" args="1 2"/>
   
   <group if="$(arg jackal)">
     <node pkg="robot_agent" type="jackal_node" name="jackal" output="screen" >
