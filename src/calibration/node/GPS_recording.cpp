@@ -1,3 +1,4 @@
+#include <ros/package.h>
 #include <ros/ros.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_srvs/SetBool.h>
@@ -29,9 +30,13 @@ class GPSRecordingNode {
       ROS_INFO_STREAM("Error! Missing GPS recording service channel!");
     }
 
+    std::string file_dir = ros::package::getPath("calibration") + "/data/";
+
     if (!rh_.getParam("GPS_waypoint_dir", GPS_waypoint_dir_)) {
       ROS_INFO_STREAM("Error! Missing GPS waypoints saving directory!");
     }
+
+    GPS_waypoint_dir_ = file_dir + GPS_waypoint_dir_;
 
     record_gps_server_ = nh_.advertiseService(
         record_gps_channel, &GPSRecordingNode::RecordGPSService, this);
@@ -42,14 +47,16 @@ class GPSRecordingNode {
                         std_srvs::SetBool::Response &res) {
     if (req.data) {
       double new_latitude_waypoint = 0.0;
-      std::accumulate(latitude_queue_.begin(), latitude_queue_.end(),
-                      new_latitude_waypoint);
+      for (const double &latitude : latitude_queue_) {
+        new_latitude_waypoint = new_latitude_waypoint + latitude;
+      }
       new_latitude_waypoint =
           new_latitude_waypoint / (double)latitude_queue_.size();
 
       double new_longitude_waypoint = 0.0;
-      std::accumulate(longitude_queue_.begin(), longitude_queue_.end(),
-                      new_longitude_waypoint);
+      for (const double &longitude : longitude_queue_) {
+        new_longitude_waypoint = new_longitude_waypoint + longitude;
+      }
       new_longitude_waypoint =
           new_longitude_waypoint / (double)longitude_queue_.size();
 
@@ -59,11 +66,11 @@ class GPSRecordingNode {
       std::ofstream GPS_waypoints;
       GPS_waypoints.open(GPS_waypoint_dir_);
       for (const double &latitude : latitude_waypoints_) {
-        GPS_waypoints << latitude << " , ";
+        GPS_waypoints << std::setprecision(10) << latitude << " , ";
       }
       GPS_waypoints << '\n';
       for (const double &longitude : longitude_waypoints_) {
-        GPS_waypoints << longitude << " , ";
+        GPS_waypoints << std::setprecision(10) << longitude << " , ";
       }
       GPS_waypoints << '\n';
       GPS_waypoints.close();

@@ -2,6 +2,8 @@
 
 #include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <boost/optional.hpp>
 #include <queue>
 #include <string>
 #include <unordered_map>
@@ -37,8 +39,6 @@ class SamplingCore {
   bool AssignInterestPoint(sampling_msgs::RequestGoal::Request &req,
                            sampling_msgs::RequestGoal::Response &res);
 
-  void CollectSampleCallback(const sampling_msgs::measurement &msg);
-
   void UpdateHeuristic();
 
   bool ParseFromRosParam();
@@ -54,11 +54,26 @@ class SamplingCore {
   bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
                     visualization::MAP_PARAM &param);
 
+  double RMSError(const Eigen::VectorXd &val1, const Eigen::VectorXd &val2);
+
  private:
   // ROS
   ros::NodeHandle nh_, rh_;
   ros::Publisher distribution_visualization_pub_;
   ros::Subscriber sample_sub_;
+  ros::Subscriber Jackal_GPS_sub_;
+  ros::Subscriber Pelican_GPS_sub_;
+
+  Eigen::VectorXd gt_mean_, gt_var_;
+
+  void CollectSampleCallback(const sampling_msgs::measurement &msg);
+
+  void JackalGPSCallback(const sensor_msgs::NavSatFix &msg);
+
+  void PelicanGPSCallback(const sensor_msgs::NavSatFix &msg);
+
+  boost::optional<double> Jackal_latitude_, Jackal_longitude_;
+  boost::optional<double> Pelican_latitude_, Pelican_longitude_;
 
   // interest point assignment
 
@@ -74,6 +89,7 @@ class SamplingCore {
 
   // data
   Eigen::MatrixXd location_;
+  Eigen::MatrixXd ground_truth_location_;
   Eigen::MatrixXd ground_truth_temperature_;
   Eigen::MatrixXd init_sample_location_;
   Eigen::MatrixXd init_sample_temperature_;
@@ -93,9 +109,11 @@ class SamplingCore {
   std::unordered_map<std::string,
                      std::unique_ptr<visualization::SamplingVisualization>>
       visualization_node_;
-  std::unordered_map<std::string,
-                     std::unique_ptr<visualization::RobotVisualization>>
-      robot_visualization_node_;
+
+  std::unique_ptr<visualization::RobotVisualization> Jackal_visualization_node_;
+  std::unique_ptr<visualization::RobotVisualization>
+      Pelican_visualization_node_;
+
   std::vector<visualization::MAP_PARAM> visualization_params_;
 
   // sampling

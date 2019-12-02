@@ -3,8 +3,8 @@
   <arg name="jackal" value="false" />
   <arg name="pelican" value="false" />
 
-  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
-  <node pkg="rosduct" name="remote_node" type="test_node.py" args="1 2"/>
+  <!-- <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+  <node pkg="rosduct" name="remote_node" type="test_node.py" args="1 2"/> -->
   
   <group if="$(arg jackal)">
     <node pkg="robot_agent" type="jackal_node" name="jackal" output="screen" >
@@ -26,6 +26,8 @@
     <remap from="interest_point_service_channel" to="interest_point"/>
     <remap from="Jackal_request_GPS_channel" to="Jackal_GPS"/>
     <remap from="Pelican_request_GPS_channel" to="Pelican_GPS"/>
+    <remap from="Jackal_GPS_channel" to="/fix"/>
+    <remap from="Pelican_GPS_channel" to="/fcu/gps"/>
   </node>
 
 

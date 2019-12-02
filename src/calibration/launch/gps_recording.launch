@@ -4,9 +4,7 @@
         queue_size: 10
         gps_channel: "/fix"
         record_gps_channel: "/record_gps"
-        GPS_waypoint_dir: "/home/yang/Documents/Projects/heterogeneous-sampling/src/calibration/data/gps_waypoints.txt"
-        calibration_result_dir: "/home/yang/Documents/Projects/heterogeneous-sampling/src/calibration/data/gps_calibration.txt"
+        GPS_waypoint_dir: "gps_waypoints.txt"
     </rosparam>
   </node>
 </launch>
-

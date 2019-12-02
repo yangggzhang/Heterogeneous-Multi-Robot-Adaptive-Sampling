@@ -199,6 +199,7 @@ void AgentNode::collect_sample() {
         } else {
           ROS_INFO_STREAM("Hooray, robot " << agent_id_
                                            << " reached the target location!");
+          ros::Duration(1.0).sleep();
           agent_state_ = REPORT;
           break;
         }

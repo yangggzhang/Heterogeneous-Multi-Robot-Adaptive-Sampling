@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_filters
   std_srvs
+  roslib
 )
 
 catkin_package(
@@ -37,3 +38,6 @@ target_link_libraries(GPS_recording_node ${catkin_LIBRARIES} )
 
 add_executable(heading_calibration_node node/heading_calibration.cpp)
 target_link_libraries(heading_calibration_node ${catkin_LIBRARIES} )
+
+add_executable(gps_range_node node/GPS_range.cpp)
+target_link_libraries(gps_range_node ${catkin_LIBRARIES} )

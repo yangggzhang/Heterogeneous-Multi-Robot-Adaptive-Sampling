@@ -1,5 +1,7 @@
 #include "sampling_core/gmm_utils.h"
+#include <math.h>
 #include <ros/ros.h>
+#include <limits>
 
 namespace sampling {
 namespace gmm {
@@ -42,48 +44,39 @@ Eigen::MatrixXd Gaussian_Mixture_Model::loggausspdf(
 
 void Gaussian_Mixture_Model::Expectation(const Eigen::MatrixXd &data,
                                          Model &gp_model, double &prob_change) {
-  int d = data.rows();
-  int n = data.cols();
-  int k = gp_model.mu.cols();
+  Eigen::MatrixXd ori_R = gp_model.R;
   Eigen::MatrixXd diff_R = gp_model.R;
-
-  for (int i = 0; i < k; i++) {
-    gp_model.R.col(i) =
-        loggausspdf(data, gp_model.mu.col(i), gp_model.Sigma.block<1, 1>(0, i));
+  for (int k = 0; k < gp_model.numGaussian; ++k) {
+    const auto square = (data.row(0).array() - gp_model.mu(k)).array() *
+                        (data.row(0).array() - gp_model.mu(k)).array();
+    gp_model.R.col(k) = 1.0 / std::sqrt(2 * M_PI) *
+                        ((-square / (2 * gp_model.Sigma(k))).exp() + 0.01);
   }
-
-  for (int j = 0; j < k; j++) {
-    gp_model.R.col(j) =
-        gp_model.R.col(j).array() + gp_model.w.array().log()(0, j);
+  const auto origin_R = gp_model.R;
+  for (int k = 0; k < gp_model.R.rows(); ++k) {
+    double row_sum = gp_model.R.row(k).array().sum();
+    if (isnan(row_sum) || row_sum == 0) {
+      row_sum = 1.0;
+    }
+    gp_model.R.row(k) = gp_model.R.row(k).array() / row_sum;
   }
-
-  Eigen::MatrixXd T =
-      gp_model.R.array().exp().rowwise().sum().log();  // T: n x 1
-
-  for (int i = 0; i < n; i++) {
-    gp_model.R.row(i) = gp_model.R.row(i).array() - T(i, 0);
-  }
-  gp_model.R = gp_model.R.array().exp();
-
   diff_R = (gp_model.R - diff_R).array().abs();
-  prob_change = diff_R.maxCoeff();
+  prob_change = diff_R.array().maxCoeff();
 }
 
 void Gaussian_Mixture_Model::Maximization(const Eigen::MatrixXd &data,
                                           Model &gp_model) {
-  double n = (double)data.cols();
-  Eigen::MatrixXd nk = gp_model.R.colwise().sum();
-  gp_model.Sigma = Eigen::MatrixXd::Zero(1, gp_model.numGaussian);
-  gp_model.w = nk / n;
-  gp_model.mu = data * gp_model.R;
-  gp_model.mu = gp_model.mu.array() / nk.array();
-  Eigen::MatrixXd r = gp_model.R.array().sqrt();
-  for (int i = 0; i < gp_model.numGaussian; i++) {
-    Eigen::MatrixXd Xo_mat = data.array() - gp_model.mu(i);
-    Eigen::VectorXd Xo(Eigen::Map<Eigen::VectorXd>(
-        Xo_mat.data(), Xo_mat.cols() * Xo_mat.rows()));
-    Xo = Xo.array() * r.col(i).array();
-    gp_model.Sigma(i) = Xo.dot(Xo) / nk(i);
+  gp_model.mu = Eigen::MatrixXd::Zero(gp_model.numGaussian, 1);
+  gp_model.Sigma = Eigen::MatrixXd::Zero(gp_model.numGaussian, 1);
+  double num_data = (double)data.cols() - 1.0;
+  const auto data_array = data.row(0).transpose().array();
+  for (int i = 0; i < gp_model.numGaussian; ++i) {
+    const auto P_array = gp_model.R.col(i).array();
+    auto p_sum = P_array.array().sum();
+    gp_model.mu(i) = (data_array * P_array).array().sum() / p_sum;
+    const auto diff = data_array - gp_model.mu(i);
+    gp_model.Sigma(i) =
+        (P_array * (diff.array() * diff.array())).array().sum() / num_data;
   }
 }
 
@@ -97,6 +90,7 @@ void Gaussian_Mixture_Model::ExpectationAndMaximization(
       break;
     }
   }
+  return;
 }
 
 void Gaussian_Mixture_Model::GaussianMixturePrediction(const Model &gp_model,
@@ -340,12 +334,9 @@ void Gaussian_Mixture_Model::GaussianProcessMixturePredict(
   }
 
   Eigen::MatrixXd mu, s2;
-
   GaussianProcessFix(model_, training_location, training_data, All_Xss, mu, s2);
-
   Eigen::MatrixXd gp_probability =
       GaussianProcessPredict(model_, training_location_, All_Xss);
-
   ApplyGP(model_, mu, s2, gp_probability, pred_h, pred_Var);
 }
 

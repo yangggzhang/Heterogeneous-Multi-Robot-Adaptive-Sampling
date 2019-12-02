@@ -7,11 +7,6 @@
 namespace sampling {
 namespace visualization {
 
-const int K_NUM_COLOR = 5;
-
-const double K_COLOR[K_NUM_COLOR][3] = {
-    {0, 0, 1}, {0, 1, 1}, {1, 1, 0}, {1, 0, 0}, {0.6, 0, 0}};
-
 struct MAP_PARAM {
   std::string map_frame;
   int map_id;
@@ -32,6 +27,11 @@ class SamplingVisualization {
 
   void UpdateMap(const Eigen::VectorXd &filling_value);
 
+  void HSVtoRGB(const double &fH, const double &fS, const double &fV,
+                double &fR, double &fG, double &fB);
+
+  visualization_msgs::Marker GetMarker();
+
  private:
   MAP_PARAM param_;
 
@@ -39,15 +39,9 @@ class SamplingVisualization {
 
   Eigen::MatrixXd map_;
 
-  ros::Publisher map_visualization_pub_;
-
-  ros::WallTimer timer_;
-
   // this function gets the color for each pixel given the normalized value
   // of the pixel
   std_msgs::ColorRGBA GetHeatMapColor(const double &norm);
-
-  void MapVisualizationCallback(const ros::WallTimerEvent &event);
 };
 
 class RobotVisualization {
@@ -55,11 +49,12 @@ class RobotVisualization {
   RobotVisualization();
 
   RobotVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
-                     const std::string &GPS_channel,
                      const std_msgs::ColorRGBA &color,
                      const Eigen::MatrixXd &map);
 
   void UpdateMap(const double &robot_x, const double &robot_y);
+
+  visualization_msgs::Marker GetMarker();
 
  private:
   MAP_PARAM param_;
@@ -70,14 +65,6 @@ class RobotVisualization {
   double map_y_scale_;
 
   visualization_msgs::Marker marker_;
-
-  ros::Publisher robot_visualization_pub_;
-
-  ros::WallTimer timer_;
-
-  void RobotVisualizationCallback(const ros::WallTimerEvent &event);
-
-  ros::ServiceClient robot_GPS_client_;
 };
 }  // namespace visualization
 }  // namespace sampling

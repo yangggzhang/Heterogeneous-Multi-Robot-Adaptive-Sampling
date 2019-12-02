@@ -9,9 +9,6 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
                                              const MAP_PARAM &param,
                                              const Eigen::MatrixXd &map)
     : param_(param), map_(map) {
-  map_visualization_pub_ = nh.advertise<visualization_msgs::Marker>(
-      "sampling_visualization/" + param.map_frame, 1);
-
   marker_array_ = visualization_msgs::Marker();
   marker_array_.header.frame_id = "sampling_visualization";
   marker_array_.header.stamp = ros::Time::now();
@@ -22,6 +19,7 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
   marker_array_.type = visualization_msgs::Marker::CUBE_LIST;
   marker_array_.scale.x = param.x_scale;
   marker_array_.scale.y = param.y_scale;
+  marker_array_.scale.z = 1.0;
 
   std::unordered_set<double> x_array;
   std::unordered_set<double> y_array;
@@ -54,14 +52,11 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
     waypoint.x = (map(i, 0) - map_x_origin) * map_x_scale;
     waypoint.y = (map(i, 1) - map_y_origin) * map_y_scale;
     waypoint.z = 0.0;
-    waypoint.x = waypoint.x * param.x_scale + param.x_offset;
-    waypoint.y = waypoint.y * param.y_scale + param.y_offset;
+    waypoint.x = waypoint.x + param.x_offset;
+    waypoint.y = waypoint.y + param.y_offset;
     marker_array_.points[i] = waypoint;
     marker_array_.colors[i] = color;
   }
-  timer_ = nh.createWallTimer(ros::WallDuration(1.0),
-                              &SamplingVisualization::MapVisualizationCallback,
-                              this);
 }
 
 void SamplingVisualization::UpdateMap(const Eigen::VectorXd &filling_value) {
@@ -89,43 +84,71 @@ void SamplingVisualization::UpdateMap(const Eigen::VectorXd &filling_value) {
   }
 }
 
-void SamplingVisualization::MapVisualizationCallback(
-    const ros::WallTimerEvent &event) {
-  if (!marker_array_.points.empty() && !marker_array_.colors.empty() &&
-      marker_array_.points.size() == marker_array_.colors.size()) {
-    map_visualization_pub_.publish(marker_array_);
+void SamplingVisualization::HSVtoRGB(const double &fH, const double &fS,
+                                     const double &fV, double &fR, double &fG,
+                                     double &fB) {
+  float fC = fV * fS;  // Chroma
+  float fHPrime = fmod(fH / 60.0, 6);
+  float fX = fC * (1 - fabs(fmod(fHPrime, 2) - 1));
+  float fM = fV - fC;
+
+  if (0 <= fHPrime && fHPrime < 1) {
+    fR = fC;
+    fG = fX;
+    fB = 0;
+  } else if (1 <= fHPrime && fHPrime < 2) {
+    fR = fX;
+    fG = fC;
+    fB = 0;
+  } else if (2 <= fHPrime && fHPrime < 3) {
+    fR = 0;
+    fG = fC;
+    fB = fX;
+  } else if (3 <= fHPrime && fHPrime < 4) {
+    fR = 0;
+    fG = fX;
+    fB = fC;
+  } else if (4 <= fHPrime && fHPrime < 5) {
+    fR = fX;
+    fG = 0;
+    fB = fC;
+  } else if (5 <= fHPrime && fHPrime < 6) {
+    fR = fC;
+    fG = 0;
+    fB = fX;
+  } else {
+    fR = 0;
+    fG = 0;
+    fB = 0;
   }
+  fR += fM;
+  fG += fM;
+  fB += fM;
 }
 
 std_msgs::ColorRGBA SamplingVisualization::GetHeatMapColor(const double &norm) {
   std_msgs::ColorRGBA color;
-  int idx1, idx2;
-  double fracB = 0;
-
-  double adjusted_norm = norm * ((double)K_NUM_COLOR - 1);
-  idx1 = floor(adjusted_norm);
-  idx2 = idx1 + 1;
-  fracB = adjusted_norm - (double)idx1;
-
+  double r, g, b;
+  HSVtoRGB((1 - norm) * 100, 1.0, 1.0, r, g, b);
+  // HSVtoRGB(norm * 120 + 240, 1.0, 1.0, r, g, b);
+  color.r = r;
+  color.g = g;
+  color.b = b;
   color.a = 1.0;
-  color.r = (K_COLOR[idx2][0] - K_COLOR[idx1][0]) * fracB + K_COLOR[idx1][0];
-  color.g = (K_COLOR[idx2][1] - K_COLOR[idx1][1]) * fracB + K_COLOR[idx1][1];
-  color.b = (K_COLOR[idx2][2] - K_COLOR[idx1][2]) * fracB + K_COLOR[idx1][2];
   return color;
+}
+
+visualization_msgs::Marker SamplingVisualization::GetMarker() {
+  return marker_array_;
 }
 
 RobotVisualization::RobotVisualization() {}
 
 RobotVisualization::RobotVisualization(ros::NodeHandle &nh,
                                        const MAP_PARAM &param,
-                                       const std::string &GPS_channel,
                                        const std_msgs::ColorRGBA &color,
                                        const Eigen::MatrixXd &map)
     : param_(param) {
-  robot_visualization_pub_ = nh.advertise<visualization_msgs::Marker>(
-      "sampling_visualization/" + param.map_frame, 1);
-  robot_GPS_client_ =
-      nh.serviceClient<sampling_msgs::RequestLocation>("GPS_channel");
   marker_ = visualization_msgs::Marker();
   marker_.header.frame_id = "sampling_visualization";
   marker_.header.stamp = ros::Time::now();
@@ -153,38 +176,19 @@ RobotVisualization::RobotVisualization(ros::NodeHandle &nh,
   map_x_scale_ = (double)x_range / map_x_range;
   map_y_scale_ = (double)y_range / map_y_range;
 
-  marker_.points.resize(1);
-  marker_.colors.resize(1);
-
-  marker_.colors[0] = color;
-
-  timer_ =
-      nh.createWallTimer(ros::WallDuration(1.0),
-                         &RobotVisualization::RobotVisualizationCallback, this);
+  marker_.color = color;
 }
 
 void RobotVisualization::UpdateMap(const double &robot_x,
                                    const double &robot_y) {
-  geometry_msgs::Point waypoint;
-  waypoint.x = (robot_x - map_x_origin_) * map_x_scale_;
-  waypoint.y = (robot_y - map_y_origin_) * map_y_scale_;
-  waypoint.z = 0.0;
-  waypoint.x = waypoint.x * param_.x_scale + param_.x_offset;
-  waypoint.y = waypoint.y * param_.y_scale + param_.y_offset;
-  marker_.points[0] = waypoint;
+  marker_.pose.position.x =
+      ((robot_x - map_x_origin_) * map_x_scale_) + param_.x_offset;
+  marker_.pose.position.y =
+      ((robot_y - map_y_origin_) * map_y_scale_) + param_.y_offset;
+  marker_.pose.position.z = 0;
 }
 
-void RobotVisualization::RobotVisualizationCallback(
-    const ros::WallTimerEvent &event) {
-  sampling_msgs::RequestLocation srv;
-  srv.request.robot_id = param_.map_frame;
-  if (!robot_GPS_client_.call(srv)) {
-    ROS_INFO_STREAM("Can not get GPS location for visualization!");
-    return;
-  }
-  UpdateMap(srv.response.latitude, srv.response.longitude);
-  robot_visualization_pub_.publish(marker_);
-}
+visualization_msgs::Marker RobotVisualization::GetMarker() { return marker_; }
 
 }  // namespace visualization
 }  // namespace sampling

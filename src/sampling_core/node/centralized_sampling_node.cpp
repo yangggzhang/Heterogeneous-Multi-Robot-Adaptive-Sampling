@@ -5,17 +5,13 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "centralized_sampling");
   ros::NodeHandle nh, rh("~");
-  ros::Rate r(10);
   sampling::core::SamplingCore node(nh, rh);
+  ROS_INFO_STREAM("finish initialzation");
   if (!node.Init()) {
-    ROS_ERROR("Failed to initialize centralized sampling node!");
+    ROS_INFO_STREAM("Failed to initialize sampling core!");
     return -1;
   }
-
-  node.UpdateVisualization();
-  ros::spinOnce();
-  r.sleep();
-
+  ros::Rate r(10);  // 10 hz
   while (ros::ok()) {
     node.Update();
     ros::spinOnce();

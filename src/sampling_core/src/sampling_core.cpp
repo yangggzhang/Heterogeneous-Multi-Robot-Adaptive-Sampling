@@ -3,6 +3,8 @@
 #include "sampling_core/sampling_core.h"
 #include "sampling_msgs/RequestLocation.h"
 
+#include <visualization_msgs/MarkerArray.h>
+
 namespace sampling {
 namespace core {
 
@@ -10,6 +12,12 @@ SamplingCore::SamplingCore(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     : nh_(nh), rh_(rh) {}
 
 bool SamplingCore::Init() {
+  Jackal_visualization_node_ = nullptr;
+  Pelican_visualization_node_ = nullptr;
+  Jackal_longitude_ = boost::optional<double>{};
+  Jackal_latitude_ = boost::optional<double>{};
+  Pelican_longitude_ = boost::optional<double>{};
+  Pelican_latitude_ = boost::optional<double>{};
   // Load parameters
   if (!ParseFromRosParam()) {
     ROS_ERROR_STREAM("Missing required ros parameter");
@@ -25,14 +33,25 @@ bool SamplingCore::Init() {
   interest_point_assignment_ser_ =
       nh_.advertiseService("interest_point_service_channel",
                            &SamplingCore::AssignInterestPoint, this);
+
   sample_sub_ = nh_.subscribe("temperature_update_channel", 1,
                               &SamplingCore::CollectSampleCallback, this);
+
+  Jackal_GPS_sub_ = nh_.subscribe("Jackal_GPS_channel", 1,
+                                  &SamplingCore::JackalGPSCallback, this);
+
+  Pelican_GPS_sub_ = nh_.subscribe("Pelican_GPS_channel", 1,
+                                   &SamplingCore::PelicanGPSCallback, this);
   // Robot agent
   Jackal_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
       "Jackal_request_GPS_channel");
 
   Pelican_GPS_client_ = nh_.serviceClient<sampling_msgs::RequestLocation>(
       "Pelican_request_GPS_channel");
+
+  distribution_visualization_pub_ =
+      nh_.advertise<visualization_msgs::MarkerArray>("sampling_visualization",
+                                                     1);
 
   voronoi_cell_ = voronoi::Voronoi(location_);
   update_flag_ = false;
@@ -48,18 +67,23 @@ bool SamplingCore::Init() {
     gp_node_.AddTrainingData(init_sample_location_, init_sample_temperature_);
     UpdateGPModel();
     UpdateHeuristic();
-    UpdateVisualization();
     ROS_INFO_STREAM("Initialize GP model with initial data points");
+    ROS_INFO_STREAM("Prediction : " << mean_prediction_.maxCoeff() << " "
+                                    << mean_prediction_.minCoeff());
+    // ROS_INFO_STREAM("Location " << init_sample_location_);
+    // ROS_INFO_STREAM("Temperature " << init_sample_temperature_);
   }
 
   if (ground_truth_temperature_.rows() > 0) {
-    gt_gp_node_.AddTrainingData(location_, ground_truth_temperature_);
+    gt_gp_node_.AddTrainingData(ground_truth_location_,
+                                ground_truth_temperature_);
+
     gt_gp_node_.ExpectationAndMaximization(max_iteration_,
                                            convergence_threshold_);
-    Eigen::VectorXd gt_mean, gt_var;
-    gt_gp_node_.GaussianProcessMixturePredict(location_, gt_mean, gt_var);
-    visualization_node_["gt"]->UpdateMap(gt_mean);
+    gt_gp_node_.GaussianProcessMixturePredict(location_, gt_mean_, gt_var_);
+    // visualization_node_["gt"]->UpdateMap(gt_mean);
   }
+  ROS_INFO_STREAM("Finish initialization!");
   return true;
 }
 
@@ -283,7 +307,10 @@ bool SamplingCore::ParseFromRosParam() {
 
     if (!utils::GetParamData(data_path, "ground_truth_temperature_data",
                              ground_truth_temperature_)) {
-      return false;
+    }
+
+    if (!utils::GetParamData(data_path, "ground_truth_location_data",
+                             ground_truth_location_)) {
     }
 
     if (!utils::GetParamData(data_path, "initial_location_data",
@@ -317,6 +344,11 @@ bool SamplingCore::ParseFromRosParam() {
     }
 
     if (!utils::GetParam(learning_param, "max_iteration", max_iteration_)) {
+      return false;
+    }
+
+    if (!utils::GetParam(learning_param, "model_update_rate",
+                         model_update_rate_)) {
       return false;
     }
 
@@ -431,9 +463,13 @@ bool SamplingCore::InitializeVisualization() {
   for (const visualization::MAP_PARAM &param : visualization_params_) {
     std::string frame = param.map_frame;
     if (frame.compare("gt") == 0) {
-      visualization_node_[frame] =
-          std::unique_ptr<visualization::SamplingVisualization>(
-              new visualization::SamplingVisualization(nh_, param, location_));
+      continue;
+      // if (ground_truth_temperature_.rows() > 0) {
+      //   visualization_node_[frame] =
+      //       std::unique_ptr<visualization::SamplingVisualization>(
+      //           new visualization::SamplingVisualization(nh_, param,
+      //                                                    location_));
+      // }
     } else if (frame.compare("mean") == 0) {
       visualization_node_[frame] =
           std::unique_ptr<visualization::SamplingVisualization>(
@@ -454,25 +490,18 @@ bool SamplingCore::InitializeVisualization() {
       Jackal_color.g = 1.0;
       Jackal_color.b = 1.0;
       Jackal_color.a = 1.0;
-      robot_visualization_node_[frame] =
-          std::unique_ptr<visualization::RobotVisualization>(
-              new visualization::RobotVisualization(
-                  nh_, param, "Jackal_request_GPS_channel", Jackal_color,
-                  location_));
+      Jackal_visualization_node_.reset(new visualization::RobotVisualization(
+          nh_, param, Jackal_color, location_));
     } else if (frame.compare("Pelican") == 0) {
       std_msgs::ColorRGBA Pelican_color;
       Pelican_color.r = 0.0;
       Pelican_color.g = 1.0;
       Pelican_color.b = 0.0;
       Pelican_color.a = 1.0;
-      robot_visualization_node_[frame] =
-          std::unique_ptr<visualization::RobotVisualization>(
-              new visualization::RobotVisualization(
-                  nh_, param, "Pelican_request_GPS_channel", Pelican_color,
-                  location_));
+      Pelican_visualization_node_.reset(new visualization::RobotVisualization(
+          nh_, param, Pelican_color, location_));
     } else {
-      ROS_ERROR("Known visualization frame!");
-      return false;
+      ROS_ERROR_STREAM("Known visualization frame " << frame);
     }
   }
   return true;
@@ -484,18 +513,65 @@ void SamplingCore::UpdateGPModel() {
                                          var_prediction_);
 }
 
+double SamplingCore::RMSError(const Eigen::VectorXd &val1,
+                              const Eigen::VectorXd &val2) {
+  double rms = 0.0;
+  if (val1.size() != val2.size()) {
+    ROS_INFO_STREAM("RMS size doest not match!");
+    ROS_INFO_STREAM("Size 1 :" << val1.size() << " size 2 : " << val2.size());
+    return rms;
+  }
+
+  for (size_t i = 0; i < val1.size(); ++i) {
+    rms = rms + (val1(i) - val2(i)) * (val1(i) - val2(i));
+  }
+  rms = std::sqrt(rms / (double)val1.size());
+  return rms;
+}
+
 void SamplingCore::UpdateVisualization() {
   visualization_node_["mean"]->UpdateMap(mean_prediction_);
   visualization_node_["variance"]->UpdateMap(var_prediction_);
+  visualization_msgs::MarkerArray marker_array;
+  for (auto it = visualization_node_.begin(); it != visualization_node_.end();
+       ++it) {
+    marker_array.markers.push_back(it->second->GetMarker());
+  }
+  if (Jackal_visualization_node_ && Jackal_latitude_.is_initialized() &&
+      Jackal_longitude_.is_initialized()) {
+    Jackal_visualization_node_->UpdateMap(Jackal_latitude_.get(),
+                                          Jackal_longitude_.get());
+    marker_array.markers.push_back(Jackal_visualization_node_->GetMarker());
+  }
+  if (Pelican_visualization_node_ && Pelican_latitude_.is_initialized() &&
+      Pelican_longitude_.is_initialized()) {
+    Pelican_visualization_node_->UpdateMap(Pelican_latitude_.get(),
+                                           Pelican_longitude_.get());
+    marker_array.markers.push_back(Pelican_visualization_node_->GetMarker());
+  }
+  distribution_visualization_pub_.publish(marker_array);
+}
+
+void SamplingCore::JackalGPSCallback(const sensor_msgs::NavSatFix &msg) {
+  Jackal_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
+  Jackal_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
+}
+
+void SamplingCore::PelicanGPSCallback(const sensor_msgs::NavSatFix &msg) {
+  Pelican_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
+  Pelican_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
 }
 
 void SamplingCore::Update() {
   if (update_flag_) {
+    ROS_INFO_STREAM("Update!");
     update_flag_ = false;
     UpdateGPModel();
-    UpdateVisualization();
     UpdateHeuristic();
+    double rms = RMSError(gt_mean_, mean_prediction_);
+    ROS_INFO_STREAM("RME Error : " << rms);
   }
+  UpdateVisualization();
 }
 
 }  // namespace core

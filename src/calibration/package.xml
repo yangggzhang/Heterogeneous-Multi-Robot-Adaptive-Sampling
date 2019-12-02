@@ -17,5 +17,6 @@
   <depend>std_msgs</depend>
   <depend>message_filters</depend>
   <depend>std_srvs</depend>
+  <depend>roslib</depend>
 
 </package>
