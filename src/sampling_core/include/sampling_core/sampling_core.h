@@ -59,7 +59,8 @@ class SamplingCore {
  private:
   // ROS
   ros::NodeHandle nh_, rh_;
-  ros::Publisher distribution_visualization_pub_;
+  ros::Publisher distribution_visualization_pub_, Jackal_position_pub_,
+      Pelican_position_pub_;
   ros::Subscriber sample_sub_;
   ros::Subscriber Jackal_GPS_sub_;
   ros::Subscriber Pelican_GPS_sub_;

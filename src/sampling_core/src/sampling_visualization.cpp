@@ -177,6 +177,10 @@ RobotVisualization::RobotVisualization(ros::NodeHandle &nh,
   map_y_scale_ = (double)y_range / map_y_range;
 
   marker_.color = color;
+
+  target_ = marker_;
+  target_.id = target_.id++;
+  target_.type = visualization_msgs::Marker::CUBE;
 }
 
 void RobotVisualization::UpdateMap(const double &robot_x,
@@ -185,10 +189,21 @@ void RobotVisualization::UpdateMap(const double &robot_x,
       ((robot_x - map_x_origin_) * map_x_scale_) + param_.x_offset;
   marker_.pose.position.y =
       ((robot_y - map_y_origin_) * map_y_scale_) + param_.y_offset;
-  marker_.pose.position.z = 0;
+  marker_.pose.position.z = 0.5;
+}
+
+void RobotVisualization::UpdateTarget(const double &target_x,
+                                      const double &target_y) {
+  marker_.pose.position.x =
+      ((target_x - map_x_origin_) * map_x_scale_) + param_.x_offset;
+  marker_.pose.position.y =
+      ((target_y - map_y_origin_) * map_y_scale_) + param_.y_offset;
+  marker_.pose.position.z = 0.5;
 }
 
 visualization_msgs::Marker RobotVisualization::GetMarker() { return marker_; }
+
+visualization_msgs::Marker RobotVisualization::GetTarget() { return marker_; }
 
 }  // namespace visualization
 }  // namespace sampling

@@ -56,6 +56,10 @@ class RobotVisualization {
 
   visualization_msgs::Marker GetMarker();
 
+  void UpdateTarget(const double &target_x, const double &target_y);
+
+  visualization_msgs::Marker GetTarget();
+
  private:
   MAP_PARAM param_;
 
@@ -65,6 +69,8 @@ class RobotVisualization {
   double map_y_scale_;
 
   visualization_msgs::Marker marker_;
+
+  visualization_msgs::Marker target_;
 };
 }  // namespace visualization
 }  // namespace sampling

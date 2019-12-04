@@ -12,7 +12,7 @@
     <node pkg="sampling_data" type="artifical_data.py" name="init_data" output="screen">
         <rosparam command="load" file="$(find sampling_data)/config/artifical_data.yaml" />
         <rosparam>
-            resolution: 0.000005
+            resolution: 0.00001
             temperature_file_name: "init_temperature.txt"
             location_file_name: "init_GPS.txt"
         </rosparam>

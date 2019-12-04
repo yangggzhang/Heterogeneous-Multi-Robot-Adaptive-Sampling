@@ -1,8 +1,10 @@
 <launch>
   <node pkg="calibration" type="gps_range_node" name="gps_range" output="screen"> 
-    <remap from="GPS_channel" to="fix"/>
+    <remap from="GPS_channel1" to="fix"/>
+    <remap from="GPS_channel2" to="/fcu/gps"/>
     <rosparam>
-        file_name: "gps_range.txt"
+        <!-- file_name: "gps_range_fix.txt" -->
+        file_name: "gps_range_Jackal.txt"
     </rosparam>
   </node>
 </launch>

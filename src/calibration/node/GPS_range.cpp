@@ -15,8 +15,10 @@ class GPSRange {
 
     std::string file_dir = ros::package::getPath("calibration") + "/data/";
     file_name_ = file_dir + file_name_;
-    gps_location_sub_ =
-        nh.subscribe("GPS_channel", 1, &GPSRange::RecordGPSCallback, this);
+    gps_location_sub1_ =
+        nh.subscribe("GPS_channel1", 1, &GPSRange::RecordGPSCallback, this);
+    gps_location_sub2_ =
+        nh.subscribe("GPS_channel2", 1, &GPSRange::RecordGPSCallback, this);
   }
 
  private:
@@ -67,7 +69,8 @@ class GPSRange {
     }
   }
 
-  ros::Subscriber gps_location_sub_;
+  ros::Subscriber gps_location_sub1_;
+  ros::Subscriber gps_location_sub2_;
 };
 }  // namespace sampling
 

@@ -52,6 +52,11 @@ bool SamplingCore::Init() {
   distribution_visualization_pub_ =
       nh_.advertise<visualization_msgs::MarkerArray>("sampling_visualization",
                                                      1);
+  Jackal_position_pub_ =
+      nh_.advertise<visualization_msgs::Marker>("jackal_visualization", 1);
+
+  Pelican_position_pub_ =
+      nh_.advertise<visualization_msgs::Marker>("pelican_visualization", 1);
 
   voronoi_cell_ = voronoi::Voronoi(location_);
   update_flag_ = false;
@@ -137,7 +142,6 @@ bool SamplingCore::AssignInterestPoint(
       res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
       res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
       heuristic_pq_.pop();
-      return true;
     }
     case UCB: {
       if (heuristic_pq_.empty()) {
@@ -153,7 +157,6 @@ bool SamplingCore::AssignInterestPoint(
       res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
       res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
       heuristic_pq_.pop();
-      return true;
     }
     case DISTANCE_UCB: {
       if (heuristic_pq_v_.empty()) {
@@ -171,7 +174,6 @@ bool SamplingCore::AssignInterestPoint(
           res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
           res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
           heuristic_pq_v_[0].pop();
-          return true;
         } else {
           return false;
         }
@@ -181,7 +183,6 @@ bool SamplingCore::AssignInterestPoint(
           res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
           res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
           heuristic_pq_v_[1].pop();
-          return true;
         } else {
           return false;
         }
@@ -190,6 +191,15 @@ bool SamplingCore::AssignInterestPoint(
       }
     }
     default: { return false; }
+  }
+  if (req.robot_id.compare(Jackal_id_) == 0) {
+    Jackal_visualization_node_->UpdateTarget(res.latitude * map_scale_,
+                                             res.longitude * map_scale_);
+  } else if (req.robot_id.compare(Pelican_id_) == 0) {
+    Pelican_visualization_node_->UpdateTarget(res.latitude * map_scale_,
+                                              res.longitude * map_scale_);
+  } else {
+    return false;
   }
   return true;
 }
@@ -486,17 +496,17 @@ bool SamplingCore::InitializeVisualization() {
       visualization_node_[frame]->UpdateMap(init_sample_temperature_.col(0));
     } else if (frame.compare("Jackal") == 0) {
       std_msgs::ColorRGBA Jackal_color;
-      Jackal_color.r = 1.0;
-      Jackal_color.g = 1.0;
-      Jackal_color.b = 1.0;
+      Jackal_color.r = 0.0;
+      Jackal_color.g = 0.0;
+      Jackal_color.b = 0.0;
       Jackal_color.a = 1.0;
       Jackal_visualization_node_.reset(new visualization::RobotVisualization(
           nh_, param, Jackal_color, location_));
     } else if (frame.compare("Pelican") == 0) {
       std_msgs::ColorRGBA Pelican_color;
       Pelican_color.r = 0.0;
-      Pelican_color.g = 1.0;
-      Pelican_color.b = 0.0;
+      Pelican_color.g = 0.0;
+      Pelican_color.b = 1.0;
       Pelican_color.a = 1.0;
       Pelican_visualization_node_.reset(new visualization::RobotVisualization(
           nh_, param, Pelican_color, location_));
@@ -511,6 +521,8 @@ void SamplingCore::UpdateGPModel() {
   gp_node_.ExpectationAndMaximization(max_iteration_, convergence_threshold_);
   gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
                                          var_prediction_);
+  ROS_INFO_STREAM("Max prediction : " << mean_prediction_.maxCoeff()
+                                      << "!!!!!!!!!!!!!!!!");
 }
 
 double SamplingCore::RMSError(const Eigen::VectorXd &val1,
@@ -537,29 +549,36 @@ void SamplingCore::UpdateVisualization() {
        ++it) {
     marker_array.markers.push_back(it->second->GetMarker());
   }
-  if (Jackal_visualization_node_ && Jackal_latitude_.is_initialized() &&
-      Jackal_longitude_.is_initialized()) {
-    Jackal_visualization_node_->UpdateMap(Jackal_latitude_.get(),
-                                          Jackal_longitude_.get());
-    marker_array.markers.push_back(Jackal_visualization_node_->GetMarker());
-  }
-  if (Pelican_visualization_node_ && Pelican_latitude_.is_initialized() &&
-      Pelican_longitude_.is_initialized()) {
-    Pelican_visualization_node_->UpdateMap(Pelican_latitude_.get(),
-                                           Pelican_longitude_.get());
-    marker_array.markers.push_back(Pelican_visualization_node_->GetMarker());
-  }
+  // if (Jackal_visualization_node_ && Jackal_latitude_.is_initialized() &&
+  //     Jackal_longitude_.is_initialized()) {
+  //   marker_array.markers.push_back(Jackal_visualization_node_->GetMarker());
+  //   marker_array.markers.push_back(Jackal_visualization_node_->GetTarget());
+  // }
+  // if (Pelican_visualization_node_ && Pelican_latitude_.is_initialized() &&
+  //     Pelican_longitude_.is_initialized()) {
+  //   marker_array.markers.push_back(Pelican_visualization_node_->GetMarker());
+  //   marker_array.markers.push_back(Pelican_visualization_node_->GetTarget());
+  // }
   distribution_visualization_pub_.publish(marker_array);
 }
 
 void SamplingCore::JackalGPSCallback(const sensor_msgs::NavSatFix &msg) {
   Jackal_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
   Jackal_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
+  Jackal_visualization_node_->UpdateMap(Jackal_latitude_.get(),
+                                        Jackal_longitude_.get());
+  visualization_msgs::Marker marker = Jackal_visualization_node_->GetMarker();
+  Jackal_position_pub_.publish(marker);
 }
 
 void SamplingCore::PelicanGPSCallback(const sensor_msgs::NavSatFix &msg) {
   Pelican_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
   Pelican_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
+
+  Pelican_visualization_node_->UpdateMap(Pelican_latitude_.get(),
+                                         Pelican_longitude_.get());
+  visualization_msgs::Marker marker = Pelican_visualization_node_->GetMarker();
+  Pelican_position_pub_.publish(marker);
 }
 
 void SamplingCore::Update() {
