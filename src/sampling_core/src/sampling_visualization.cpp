@@ -36,7 +36,7 @@ SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
   double map_x_scale = (double)x_range / map_x_range;
   double map_y_scale = (double)y_range / map_y_range;
 
-  assert(x_range * y_range == map.rows());
+  // assert(x_range * y_range == map.rows());
 
   marker_array_.points.resize(map.rows());
   marker_array_.colors.resize(map.rows());

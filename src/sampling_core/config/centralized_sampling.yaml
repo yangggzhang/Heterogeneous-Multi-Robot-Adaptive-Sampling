@@ -1,10 +1,10 @@
 #Configuation for centralized sampling
 data_path:
-  - location_data: "gt_GPS.txt"
-    ground_truth_temperature_data: "temp.txt"
-    ground_truth_location_data: "gt_gps_waypoints.txt"
-    initial_temperature_data: "init_temperature.txt"
-    initial_location_data: "init_GPS.txt"
+  - location_data: "wifi_gps_gt.txt"
+    ground_truth_temperature_data: "wifi_measurement2.txt"
+    ground_truth_location_data: "wifi_gps2.txt"
+    initial_temperature_data: "wifi_measurement2.txt"
+    initial_location_data: "wifi_gps2.txt"
 
 # learning parameter
 learning_parameters:
@@ -14,9 +14,9 @@ learning_parameters:
 
 # Gaussian Process parameter:
 gp_parameters:
-  - ground_truth_num_gaussian: 3
+  - ground_truth_num_gaussian: 1
     num_gaussian: 1
-    gp_hyperparameter: [2.0, 2.0, 0.5]
+    gp_hyperparameter: [0.1, 0.1, 0.1]
     map_scale : 1000000.0
 
 # sampling parameter
