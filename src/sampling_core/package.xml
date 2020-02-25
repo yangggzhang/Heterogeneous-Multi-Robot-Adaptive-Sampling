@@ -22,5 +22,5 @@
   <depend>temperature_measurement</depend>
   <depend>sampling_msgs</depend>
   <depend>roslib</depend>
-
+  <depend>cv_bridge</depend>
 </package>

@@ -18,10 +18,12 @@ find_package(catkin REQUIRED COMPONENTS
   temperature_measurement
   sampling_msgs
   roslib
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
+find_package(OpenCV)
 
 catkin_package(
    INCLUDE_DIRS include
@@ -34,6 +36,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
   include
   libgp/include
 )
@@ -49,5 +52,5 @@ add_library(${PROJECT_NAME}
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
-target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
