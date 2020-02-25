@@ -43,6 +43,7 @@ include_directories(
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
+  src/gmm.cpp
   src/gmm_utils.cpp
   src/voronoi.cpp
   src/sampling_core.cpp
@@ -54,3 +55,5 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
 target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
+add_executable(gmm_test_node node/gmm_test_node.cpp)
+target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
