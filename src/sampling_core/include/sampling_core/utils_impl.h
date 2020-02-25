@@ -46,6 +46,20 @@ bool LoadData(const std::string &path, Eigen::MatrixXd &data) {
   return true;
 }
 
+bool LoadDataVec(const std::string &path, Eigen::VectorXd &data) {
+  Eigen::MatrixXd data_mat;
+  if (!LoadData(path, data_mat)) {
+    ROS_ERROR_STREAM("Failed to load " << path);
+    return false;
+  }
+  if (data_mat.cols() != 1) {
+    ROS_ERROR_STREAM("Loaded data has multiple dimensions!");
+    return false;
+  }
+  data = data_mat.col(0);
+  return true;
+}
+
 bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
                   Eigen::MatrixXd &data) {
   std::string file_dir;

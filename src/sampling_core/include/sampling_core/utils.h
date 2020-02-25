@@ -15,6 +15,8 @@ namespace utils {
 
 bool LoadData(const std::string &path, Eigen::MatrixXd &data);
 
+bool LoadDataVec(const std::string &path, Eigen::VectorXd &data);
+
 bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
                   Eigen::MatrixXd &data);
 

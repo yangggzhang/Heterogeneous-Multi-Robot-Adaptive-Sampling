@@ -51,6 +51,7 @@ void GaussianProcessMixtureModel::Train(
   for (int i = 0; i < gp_number_; ++i) {
     gp_model_[i]->clear_sampleset();
   }
+
   for (int i = 0; i < sample_number; ++i) {
     Eigen::MatrixXd::Index predicted_class;
     double sample_utility = sample_utilities(i);
@@ -74,7 +75,7 @@ void GaussianProcessMixtureModel::GPPredict(const int& GP_index,
 Eigen::VectorXd GaussianProcessMixtureModel::GMMPredictForGP(
     const int& GP_index, const Eigen::VectorXd& gp_predictions) {
   Eigen::MatrixXd probs = gmm_model_->Predict(gp_predictions);
-  return probs.row(GP_index);
+  return probs.col(GP_index);
 }
 
 void GaussianProcessMixtureModel::Predict(const Eigen::MatrixXd& test_positions,
@@ -94,12 +95,14 @@ void GaussianProcessMixtureModel::Predict(const Eigen::MatrixXd& test_positions,
     prob_mat.col(i) = GMMPredictForGP(i, raw_mean_predictions.col(i));
 
   // Normalize probability model
-  prob_mat.rowwise().normalize();
-  prob_mat.transposeInPlace();
+  for (int i = 0; i < test_number; ++i) {
+    prob_mat.row(i) = prob_mat.row(i) / prob_mat.row(i).array().sum();
+  }
 
   // Calculate weighted preditions
-  Eigen::MatrixXd weighted_mean = raw_mean_predictions * prob_mat;
-  Eigen::MatrixXd weighed_var = raw_var_predictions * prob_mat;
+  Eigen::MatrixXd weighted_mean =
+      raw_mean_predictions.array() * prob_mat.array();
+  Eigen::MatrixXd weighed_var = raw_var_predictions.array() * prob_mat.array();
 
   pred_mean = weighted_mean.rowwise().sum();
   pred_var = weighed_var.rowwise().sum();
