@@ -3,11 +3,11 @@
 #include "sampling_core/gpmm.h"
 
 namespace sampling {
-namespace GPMM {
+namespace gpmm {
 GaussianProcessMixtureModel::GaussianProcessMixtureModel()
     : gp_number_(KGaussianProcessNumber) {
-  gmm_model_ = std::unique_ptr<GMM_CV::GaussianMixtureModel>(
-      new GMM_CV::GaussianMixtureModel(KGaussianProcessNumber));
+  gmm_model_ = std::unique_ptr<gmm::GaussianMixtureModel>(
+      new gmm::GaussianMixtureModel(KGaussianProcessNumber));
   gp_model_.resize(KGaussianProcessNumber);
   for (int i = 0; i < gp_model_.size(); ++i) {
     gp_model_[i] = std::unique_ptr<libgp::GaussianProcess>(
@@ -22,8 +22,8 @@ GaussianProcessMixtureModel::GaussianProcessMixtureModel(
     const int& gp_number, const std::vector<std::vector<double>> gp_hyperparams,
     const int& gp_max_iteration, const double& gp_eps)
     : gp_number_(gp_number) {
-  gmm_model_ = std::unique_ptr<GMM_CV::GaussianMixtureModel>(
-      new GMM_CV::GaussianMixtureModel(gp_number, gp_max_iteration, gp_eps));
+  gmm_model_ = std::unique_ptr<gmm::GaussianMixtureModel>(
+      new gmm::GaussianMixtureModel(gp_number, gp_max_iteration, gp_eps));
   assert(gp_number == gp_hyperparams.size());
   gp_model_.resize(gp_number);
   for (int i = 0; i < gp_number; ++i) {
@@ -107,5 +107,5 @@ void GaussianProcessMixtureModel::Predict(const Eigen::MatrixXd& test_positions,
   pred_mean = weighted_mean.rowwise().sum();
   pred_var = weighed_var.rowwise().sum();
 }
-}  // namespace GPMM
+}  // namespace gpmm
 }  // namespace sampling

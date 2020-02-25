@@ -6,7 +6,7 @@
 #include <opencv2/core/types.hpp>
 
 namespace sampling {
-namespace GMM_CV {
+namespace gmm {
 GaussianMixtureModel::GaussianMixtureModel() {
   model_ = cv::ml::EM::create();
   model_->setClustersNumber(KClusterNumber);
@@ -55,5 +55,5 @@ Eigen::MatrixXd GaussianMixtureModel::GetMeans() {
   return means_eigen;
 }
 
-}  // namespace GMM_CV
+}  // namespace gmm
 }  // namespace sampling

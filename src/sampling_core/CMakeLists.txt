@@ -45,7 +45,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/gpmm.cpp
   src/gmm.cpp
-  src/gmm_utils.cpp
+  src/gmm.cpp
   src/voronoi.cpp
   src/sampling_core.cpp
   src/sampling_visualization.cpp

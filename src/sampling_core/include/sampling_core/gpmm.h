@@ -16,7 +16,7 @@
 #include "sampling_core/gmm.h"
 
 namespace sampling {
-namespace GPMM {
+namespace gpmm {
 
 const int KGaussianProcessNumber = 3;
 const double KGPCov1 = 0.5;
@@ -51,8 +51,8 @@ class GaussianProcessMixtureModel {
 
  private:
   int gp_number_;
-  std::unique_ptr<GMM_CV::GaussianMixtureModel> gmm_model_;
+  std::unique_ptr<gmm::GaussianMixtureModel> gmm_model_;
   std::vector<std::unique_ptr<libgp::GaussianProcess>> gp_model_;
 };
-}  // namespace GPMM
+}  // namespace gpmm
 }  // namespace sampling

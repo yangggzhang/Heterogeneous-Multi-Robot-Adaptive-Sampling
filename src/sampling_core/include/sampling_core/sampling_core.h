@@ -8,7 +8,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "sampling_core/gmm_utils.h"
+#include "sampling_core/gmm.h"
+#include "sampling_core/gpmm.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
 #include "sampling_core/voronoi.h"
@@ -78,14 +79,17 @@ class SamplingCore {
 
   // interest point assignment
 
-  // gp parameter
-  int gp_num_gaussian_;
-  std::vector<double> gp_hyperparam_;
-  double map_scale_;
-
-  // EM parameter
-  double convergence_threshold_;
+  // model parameter
+  int num_gaussian_;
+  std::vector<std::vector<double>> gp_hyperparams_;
   int max_iteration_;
+  double eps_;
+  double map_scale_;
+  int gt_num_gaussian_;
+  std::vector<std::vector<double>> gt_gp_hyperparams_;
+
+  std::unique_ptr<gpmm::GaussianProcessMixtureModel> model_;
+  std::unique_ptr<gpmm::GaussianProcessMixtureModel> gt_model_;
   int model_update_rate_;
 
   // data
@@ -94,17 +98,12 @@ class SamplingCore {
   Eigen::MatrixXd ground_truth_temperature_;
   Eigen::MatrixXd init_sample_location_;
   Eigen::MatrixXd init_sample_temperature_;
+  Eigen::VectorXd collected_temperatures_;
+  Eigen::MatrixXd collected_locations_;
 
   // prediction
   Eigen::VectorXd mean_prediction_;
   Eigen::VectorXd var_prediction_;
-
-  // GP parameter
-  int ground_truth_num_gaussian_;
-  int num_gaussian_;
-  std::vector<double> gp_hyperparameter_;
-  gmm::Gaussian_Mixture_Model gp_node_;
-  gmm::Gaussian_Mixture_Model gt_gp_node_;
 
   // Visualization
   std::unordered_map<std::string,

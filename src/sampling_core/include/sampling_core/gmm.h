@@ -14,7 +14,7 @@
 #include <vector>
 
 namespace sampling {
-namespace GMM_CV {
+namespace gmm {
 
 const int KClusterNumber = 3;
 const int KMaxIteration = 300;
@@ -39,5 +39,5 @@ class GaussianMixtureModel {
  private:
   cv::Ptr<cv::ml::EM> model_;
 };
-}  // namespace GMM_CV
+}  // namespace gmm
 }  // namespace sampling

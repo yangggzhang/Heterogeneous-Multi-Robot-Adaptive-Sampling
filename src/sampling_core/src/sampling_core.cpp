@@ -63,30 +63,25 @@ bool SamplingCore::Init() {
   sample_size_ = 0;
 
   // GP
-  gp_node_ = gmm::Gaussian_Mixture_Model(num_gaussian_, gp_hyperparameter_);
-  gt_gp_node_ = gmm::Gaussian_Mixture_Model(ground_truth_num_gaussian_,
-                                            gp_hyperparameter_);
+  if (!gt_gp_hyperparams_.empty()) {
+    gt_model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
+        new gpmm::GaussianProcessMixtureModel(
+            gt_num_gaussian_, gt_gp_hyperparams_, max_iteration_, eps_));
+  } else
+    gt_model_ = nullptr;
+
+  model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
+      new gpmm::GaussianProcessMixtureModel(num_gaussian_, gp_hyperparams_,
+                                            max_iteration_, eps_));
 
   // Initial data
   if (init_sample_temperature_.rows() > 0) {
-    gp_node_.AddTrainingData(init_sample_location_, init_sample_temperature_);
-    UpdateGPModel();
-    UpdateHeuristic();
-    ROS_INFO_STREAM("Initialize GP model with initial data points");
-    ROS_INFO_STREAM("Prediction : " << mean_prediction_.maxCoeff() << " "
-                                    << mean_prediction_.minCoeff());
-    // ROS_INFO_STREAM("Location " << init_sample_location_);
-    // ROS_INFO_STREAM("Temperature " << init_sample_temperature_);
+    model_->Train(init_sample_temperature_, init_sample_temperature_);
   }
 
   if (ground_truth_temperature_.rows() > 0) {
-    gt_gp_node_.AddTrainingData(ground_truth_location_,
-                                ground_truth_temperature_);
-
-    gt_gp_node_.ExpectationAndMaximization(max_iteration_,
-                                           convergence_threshold_);
-    gt_gp_node_.GaussianProcessMixturePredict(location_, gt_mean_, gt_var_);
-    // visualization_node_["gt"]->UpdateMap(gt_mean);
+    gt_model_->Train(ground_truth_temperature_, ground_truth_location_);
+    gt_model_->Predict(location_, gt_mean_, gt_var_);
   }
   ROS_INFO_STREAM("Finish initialization!");
   return true;
@@ -130,8 +125,7 @@ bool SamplingCore::AssignInterestPoint(
   switch (heuristic_mode_) {
     case VARIANCE: {
       if (heuristic_pq_.empty()) {
-        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
-                                               var_prediction_);
+        model_->Predict(location_, mean_prediction_, var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -145,8 +139,7 @@ bool SamplingCore::AssignInterestPoint(
     }
     case UCB: {
       if (heuristic_pq_.empty()) {
-        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
-                                               var_prediction_);
+        model_->Predict(location_, mean_prediction_, var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -160,8 +153,7 @@ bool SamplingCore::AssignInterestPoint(
     }
     case DISTANCE_UCB: {
       if (heuristic_pq_v_.empty()) {
-        gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
-                                               var_prediction_);
+        model_->Predict(location_, mean_prediction_, var_prediction_);
         UpdateHeuristic();
         if (heuristic_pq_v_.empty()) {
           ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
@@ -217,7 +209,17 @@ void SamplingCore::CollectSampleCallback(
     new_location(0, 0) = new_location(0, 0) * map_scale_;
     new_location(0, 1) = new_location(0, 1) * map_scale_;
     sample_count_[new_location]++;
-    gp_node_.AddTrainingData(new_location, new_feature);
+
+    collected_temperatures_.conservativeResize(collected_temperatures_.size() +
+                                               1);
+    collected_temperatures_(collected_temperatures_.size() - 1) =
+        msg.measurement;
+    collected_locations_.conservativeResize(collected_locations_.rows() + 1,
+                                            collected_locations_.cols());
+    collected_locations_(collected_locations_.rows() - 1, 0) =
+        new_location(0, 0);
+    collected_locations_(collected_locations_.rows() - 1, 1) =
+        new_location(0, 1);
   } else {
     ROS_INFO_STREAM(
         "Master computer received invalid sample from : " << msg.robot_id);
@@ -332,6 +334,8 @@ bool SamplingCore::ParseFromRosParam() {
                              init_sample_temperature_)) {
       return false;
     }
+    collected_locations_ = init_sample_temperature_;
+    collected_temperatures_ = init_sample_location_;
 
     ROS_INFO_STREAM("Successfully loaded data!");
   }
@@ -348,15 +352,6 @@ bool SamplingCore::ParseFromRosParam() {
     }
     XmlRpc::XmlRpcValue learning_param = learning_param_list[0];
 
-    if (!utils::GetParam(learning_param, "convergence_threshold",
-                         convergence_threshold_)) {
-      return false;
-    }
-
-    if (!utils::GetParam(learning_param, "max_iteration", max_iteration_)) {
-      return false;
-    }
-
     if (!utils::GetParam(learning_param, "model_update_rate",
                          model_update_rate_)) {
       return false;
@@ -365,35 +360,56 @@ bool SamplingCore::ParseFromRosParam() {
     ROS_INFO_STREAM("Successfully loaded EM learning parameters!");
   }
 
-  // learning GP parameter
-  XmlRpc::XmlRpcValue gp_param_list;
-  if (!rh_.getParam("gp_parameters", gp_param_list)) {
-    ROS_ERROR_STREAM("Missing GP parameters");
+  // learning Model parameters
+  XmlRpc::XmlRpcValue model_param_list;
+  if (!rh_.getParam("model_parameters", model_param_list)) {
+    ROS_ERROR_STREAM("Missing model parameters");
     return false;
   } else {
-    if (gp_param_list.size() == 0) {
-      ROS_ERROR_STREAM("Empty GP parameters!");
+    if (model_param_list.size() == 0) {
+      ROS_ERROR_STREAM("Empty model parameters!");
       return false;
     }
-    XmlRpc::XmlRpcValue gp_param = gp_param_list[0];
-    if (!utils::GetParam(gp_param, "ground_truth_num_gaussian",
-                         ground_truth_num_gaussian_)) {
-      return false;
+    for (int32_t i = 0; i < model_param_list.size(); ++i) {
+      XmlRpc::XmlRpcValue model_param = model_param_list[i];
+      bool is_gt = false;
+      utils::GetParam(model_param, "gt", is_gt);
+      if (is_gt) {
+        if (!utils::GetParam(model_param, "num_gaussian", gt_num_gaussian_)) {
+          return false;
+        }
+        for (int i = 0; i < gt_num_gaussian_; ++i) {
+          std::string param_name = "param" + std::to_string(i);
+          std::vector<double> gp_hyper_param;
+          if (!utils::GetParam(model_param, param_name, gp_hyper_param)) {
+            return false;
+          }
+          gt_gp_hyperparams_.push_back(gp_hyper_param);
+        }
+      } else {
+        if (!utils::GetParam(model_param, "num_gaussian", num_gaussian_)) {
+          return false;
+        }
+        for (int i = 0; i < num_gaussian_; ++i) {
+          std::string param_name = "param" + std::to_string(i);
+          std::vector<double> gp_hyper_param;
+          if (!utils::GetParam(model_param, param_name, gp_hyper_param)) {
+            return false;
+          }
+          gp_hyperparams_.push_back(gp_hyper_param);
+        }
+      }
+      if (!utils::GetParam(model_param, "max_iteration", max_iteration_)) {
+        return false;
+      }
+      if (!utils::GetParam(model_param, "eps", eps_)) {
+        return false;
+      }
+      if (!utils::GetParam(model_param, "map_scale", map_scale_)) {
+        return false;
+      }
     }
-
-    if (!utils::GetParam(gp_param, "num_gaussian", num_gaussian_)) {
-      return false;
-    }
-
-    if (!utils::GetParam(gp_param, "gp_hyperparameter", gp_hyperparameter_)) {
-      return false;
-    }
-
-    if (!utils::GetParam(gp_param, "map_scale", map_scale_)) {
-      return false;
-    }
-
-    ROS_INFO_STREAM("Successfully loaded GP parameters!");
+    ROS_INFO_STREAM("Successfully loaded model parameters!");
   }
 
   // learning sampling parameter
@@ -518,11 +534,8 @@ bool SamplingCore::InitializeVisualization() {
 }
 
 void SamplingCore::UpdateGPModel() {
-  gp_node_.ExpectationAndMaximization(max_iteration_, convergence_threshold_);
-  gp_node_.GaussianProcessMixturePredict(location_, mean_prediction_,
-                                         var_prediction_);
-  ROS_INFO_STREAM("Max prediction : " << mean_prediction_.maxCoeff()
-                                      << "!!!!!!!!!!!!!!!!");
+  model_->Train(collected_temperatures_, collected_locations_);
+  model_->Predict(location_, mean_prediction_, var_prediction_);
 }
 
 double SamplingCore::RMSError(const Eigen::VectorXd &val1,

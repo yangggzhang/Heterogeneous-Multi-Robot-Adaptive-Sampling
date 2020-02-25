@@ -1,7 +1,7 @@
-#include "sampling_core/gmm_utils.h"
 #include <math.h>
 #include <ros/ros.h>
 #include <limits>
+#include "sampling_core/gmm.h"
 
 namespace sampling {
 namespace gmm {

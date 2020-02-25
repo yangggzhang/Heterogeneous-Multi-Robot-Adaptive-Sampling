@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
     }
     gp_params.push_back(param);
   }
-  sampling::GPMM::GaussianProcessMixtureModel model(num_gau, gp_params,
+  sampling::gpmm::GaussianProcessMixtureModel model(num_gau, gp_params,
                                                     max_iteration, eps);
   ROS_INFO_STREAM("INIT SAMPLE SIZE : " << init_sample_utilities.rows());
   ROS_INFO_STREAM("INIT POSITION SIZE : " << init_sample_locations.rows() << " "

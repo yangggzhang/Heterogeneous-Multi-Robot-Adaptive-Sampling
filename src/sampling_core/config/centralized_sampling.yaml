@@ -12,12 +12,28 @@ learning_parameters:
     max_iteration: 100
     model_update_rate: 1
 
-# Gaussian Process parameter:
-gp_parameters:
-  - ground_truth_num_gaussian: 1
-    num_gaussian: 1
-    gp_hyperparameter: [0.1, 0.1, 0.1]
+# Gaussian Process Mixture Model parameter:
+model_parameters:
+  - is_gt: 0
+    num_gaussian: 3
+    param0: [ 0.5, 0.5, 0.1]
+    param1: [ 0.5, 0.5, 0.1]
+    param2: [ 0.5, 0.5, 0.1]
+    max_iteration: 100
+    eps: 0.1
     map_scale : 1000000.0
+  - is_gt: 1
+    num_gaussian: 3
+    param0: [ 0.5, 0.5, 0.1]
+    param1: [ 0.5, 0.5, 0.1]
+    param2: [ 0.5, 0.5, 0.1]
+    max_iteration: 100
+    eps: 0.1
+    gp_params:
+      - param: [ 0.5, 0.5, 0.1]
+      - param: [ 0.5, 0.5, 0.1]
+      - param: [ 0.5, 0.5, 0.1]
+    map_scale : 1000000.0  
 
 # sampling parameter
 sampling_parameters:
