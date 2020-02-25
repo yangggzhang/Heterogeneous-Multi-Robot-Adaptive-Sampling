@@ -25,6 +25,8 @@ class GaussianMixtureModel {
  public:
   GaussianMixtureModel();
 
+  GaussianMixtureModel(const int& cluster_number);
+
   GaussianMixtureModel(const int& cluster_number, const int& max_iteration,
                        const double& eps);
 

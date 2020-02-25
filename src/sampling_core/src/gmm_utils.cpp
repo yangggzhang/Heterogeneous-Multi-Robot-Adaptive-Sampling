@@ -3,7 +3,6 @@
 #include <ros/ros.h>
 #include <limits>
 
-
 namespace sampling {
 namespace gmm {
 

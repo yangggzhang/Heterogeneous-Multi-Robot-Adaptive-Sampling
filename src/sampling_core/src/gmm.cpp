@@ -15,6 +15,14 @@ GaussianMixtureModel::GaussianMixtureModel() {
       cv::TermCriteria::COUNT + cv::TermCriteria::EPS, KMaxIteration, Keps));
 }
 
+GaussianMixtureModel::GaussianMixtureModel(const int& cluster_number) {
+  model_ = cv::ml::EM::create();
+  model_->setClustersNumber(cluster_number);
+  model_->setCovarianceMatrixType(cv::ml::EM::COV_MAT_DIAGONAL);
+  model_->setTermCriteria(cv::TermCriteria(
+      cv::TermCriteria::COUNT + cv::TermCriteria::EPS, KMaxIteration, Keps));
+}
+
 GaussianMixtureModel::GaussianMixtureModel(const int& cluster_number,
                                            const int& max_iteration,
                                            const double& eps) {

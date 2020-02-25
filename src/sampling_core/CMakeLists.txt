@@ -43,6 +43,7 @@ include_directories(
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
+  src/gpmm.cpp
   src/gmm.cpp
   src/gmm_utils.cpp
   src/voronoi.cpp
