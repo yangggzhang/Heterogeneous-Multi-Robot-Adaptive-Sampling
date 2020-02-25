@@ -11,6 +11,23 @@
                 - param: [ 0.5, 0.5, 0.1]
                 - param: [ 0.5, 0.5, 0.1]
                 - param: [ 0.5, 0.5, 0.1]
+            visualization_parameters:
+                - map_frame: "mean"
+                  map_id: 1
+                  x_scale: 1.0
+                  y_scale: 1.0
+                  x_offset: 0.0
+                  y_offset: 0.0
+                  lower_bound: 0.0
+                  upper_bound: 1.5
+                - map_frame: "variance"
+                  map_id: 2
+                  x_scale: 1.0
+                  y_scale: 1.0
+                  x_offset: 20.0
+                  y_offset: 0.0
+                  lower_bound: 0.0
+                  upper_bound: 1.0
          </rosparam>
    </node>
 </launch>

@@ -1,12 +1,14 @@
 #include <ros/package.h>
 #include <ros/ros.h>
 #include <stdlib.h> /* srand, rand */
+#include <visualization_msgs/MarkerArray.h>
 #include <Eigen/Dense>
 #include <iostream>
 #include <string>
 
 #include "sampling_core/gmm.h"
 #include "sampling_core/gpmm.h"
+#include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
 
 float RandomFloat(float a, float b) {
@@ -16,11 +18,44 @@ float RandomFloat(float a, float b) {
   return a + r;
 }
 
+bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
+                  sampling::visualization::MAP_PARAM &param) {
+  if (!sampling::utils::GetParam(YamlNode, "map_frame", param.map_frame)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "map_id", param.map_id)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "x_scale", param.x_scale)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "y_scale", param.y_scale)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "x_offset", param.x_offset)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "y_offset", param.y_offset)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "lower_bound", param.lower_bound)) {
+    return false;
+  }
+  if (!sampling::utils::GetParam(YamlNode, "upper_bound", param.upper_bound)) {
+    return false;
+  }
+  return true;
+}
+
 int main(int argc, char **argv) {
   ros::init(argc, argv, "gmm_test_node");
   int num_gau, max_iteration;
   double eps;
   ros::NodeHandle nh("~");
+  ros::Publisher distribution_visualization_pub;
+  distribution_visualization_pub =
+      nh.advertise<visualization_msgs::MarkerArray>("sampling_visualization",
+                                                    1);
   if (!nh.getParam("num_gau", num_gau)) {
     num_gau = 3;
   }
@@ -94,9 +129,52 @@ int main(int argc, char **argv) {
   model.Train(init_sample_utilities, init_sample_locations);
   Eigen::VectorXd pred_mean, pred_var;
   model.Predict(test_locations, pred_mean, pred_var);
-  for (int i = 0; i < pred_mean.size(); ++i) {
-    ROS_INFO_STREAM("Sample : " << i << " Mean : " << pred_mean(i)
-                                << " Var : " << pred_var(i));
+  // for (int i = 0; i < pred_mean.size(); ++i) {
+  //   ROS_INFO_STREAM("Sample : " << i << " Mean : " << pred_mean(i)
+  //                               << " Var : " << pred_var(i));
+  // }
+
+  std::vector<sampling::visualization::MAP_PARAM> visualization_params;
+  XmlRpc::XmlRpcValue visualization_param_list;
+  nh.getParam("visualization_parameters", visualization_param_list);
+  for (int32_t i = 0; i < visualization_param_list.size(); ++i) {
+    XmlRpc::XmlRpcValue visualization_param = visualization_param_list[i];
+    sampling::visualization::MAP_PARAM param;
+    if (!LoadMapParam(visualization_param, param)) {
+      ROS_ERROR_STREAM("ERROR LOADING VISUALIZATION PARAM!");
+      return -1;
+    }
+    visualization_params.push_back(param);
+  }
+
+  std::unique_ptr<sampling::visualization::SamplingVisualization> mean_viz_node,
+      var_viz_node;
+  for (const sampling::visualization::MAP_PARAM &viz_param :
+       visualization_params) {
+    std::string frame_str = viz_param.map_frame;
+    if (frame_str.compare("mean") == 0) {
+      mean_viz_node =
+          std::unique_ptr<sampling::visualization::SamplingVisualization>(
+              new sampling::visualization::SamplingVisualization(
+                  nh, viz_param, test_locations));
+    }
+    if (frame_str.compare("variance") == 0) {
+      var_viz_node =
+          std::unique_ptr<sampling::visualization::SamplingVisualization>(
+              new sampling::visualization::SamplingVisualization(
+                  nh, viz_param, test_locations));
+    }
+  }
+  mean_viz_node->UpdateMap(pred_mean);
+  var_viz_node->UpdateMap(pred_var);
+  visualization_msgs::MarkerArray marker_array;
+  marker_array.markers.push_back(mean_viz_node->GetMarker());
+  marker_array.markers.push_back(var_viz_node->GetMarker());
+  ros::Rate r(60);  // 10 hz
+  while (ros::ok()) {
+    distribution_visualization_pub.publish(marker_array);
+    ros::spinOnce();
+    r.sleep();
   }
   ros::shutdown();
 
