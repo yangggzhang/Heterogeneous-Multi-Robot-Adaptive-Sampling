@@ -28,19 +28,16 @@ GaussianMixtureModel::GaussianMixtureModel(const int& cluster_number,
 bool GaussianMixtureModel::Train(const Eigen::VectorXd& samples) {
   cv::Mat samples_mat;
   cv::eigen2cv(samples, samples_mat);
-  cv::Size s = samples_mat.size();
   return model_->trainEM(samples_mat);
 }
 
-void GaussianMixtureModel::Predict(const Eigen::VectorXd& samples,
-                                   Eigen::MatrixXd& probs) {
-  std::vector<double> sample_array;
-  sample_array.resize(samples.size());
-  Eigen::VectorXd::Map(&sample_array.front(), samples.size()) = samples;
-  cv::Mat probs_mat;
-  model_->predict(sample_array, probs_mat);
+Eigen::MatrixXd GaussianMixtureModel::Predict(const Eigen::VectorXd& samples) {
+  Eigen::MatrixXd probs;
+  cv::Mat samples_mat, probs_mat;
+  cv::eigen2cv(samples, samples_mat);
+  model_->predict(samples_mat, probs_mat);
   cv::cv2eigen(probs_mat, probs);
-  return;
+  return probs;
 }
 
 Eigen::MatrixXd GaussianMixtureModel::GetMeans() {

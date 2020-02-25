@@ -16,10 +16,11 @@ int main(int argc, char **argv) {
   const int num_gau = 2;
   const double eps = 0.1;
   const int max_iteration = 100;
+  const int sample_size = 20;
   float a = 3;
   float b = 10;
-  Eigen::VectorXd samples(1000);
-  for (int i = 0; i < 1000; ++i) {
+  Eigen::VectorXd samples(sample_size);
+  for (int i = 0; i < sample_size; ++i) {
     samples(i) = RandomFloat(a, b);
   }
   sampling::GMM_CV::GaussianMixtureModel gmm(num_gau, max_iteration, eps);
@@ -28,6 +29,14 @@ int main(int argc, char **argv) {
   for (int i = 0; i < means.rows(); ++i) {
     for (int j = 0; j < means.cols(); ++j) {
       std::cout << means(i, j) << " ";
+    }
+    std::cout << std::endl;
+  }
+  Eigen::MatrixXd probs;
+  probs = gmm.Predict(samples);
+  for (int i = 0; i < probs.rows(); ++i) {
+    for (int j = 0; j < probs.cols(); ++j) {
+      std::cout << probs(i, j) << " ";
     }
     std::cout << std::endl;
   }

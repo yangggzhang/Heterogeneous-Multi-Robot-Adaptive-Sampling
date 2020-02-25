@@ -30,7 +30,7 @@ class GaussianMixtureModel {
 
   bool Train(const Eigen::VectorXd& samples);
 
-  void Predict(const Eigen::VectorXd& samples, Eigen::MatrixXd& probs);
+  Eigen::MatrixXd Predict(const Eigen::VectorXd& samples);
 
   Eigen::MatrixXd GetMeans();
 
