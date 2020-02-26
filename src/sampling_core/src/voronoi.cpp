@@ -145,8 +145,8 @@ bool Voronoi::IsAgentClosest(
   return true;
 }
 
-Eigen::MatrixXd Voronoi::GetVoronoiCell(const Eigen::MatrixXd &agent_locations,
-                                        const int &agent_id) {
+Eigen::MatrixXd Voronoi::GetSingleVoronoiCell(
+    const Eigen::MatrixXd &agent_locations, const int &agent_id) {
   Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
   Eigen::MatrixXd cell(location_.rows(), location_.cols());
   int count = 0;
@@ -178,9 +178,32 @@ int Voronoi::FindClosestAgent(
   return closest_agent;
 }
 
-std::vector<Eigen::MatrixXd> Voronoi::GetVoronoiDiagram(
+std::vector<Eigen::MatrixXd> Voronoi::GetVoronoiCells(
     const Eigen::MatrixXd &agent_locations) {
   Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
+  Eigen::MatrixXd empty_cell(location_.rows(), location_.cols());
+  std::vector<Eigen::MatrixXd> voronoi_cells(num_robots_, empty_cell);
+  std::vector<int> sample_counts;
+  for (int i = 0; i < location_.rows(); ++i) {
+    int closest_agent_id = FindClosestAgent(hetero_space_, motion_primitives_,
+                                            distance_map.row(i));
+    voronoi_cells[i].row(sample_counts[closest_agent_id]++) = location_.row(i);
+  }
+  for (int i = 0; i < num_robots_; ++i) {
+    voronoi_cells[i].conservativeResize(sample_counts[i], location_.cols());
+  }
+  return voronoi_cells;
+}
+
+std::vector<int> Voronoi::GetVoronoiIndex(
+    const Eigen::MatrixXd &agent_locations) {
+  Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
+  std::vector<int> cell_labels(location_.rows(), -1);
+  for (int i = 0; i < location_.rows(); ++i) {
+    cell_labels[i] = FindClosestAgent(hetero_space_, motion_primitives_,
+                                      distance_map.row(i));
+  }
+  return cell_labels;
 }
 
 }  // namespace voronoi
