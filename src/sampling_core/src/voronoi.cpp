@@ -19,7 +19,9 @@ Voronoi::Voronoi(const Eigen::MatrixXd &location, const int &num_robots,
       num_robots_(num_robots),
       hetero_space_(hetero_space),
       scale_factors_(scale_factors),
-      motion_primitives_(motion_primitives) {}
+      motion_primitives_(motion_primitives) {
+  unreachable_locations_.resize(num_robots_);
+}
 
 bool Voronoi::UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
                                const Eigen::VectorXd &scale_factor,
@@ -99,7 +101,8 @@ double Voronoi::HeteroDistance(
     const std::vector<HeterogenitySpace> &hetero_space,
     const std::vector<double> &scale_factor,
     const std::vector<double> &motion_primitive,
-    const double &euclidean_distance) {
+    const double &euclidean_distance, const Eigen::VectorXd &grid_location,
+    const std::unordered_set<std::pair<double, double>> &unreachable_points) {
   Eigen::VectorXd distance_vec(hetero_space.size());
   for (int i = 0; i < hetero_space.size(); ++i) {
     switch (hetero_space[i]) {
@@ -124,6 +127,14 @@ double Voronoi::HeteroDistance(
             ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
       }
+      case REACHABILITY: {
+        if (unreachable_points.count({grid_location(0), grid_location(0)})) {
+          distance_vec(i) = std::numeric_limits<double>::infinity();
+        } else {
+          distance_vec(i) = 0;
+        }
+        break;
+      }
       default:
         break;
     }
@@ -135,17 +146,19 @@ double Voronoi::HeteroDistance(
 bool Voronoi::IsAgentClosest(
     const std::vector<HeterogenitySpace> &hetero_space,
     const std::vector<std::vector<double>> &motion_primitives,
-    const Eigen::VectorXd &distance_vec, const int &agent_id) {
+    const Eigen::VectorXd &distance_vec, const Eigen::VectorXd &grid_location,
+    const int &agent_id) {
   assert(distance_vec.size() == num_robots_);
-  const double agent_distance =
-      HeteroDistance(hetero_space, scale_factors_, motion_primitives_[agent_id],
-                     distance_vec(agent_id));
+  const double agent_distance = HeteroDistance(
+      hetero_space, scale_factors_, motion_primitives_[agent_id],
+      distance_vec(agent_id), grid_location, unreachable_locations_[agent_id]);
   for (int i = 0; i < num_robots_; ++i) {
     if (i == agent_id)
       continue;
     else {
       double temp_distance = HeteroDistance(
-          hetero_space, scale_factors_, motion_primitives_[i], distance_vec(i));
+          hetero_space, scale_factors_, motion_primitives_[i], distance_vec(i),
+          grid_location, unreachable_locations_[i]);
       if (temp_distance < agent_distance) return false;
     }
   }
@@ -159,7 +172,7 @@ Eigen::MatrixXd Voronoi::GetSingleVoronoiCell(
   int count = 0;
   for (int i = 0; i < location_.rows(); ++i) {
     if (IsAgentClosest(hetero_space_, motion_primitives_, distance_map.row(i),
-                       agent_id)) {
+                       location_.row(i), agent_id)) {
       cell.row(count++) = location_.row(i);
     }
   }
@@ -170,13 +183,14 @@ Eigen::MatrixXd Voronoi::GetSingleVoronoiCell(
 int Voronoi::FindClosestAgent(
     const std::vector<HeterogenitySpace> &hetero_space,
     const std::vector<std::vector<double>> &motion_primitives,
-    const Eigen::VectorXd &distance_vec) {
+    const Eigen::VectorXd &distance_vec, const Eigen::VectorXd &grid_location) {
   assert(num_robots_ == motion_primitives_.size());
   int closest_agent = -1;
   double closest_distance = std::numeric_limits<double>::infinity();
   for (int i = 0; i < num_robots_; ++i) {
     double temp_distance = HeteroDistance(
-        hetero_space, scale_factors_, motion_primitives[i], distance_vec(i));
+        hetero_space, scale_factors_, motion_primitives[i], distance_vec(i),
+        grid_location, unreachable_locations_[i]);
     if (temp_distance < closest_distance) {
       closest_distance = temp_distance;
       closest_agent = i;
@@ -192,8 +206,9 @@ std::vector<Eigen::MatrixXd> Voronoi::GetVoronoiCells(
   std::vector<Eigen::MatrixXd> voronoi_cells(num_robots_, empty_cell);
   std::vector<int> sample_counts;
   for (int i = 0; i < location_.rows(); ++i) {
-    int closest_agent_id = FindClosestAgent(hetero_space_, motion_primitives_,
-                                            distance_map.row(i));
+    int closest_agent_id =
+        FindClosestAgent(hetero_space_, motion_primitives_, distance_map.row(i),
+                         location_.row(i));
     voronoi_cells[i].row(sample_counts[closest_agent_id]++) = location_.row(i);
   }
   for (int i = 0; i < num_robots_; ++i) {
@@ -208,9 +223,20 @@ std::vector<int> Voronoi::GetVoronoiIndex(
   std::vector<int> cell_labels(location_.rows(), -1);
   for (int i = 0; i < location_.rows(); ++i) {
     cell_labels[i] = FindClosestAgent(hetero_space_, motion_primitives_,
-                                      distance_map.row(i));
+                                      distance_map.row(i), location_.row(i));
   }
   return cell_labels;
+}
+
+void Voronoi::UpdateUnreachableLocations(
+    const std::vector<Eigen::MatrixXd> &unreachable_locations) {
+  assert(unreachable_locations.size() == num_robots_);
+  for (int i = 0; i < num_robots_; ++i) {
+    for (int j = 0; j < unreachable_locations[i].rows(); ++j) {
+      unreachable_locations_[i].insert(
+          {unreachable_locations[i](j, 0), unreachable_locations[i](j, 1)});
+    }
+  }
 }
 
 }  // namespace voronoi
