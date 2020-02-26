@@ -2,27 +2,27 @@
   
     <!-- BEGIN ROBOT 1-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="1" />
+        <arg name="lat" value="0" />
         <arg name="lon" value="0"/>
         <arg name="max_vel" value="1"/>
         <arg name="id"  value="ugv1" />
     </include>
     
     <!-- BEGIN ROBOT 2-->
-    <include file="$(find robot_agent)/launch/fake_agent.launch" >
+    <!-- <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="9" />
         <arg name="lon" value="7"/>
         <arg name="max_vel" value="1"/>
         <arg name="id"  value="ugv2" />
-    </include>
+    </include> -->
 
     <!-- BEGIN ROBOT 4-->
-    <include file="$(find robot_agent)/launch/fake_agent.launch" >
+    <!-- <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="8" />
         <arg name="lon" value="3"/>
         <arg name="max_vel" value="3"/>
         <arg name="id"  value="uav3" />
-    </include>
+    </include> -->
 
     <!-- BEGIN ROBOT 4-->
     <!-- <include file="$(find robot_agent)/launch/fake_agent.launch" >
