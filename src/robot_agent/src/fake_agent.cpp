@@ -85,7 +85,21 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   // std::cout << getPdf(test, mean, sigmat) << std::endl; //0.16
   // test << 0.6, 0.6;
   // std::cout << getPdf(test, mean, sigmat) << std::endl;//0.1153
+  // test dist calculation =============================
+  // goal_rtk_latitude_ = 7.0;
+  // goal_rtk_longitude_ = 8.0;
 
+  // double dist_to_goal =
+  //     sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
+  //          pow((goal_rtk_longitude_ - current_longitude_), 2));
+  // double vel_dir_x = (goal_rtk_latitude_ - current_latitude_) / dist_to_goal;
+  // double vel_dir_y = (goal_rtk_longitude_ - current_longitude_) /
+  // dist_to_goal;
+
+  // std::cout << "dist: " << dist_to_goal << " vel_x: " << vel_dir_x
+  //           << " vel_y: " << vel_dir_y << std::endl;
+
+  // agent_state_ = NAVIGATE;
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
   //   ROS_INFO_STREAM("Jackal move base server came up! READY TO GO!!!");
 }
@@ -124,8 +138,19 @@ bool FakeAgentNode::move_to_goal() {
     navigate_loop_rate.sleep();
     // update new position
     dt = ros::Time::now() - previous;
-    current_latitude_ += max_vel_ * vel_dir_x * dt.toSec();
-    current_longitude_ += max_vel_ * vel_dir_y * dt.toSec();
+    // if distance < max_speed*dt, max_speed -> directly move to goal
+    if ((sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
+              pow((goal_rtk_longitude_ - current_longitude_), 2))) >=
+        (max_vel_ * dt.toSec())) {
+      current_latitude_ += max_vel_ * vel_dir_x * dt.toSec();
+      current_longitude_ += max_vel_ * vel_dir_y * dt.toSec();
+    } else {
+      current_latitude_ = goal_rtk_latitude_;
+      current_longitude_ = goal_rtk_longitude_;
+    }
+    ROS_INFO_STREAM("Robot " << agent_id_ << " current location with state ("
+                             << current_latitude_ << ", " << current_longitude_
+                             << ")");
     if (goal_reached()) {
       return true;
     }
