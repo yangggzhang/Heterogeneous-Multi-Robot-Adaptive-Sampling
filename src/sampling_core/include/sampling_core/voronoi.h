@@ -71,6 +71,9 @@ class Voronoi {
           const std::vector<double> &scale_factors,
           const std::vector<std::vector<double>> &motion_primitives);
 
+  std::vector<int> GetSingleVoronoiCellIndex(
+      const Eigen::MatrixXd &agent_locations, const int &agent_id);
+
   Eigen::MatrixXd GetSingleVoronoiCell(const Eigen::MatrixXd &agent_locations,
                                        const int &agent_id);
 

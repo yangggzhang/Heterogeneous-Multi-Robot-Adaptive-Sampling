@@ -50,6 +50,7 @@ add_library(${PROJECT_NAME}
   src/sampling_core.cpp
   src/sampling_visualization.cpp
   src/voronoi_visualization.cpp
+  src/informative_point_selection.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

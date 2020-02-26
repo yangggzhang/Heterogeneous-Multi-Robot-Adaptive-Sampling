@@ -165,6 +165,20 @@ bool Voronoi::IsAgentClosest(
   return true;
 }
 
+std::vector<int> Voronoi::GetSingleVoronoiCellIndex(
+    const Eigen::MatrixXd &agent_locations, const int &agent_id) {
+  Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
+  std::vector<int> cell_index;
+  int count = 0;
+  for (int i = 0; i < location_.rows(); ++i) {
+    if (IsAgentClosest(hetero_space_, motion_primitives_, distance_map.row(i),
+                       location_.row(i), agent_id)) {
+      cell_index.push_back(i);
+    }
+  }
+  return cell_index;
+}
+
 Eigen::MatrixXd Voronoi::GetSingleVoronoiCell(
     const Eigen::MatrixXd &agent_locations, const int &agent_id) {
   Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
