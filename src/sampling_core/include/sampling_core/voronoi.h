@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace sampling {
-enum HeterogenitySpace { SPEED, BATTERYLIFE, MOBILITY };
+enum HeterogenitySpace { DISTANCE, SPEED, BATTERYLIFE, MOBILITY };
 
 namespace voronoi {
 class Voronoi {
@@ -39,6 +39,11 @@ class Voronoi {
                       const std::vector<std::vector<double>> &motion_primitives,
                       const Eigen::VectorXd &distance_vec, const int &agent_id);
 
+  int FindClosestAgent(
+      const std::vector<HeterogenitySpace> &hetero_space,
+      const std::vector<std::vector<double>> &motion_primitives,
+      const Eigen::VectorXd &distance_vec);
+
  public:
   Voronoi();
 
@@ -52,6 +57,9 @@ class Voronoi {
 
   Eigen::MatrixXd GetVoronoiCell(const Eigen::MatrixXd &agent_locations,
                                  const int &agent_id);
+
+  std::vector<Eigen::MatrixXd> GetVoronoiDiagram(
+      const Eigen::MatrixXd &agent_locations);
 
   bool UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
                         const Eigen::VectorXd &scale_factor,

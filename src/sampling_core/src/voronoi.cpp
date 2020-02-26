@@ -2,6 +2,7 @@
 
 #include <math.h> /* sqrt */
 #include <ros/ros.h>
+#include <limits>
 
 namespace sampling {
 namespace voronoi {
@@ -87,9 +88,7 @@ Eigen::MatrixXd Voronoi::GetDistanceMap(
     distance.col(0) = distance.col(0).array() - agent_locations(i, 0);
     distance.col(1) = distance.col(1).array() - agent_locations(i, 1);
     distance_map.col(i) = distance.rowwise().norm();
-    max_distance = std::max(max_distance, distance_map.col(i).maxCoeff());
   }
-  distance_map = distance_map / max_distance;
   return distance_map;
 }
 
@@ -98,21 +97,25 @@ double Voronoi::HeteroDistance(
     const std::vector<double> &motion_primitive,
     const double &euclidean_distance) {
   Eigen::VectorXd distance_vec(hetero_space.size());
-  distance_vec(0) = euclidean_distance;
   for (int i = 0; i < hetero_space.size(); ++i) {
     switch (hetero_space[i]) {
+      case DISTANCE: {
+        distance_vec(i) =
+            ContinuousDistance(motion_primitive[i], euclidean_distance);
+        break;
+      }
       case SPEED: {
-        distance_vec(i + 1) =
+        distance_vec(i) =
             ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
       }
       case BATTERYLIFE: {
-        distance_vec(i + 1) =
+        distance_vec(i) =
             ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
       }
       case MOBILITY: {
-        distance_vec(i + 1) =
+        distance_vec(i) =
             ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
       }
@@ -155,6 +158,29 @@ Eigen::MatrixXd Voronoi::GetVoronoiCell(const Eigen::MatrixXd &agent_locations,
   }
   cell.conservativeResize(count, location_.cols());
   return cell;
+}
+
+int Voronoi::FindClosestAgent(
+    const std::vector<HeterogenitySpace> &hetero_space,
+    const std::vector<std::vector<double>> &motion_primitives,
+    const Eigen::VectorXd &distance_vec) {
+  assert(num_robots_ == motion_primitives_.size());
+  int closest_agent = -1;
+  double closest_distance = std::numeric_limits<double>::infinity();
+  for (int i = 0; i < num_robots_; ++i) {
+    double temp_distance =
+        HeteroDistance(hetero_space, motion_primitives[i], distance_vec(i));
+    if (temp_distance < closest_distance) {
+      temp_distance = closest_distance;
+      closest_agent = i;
+    }
+  }
+  return closest_agent;
+}
+
+std::vector<Eigen::MatrixXd> Voronoi::GetVoronoiDiagram(
+    const Eigen::MatrixXd &agent_locations) {
+  Eigen::MatrixXd distance_map = GetDistanceMap(agent_locations);
 }
 
 }  // namespace voronoi
