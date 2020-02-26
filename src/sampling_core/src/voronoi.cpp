@@ -1,4 +1,6 @@
 #include "sampling_core/voronoi.h"
+
+#include <math.h> /* sqrt */
 #include <ros/ros.h>
 
 namespace sampling {
@@ -7,6 +9,10 @@ namespace voronoi {
 Voronoi::Voronoi() {}
 
 Voronoi::Voronoi(const Eigen::MatrixXd &location) : location_(location) {}
+
+Voronoi::Voronoi(const Eigen::MatrixXd &location,
+                 const std::vector<std::vector<double>> &motion_primitives)
+    : location_(location), motion_primitives_(motion_primitives) {}
 
 bool Voronoi::UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
                                const Eigen::VectorXd &scale_factor,
@@ -37,6 +43,33 @@ bool Voronoi::UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
 }
 
 Eigen::MatrixXd Voronoi::GetLocation() { return location_; }
+
+double Voronoi::L1_Distance(const std::vector<double> &lhs,
+                            const std::vector<double> &rhs) {
+  assert(lhs.size() == rhs.size());
+  double distance = 0.0;
+  for (int i = 0; i < lhs.size(); ++i) {
+    distance += fabs(lhs[i] - rhs[i]);
+  }
+  return distance;
+}
+
+double Voronoi::L2_Distance(const std::vector<double> &lhs,
+                            const std::vector<double> &rhs) {
+  assert(lhs.size() == rhs.size());
+  double distance = 0.0;
+  for (int i = 0; i < lhs.size(); ++i) {
+    distance += (lhs[i] - rhs[i]) * (lhs[i] - rhs[i]);
+  }
+  return std::sqrt(distance);
+}
+
+inline double Voronoi::Continuous_Distance(const double &motion_primitive,
+                                           const double &euclidean_distance) {
+  double px = exp(motion_primitive * euclidean_distance);
+  double nx = exp(-motion_primitive * euclidean_distance);
+  return (px - nx) / (px + nx);
+}
 
 }  // namespace voronoi
 }  // namespace sampling
