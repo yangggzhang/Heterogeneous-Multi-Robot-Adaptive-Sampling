@@ -41,12 +41,15 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   if (!rh_.getParam("speed_resolution", speed_resolution_)) {
     ROS_ERROR("Error! Missing speed_resolution!");
   }
+
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
   }
+
   if (!rh_.getParam("collision_radius", collsion_radius_)) {
     ROS_ERROR("Error! Missing collision_radius!");
   }
+
   if (!rh_.getParam("prediction_time", prediction_time_)) {
     ROS_ERROR("Error! Missing prediction_time!");
   }
@@ -63,12 +66,15 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   if (!rh_.getParam("ground_truth_mu", mu)) {
     ROS_ERROR("Error! Missing ground truth mu !");
   }
+
   if (!rh_.getParam("ground_truth_sig", sigma)) {
     ROS_ERROR("Error! Missing ground truth sigma!");
   }
+
   if (!rh_.getParam("gaussian_weights", gt_weights_)) {
     ROS_ERROR("Error! Missing gaussian_weights!");
   }
+
   if (!rh_.getParam("obstacle_pos", obstacles)) {
     ROS_ERROR("Error! Missing obstacle_pos!");
   }
@@ -85,7 +91,6 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
       gt_mu_(i, j) = mu[count];
       gt_sigma_(i, j) = sigma[count];
     }
-    // std::cout << gt_mu_.row(i) << std::endl;
   }
 
   assert((obstacles.size() % 2) == 0);  // can reshape to n*2
@@ -95,49 +100,6 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     obstacle_pos_.row(i) << obstacles[2 * i], obstacles[2 * i + 1];
   }
   std::cout << obstacle_pos_ << std::endl;
-
-  // std::cout << gt_mu_ << std::endl;
-  // std::cout << gt_sigma_ << std::endl;
-  // create groundtruth distribution
-  // Eigen::Vector2d location;
-  // location << current_latitude_, current_longitude_;
-  // for (int i = 0; i < gt_num_gaussian_; i++) {
-  //   Eigen::Vector2d mu_i = gt_mu_.row(i);
-  //   Eigen::Vector2d sigma_i = gt_sigma_.row(i);
-  //   std::cout << gt_mu_.row(i) << std::endl;
-  //   std::cout << gt_sigma_.row(i).size() << std::endl;
-  //   cov = sigma_i.asDiagonal();
-
-  //   std::cout << gt_weights_[i] * getPdf(location, gt_mu_.row(i),
-  //                                        gt_sigma_.row(i).asDiagonal())
-  //             << std::endl;
-  // }
-  // test==============================================
-  // Eigen::MatrixXd sigmat(2, 2);
-  // sigmat << 1, 0.1, 0.1, 1;
-  // Eigen::VectorXd mean(2);
-  // mean << 0, 0;
-  // Eigen::VectorXd test(2);
-  // test << 0, 0;
-  // std::cout << getPdf(test, mean, sigmat) << std::endl; //0.16
-  // test << 0.6, 0.6;
-  // std::cout << getPdf(test, mean, sigmat) << std::endl;//0.1153
-  // test dist calculation =============================
-  // goal_rtk_latitude_ = 3.0;
-  // goal_rtk_longitude_ = 3.0;
-
-  // double dist_to_goal =
-  //     sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
-  //          pow((goal_rtk_longitude_ - current_longitude_), 2));
-  // double vel_dir_x = (goal_rtk_latitude_ - current_latitude_) / dist_to_goal;
-  // double vel_dir_y = (goal_rtk_longitude_ - current_longitude_) /
-  // dist_to_goal;
-
-  // std::cout << "dist: " << dist_to_goal << " vel_x: " << vel_dir_x
-  //           << " vel_y: " << vel_dir_y << std::endl;
-
-  // agent_state_ = NAVIGATE;
-
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
 }
 
