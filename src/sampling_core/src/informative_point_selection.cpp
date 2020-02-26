@@ -12,6 +12,7 @@ InformativeSampling::InformativeSampling(const Eigen::MatrixXd &locations,
     : locations_(locations), mode_(mode), variance_const_(variance_constant) {}
 
 double InformativeSampling::CalculateUtility(const SAMPLINGMODE &mode,
+                                             const int &location_id,
                                              const double &mean,
                                              const double &var) {
   double utility;
@@ -21,7 +22,8 @@ double InformativeSampling::CalculateUtility(const SAMPLINGMODE &mode,
       break;
     }
     case UCB: {
-      utility = mean + variance_const_ * var;
+      utility = mean + variance_const_ /
+                           double(++collection_count_[location_id]) * var;
       break;
     }
     default: {
@@ -41,7 +43,7 @@ std::pair<double, double> InformativeSampling::SelectInformativeLocation(
   int most_informative_index = -1;
   for (const int &index : cell_index) {
     double temp_utility =
-        CalculateUtility(mode_, pred_mean(index), pred_var(index));
+        CalculateUtility(mode_, index, pred_mean(index), pred_var(index));
     if (temp_utility > most_informative_utility) {
       most_informative_utility = temp_utility;
       most_informative_index = index;

@@ -10,6 +10,7 @@
 
 #include "sampling_core/gmm.h"
 #include "sampling_core/gpmm.h"
+#include "sampling_core/informative_point_selection.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
 #include "sampling_core/voronoi.h"
