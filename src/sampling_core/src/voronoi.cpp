@@ -101,9 +101,9 @@ double Voronoi::HeteroDistance(
   for (int i = 0; i < hetero_space.size(); ++i) {
     switch (hetero_space[i]) {
       case DISTANCE: {
-        // distance_vec(i) = euclidean_distance;
-        distance_vec(i) =
-            ContinuousDistance(motion_primitive[i], euclidean_distance);
+        distance_vec(i) = euclidean_distance;
+        // distance_vec(i) =
+        //     ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
       }
       case SPEED: {
