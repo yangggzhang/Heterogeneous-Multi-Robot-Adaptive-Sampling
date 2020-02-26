@@ -88,8 +88,9 @@ Eigen::MatrixXd Voronoi::GetDistanceMap(
     distance.col(0) = distance.col(0).array() - agent_locations(i, 0);
     distance.col(1) = distance.col(1).array() - agent_locations(i, 1);
     distance_map.col(i) = distance.rowwise().norm();
+    max_distance = std::max(max_distance, distance_map.col(i).maxCoeff());
   }
-  return distance_map;
+  return distance_map.array() / max_distance;
 }
 
 double Voronoi::HeteroDistance(
@@ -100,6 +101,7 @@ double Voronoi::HeteroDistance(
   for (int i = 0; i < hetero_space.size(); ++i) {
     switch (hetero_space[i]) {
       case DISTANCE: {
+        // distance_vec(i) = euclidean_distance;
         distance_vec(i) =
             ContinuousDistance(motion_primitive[i], euclidean_distance);
         break;
@@ -171,7 +173,7 @@ int Voronoi::FindClosestAgent(
     double temp_distance =
         HeteroDistance(hetero_space, motion_primitives[i], distance_vec(i));
     if (temp_distance < closest_distance) {
-      temp_distance = closest_distance;
+      closest_distance = temp_distance;
       closest_agent = i;
     }
   }

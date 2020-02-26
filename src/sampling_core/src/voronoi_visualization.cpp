@@ -11,7 +11,7 @@ VoronoiVisualization::VoronoiVisualization(const Eigen::MatrixXd &map)
   marker_array_ = visualization_msgs::Marker();
   marker_array_.header.frame_id = "voronoi_visualization";
   marker_array_.header.stamp = ros::Time::now();
-  marker_array_.ns = "sampling_visualization";
+  marker_array_.ns = "voronoi_visualization";
   marker_array_.pose.orientation.w = 0.0;
   marker_array_.action = visualization_msgs::Marker::ADD;
   marker_array_.id = 0;
@@ -121,16 +121,16 @@ visualization_msgs::Marker VoronoiVisualization::GetVoronoiMap() {
 visualization_msgs::Marker VoronoiVisualization::GetRobotMarker(
     const Eigen::MatrixXd &robot_locations) {
   visualization_msgs::Marker robot_array = visualization_msgs::Marker();
-  robot_array.header.frame_id = "sampling_visualization";
+  robot_array.header.frame_id = "voronoi_visualization";
   robot_array.header.stamp = ros::Time::now();
-  robot_array.ns = "sampling_visualization";
+  robot_array.ns = "robot_visualization";
   robot_array.pose.orientation.w = 0.0;
   robot_array.action = visualization_msgs::Marker::ADD;
   robot_array.id = 1;
   robot_array.type = visualization_msgs::Marker::SPHERE_LIST;
-  robot_array.scale.x = 4.0;
-  robot_array.scale.y = 4.0;
-  robot_array.scale.z = 4.0;
+  robot_array.scale.x = 2.0;
+  robot_array.scale.y = 2.0;
+  robot_array.scale.z = 2.0;
 
   robot_array.points.resize(robot_locations.rows());
   robot_array.colors.resize(robot_locations.rows());
@@ -189,6 +189,7 @@ visualization_msgs::Marker VoronoiVisualization::GetRobotMarker(
     }
     robot_array.colors[i] = color;
   }
+  return robot_array;
 }
 
 }  // namespace visualization

@@ -8,12 +8,12 @@
 namespace sampling {
 namespace visualization {
 
-const double KRGBRed[3] = {255, 0, 0};
-const double KRGBGreen[3] = {0, 255, 0};
-const double KRGBBlue[3] = {0, 0, 255};
-const double KRGBYellow[3] = {255, 255, 0};
-const double KRGBGray[3] = {128, 128, 128};
-const double KRGBPink[3] = {255, 102, 255};
+const double KRGBRed[3] = {255.0 / 255.0, 0 / 255.0, 0.0 / 255.0};
+const double KRGBGreen[3] = {0.0 / 255.0, 255 / 255.0, 0 / 255.0};
+const double KRGBBlue[3] = {0.0 / 255.0, 0 / 255.0, 255 / 255.0};
+const double KRGBYellow[3] = {255.0 / 255.0, 255.0 / 255.0, 0.0 / 255.0};
+const double KRGBGray[3] = {128.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0};
+const double KRGBPink[3] = {255.0 / 255.0, 102.0 / 255.0, 255.0 / 255.0};
 
 class VoronoiVisualization {
  public:

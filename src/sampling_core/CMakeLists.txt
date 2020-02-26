@@ -59,3 +59,7 @@ target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARI
 
 add_executable(gmm_test_node node/gmm_test_node.cpp)
 target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+
+add_executable(voronoi_test_node node/voronoi_test_node.cpp)
+target_link_libraries(voronoi_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+
