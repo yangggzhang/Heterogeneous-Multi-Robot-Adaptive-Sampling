@@ -5,6 +5,9 @@
 #include <Eigen/Dense>
 #include <random>
 #include "robot_agent/robot_agent.h"
+// const double M_PI = 3.1415926;
+
+// double pdf(const Eigen::VectorXd &x) const {};
 
 namespace sampling {
 namespace agent {
@@ -25,6 +28,9 @@ class FakeAgentNode : public AgentNode {
 
   bool collect_temperature_sample() override;
 
+  double getGroundTruth();
+  double getPdf(const Eigen::VectorXd &x, const Eigen::VectorXd &meanVec,
+                const Eigen::MatrixXd &covMat);
   //   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg)
   //   override;
 
@@ -38,6 +44,7 @@ class FakeAgentNode : public AgentNode {
   double nagivate_loop_rate_int_;
   std::default_random_engine generator;
   Eigen::MatrixXd gt_mu_, gt_sigma_;
+  std::vector<double> gt_weights_;
 };
 }  // namespace agent
 }  // namespace sampling

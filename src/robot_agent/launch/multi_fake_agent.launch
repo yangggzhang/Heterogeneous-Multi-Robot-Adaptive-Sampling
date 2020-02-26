@@ -2,7 +2,7 @@
   
     <!-- BEGIN ROBOT 1-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="0" />
+        <arg name="lat" value="1" />
         <arg name="lon" value="0"/>
         <arg name="max_vel" value="1"/>
         <arg name="id"  value="robot1" />
