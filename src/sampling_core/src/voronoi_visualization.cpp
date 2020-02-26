@@ -30,10 +30,10 @@ VoronoiVisualization::VoronoiVisualization(const Eigen::MatrixXd &map)
   size_t y_range = y_array.size();
   double map_x_range = map.col(0).maxCoeff() - map.col(0).minCoeff();
   double map_y_range = map.col(1).maxCoeff() - map.col(1).minCoeff();
-  double map_x_origin = (map.col(0).maxCoeff() + map.col(0).minCoeff()) / 2.0;
-  double map_y_origin = (map.col(1).maxCoeff() + map.col(1).minCoeff()) / 2.0;
-  double map_x_scale = (double)x_range / map_x_range;
-  double map_y_scale = (double)y_range / map_y_range;
+  map_x_origin_ = (map.col(0).maxCoeff() + map.col(0).minCoeff()) / 2.0;
+  map_y_origin_ = (map.col(1).maxCoeff() + map.col(1).minCoeff()) / 2.0;
+  map_x_scale_ = (double)x_range / map_x_range;
+  map_y_scale_ = (double)y_range / map_y_range;
 
   // assert(x_range * y_range == map.rows());
 
@@ -48,8 +48,8 @@ VoronoiVisualization::VoronoiVisualization(const Eigen::MatrixXd &map)
 
   for (size_t i = 0; i < map.rows(); ++i) {
     geometry_msgs::Point waypoint;
-    waypoint.x = (map(i, 0) - map_x_origin) * map_x_scale;
-    waypoint.y = (map(i, 1) - map_y_origin) * map_y_scale;
+    waypoint.x = (map(i, 0) - map_x_origin_) * map_x_scale_;
+    waypoint.y = (map(i, 1) - map_y_origin_) * map_y_scale_;
     waypoint.z = 0.0;
     marker_array_.points[i] = waypoint;
     marker_array_.colors[i] = color;
@@ -113,8 +113,82 @@ void VoronoiVisualization::UpdateMap(const std::vector<int> &cell_labels) {
     }
   }
 }
-visualization_msgs::Marker VoronoiVisualization::GetMarker() {
+
+visualization_msgs::Marker VoronoiVisualization::GetVoronoiMap() {
   return marker_array_;
+}
+
+visualization_msgs::Marker VoronoiVisualization::GetRobotMarker(
+    const Eigen::MatrixXd &robot_locations) {
+  visualization_msgs::Marker robot_array = visualization_msgs::Marker();
+  robot_array.header.frame_id = "sampling_visualization";
+  robot_array.header.stamp = ros::Time::now();
+  robot_array.ns = "sampling_visualization";
+  robot_array.pose.orientation.w = 0.0;
+  robot_array.action = visualization_msgs::Marker::ADD;
+  robot_array.id = 1;
+  robot_array.type = visualization_msgs::Marker::SPHERE_LIST;
+  robot_array.scale.x = 4.0;
+  robot_array.scale.y = 4.0;
+  robot_array.scale.z = 4.0;
+
+  robot_array.points.resize(robot_locations.rows());
+  robot_array.colors.resize(robot_locations.rows());
+
+  for (int i = 0; i < robot_locations.rows(); i++) {
+    geometry_msgs::Point waypoint;
+    waypoint.x = (robot_locations(i, 0) - map_x_origin_) * map_x_scale_;
+    waypoint.y = (robot_locations(i, 1) - map_y_origin_) * map_y_scale_;
+    waypoint.z = 0.0;
+    robot_array.points[i] = waypoint;
+    std_msgs::ColorRGBA color = std_msgs::ColorRGBA();
+    color.a = 1.0;
+    switch (i) {
+      case 0: {
+        color.r = KRGBRed[0];
+        color.g = KRGBRed[1];
+        color.b = KRGBRed[2];
+        break;
+      }
+      case 1: {
+        color.r = KRGBGreen[0];
+        color.g = KRGBGreen[1];
+        color.b = KRGBGreen[2];
+        break;
+      }
+      case 2: {
+        color.r = KRGBBlue[0];
+        color.g = KRGBBlue[1];
+        color.b = KRGBBlue[2];
+        break;
+      }
+      case 3: {
+        color.r = KRGBYellow[0];
+        color.g = KRGBYellow[1];
+        color.b = KRGBYellow[2];
+        break;
+      }
+      case 4: {
+        color.r = KRGBGray[0];
+        color.g = KRGBGray[1];
+        color.b = KRGBGray[2];
+        break;
+      }
+      case 5: {
+        color.r = KRGBPink[0];
+        color.g = KRGBPink[1];
+        color.b = KRGBPink[2];
+        break;
+      }
+      default: {
+        color.r = 255.0;
+        color.g = 255.0;
+        color.b = 255.0;
+        break;
+      }
+    }
+    robot_array.colors[i] = color;
+  }
 }
 
 }  // namespace visualization

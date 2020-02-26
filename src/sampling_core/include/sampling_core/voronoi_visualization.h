@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <sampling_core/voronoi.h>
 #include <visualization_msgs/Marker.h>
-#include <Eigen/Core>
+#include <Eigen/Dense>
 #include <vector>
 
 namespace sampling {
@@ -23,12 +23,16 @@ class VoronoiVisualization {
 
   void UpdateMap(const std::vector<int> &cell_labels);
 
-  visualization_msgs::Marker GetMarker();
+  visualization_msgs::Marker GetVoronoiMap();
+
+  // robot_locations N x 2
+  visualization_msgs::Marker GetRobotMarker(
+      const Eigen::MatrixXd &robot_locations);
 
  private:
   visualization_msgs::Marker marker_array_;
 
-  double origin_x_, origin_y_;
+  double map_x_origin_, map_y_origin_, map_x_scale_, map_y_scale_;
 
   Eigen::MatrixXd map_;
 };
