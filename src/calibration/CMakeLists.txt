@@ -8,7 +8,6 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  Eigen3 REQUIRED
   roscpp
   rospy
   sensor_msgs
@@ -17,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
   roslib
 )
+
+find_package(Eigen3 REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
