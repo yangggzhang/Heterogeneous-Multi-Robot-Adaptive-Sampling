@@ -32,7 +32,7 @@ class AgentNode {
 
   bool request_target_from_master();
 
-  bool collect_temperature_sample();
+  virtual bool collect_temperature_sample();
 
   void report_temperature_sample();
 
