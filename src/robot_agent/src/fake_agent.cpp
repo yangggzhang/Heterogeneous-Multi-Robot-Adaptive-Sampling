@@ -17,10 +17,6 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing fake agent max vel!");
   }
 
-  // if (!rh_.getParam("fake_agent_max_acc", max_acc_)) {
-  //   ROS_ERROR("Error! Missing fake agent max acc!");
-  // }
-
   if (!rh_.getParam("fake_moving_duration_threshold_s",
                     fake_moving_duration_threshold_s_)) {
     ROS_ERROR("Error! Missing fake agent navigation time threshold!");
@@ -127,22 +123,22 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   // test << 0.6, 0.6;
   // std::cout << getPdf(test, mean, sigmat) << std::endl;//0.1153
   // test dist calculation =============================
-  goal_rtk_latitude_ = 3.0;
-  goal_rtk_longitude_ = 3.0;
+  // goal_rtk_latitude_ = 3.0;
+  // goal_rtk_longitude_ = 3.0;
 
-  double dist_to_goal =
-      sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
-           pow((goal_rtk_longitude_ - current_longitude_), 2));
-  double vel_dir_x = (goal_rtk_latitude_ - current_latitude_) / dist_to_goal;
-  double vel_dir_y = (goal_rtk_longitude_ - current_longitude_) / dist_to_goal;
+  // double dist_to_goal =
+  //     sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
+  //          pow((goal_rtk_longitude_ - current_longitude_), 2));
+  // double vel_dir_x = (goal_rtk_latitude_ - current_latitude_) / dist_to_goal;
+  // double vel_dir_y = (goal_rtk_longitude_ - current_longitude_) /
+  // dist_to_goal;
 
-  std::cout << "dist: " << dist_to_goal << " vel_x: " << vel_dir_x
-            << " vel_y: " << vel_dir_y << std::endl;
+  // std::cout << "dist: " << dist_to_goal << " vel_x: " << vel_dir_x
+  //           << " vel_y: " << vel_dir_y << std::endl;
 
-  agent_state_ = NAVIGATE;
+  // agent_state_ = NAVIGATE;
 
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
-  //   ROS_INFO_STREAM("Jackal move base server came up! READY TO GO!!!");
 }
 
 bool FakeAgentNode::update_goal_from_gps() {
@@ -184,23 +180,12 @@ bool FakeAgentNode::move_to_goal() {
     navigate_loop_rate.sleep();
     // update new position
     dt = ros::Time::now() - previous;
+    std::cout << dt << std::endl;
     current_latitude_ += best_vel[0] * dt.toSec();
     current_longitude_ += best_vel[1] * dt.toSec();
-    // if distance < max_speed*dt, max_speed -> directly move to goal
-    // if ((sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
-    //           pow((goal_rtk_longitude_ - current_longitude_), 2))) >=
-    //     (max_vel_ * dt.toSec())) {
-    //   current_latitude_ += max_vel_ * vel_dir_x * dt.toSec();
-    //   current_longitude_ += max_vel_ * vel_dir_y * dt.toSec();
-    // } else {
-    //   current_latitude_ = goal_rtk_latitude_;
-    //   current_longitude_ = goal_rtk_longitude_;
-    // }
-
     ROS_INFO_STREAM("Robot " << agent_id_ << " current location with state ("
                              << current_latitude_ << ", " << current_longitude_
                              << ")");
-
     previous = ros::Time::now();
     totalNavigationTime = ros::Time::now() - begin;
   }
@@ -224,10 +209,7 @@ std::vector<double> FakeAgentNode::get_best_vel() {
       double v_x = speed * cos(angle);
       double v_y = speed * sin(angle);
       Eigen::MatrixXd traj = get_trajectory(v_x, v_y);
-      // double goal_cost = 0;
-      // double obstacle_cost = 0;
       double goal_cost = goal_cost_gain_ * get_goal_cost(traj);
-      // goal_cost_gain_ *
       double obstacle_cost = obstacle_cost_gain_ * get_obstacle_cost(traj);
       double total_cost = goal_cost + obstacle_cost;
       if (min_cost >= total_cost) {
@@ -265,47 +247,34 @@ double FakeAgentNode::get_goal_cost(Eigen::MatrixXd traj) {
   double end_lon = traj((traj.rows() - 1), 1);
   cost = sqrt(pow((goal_rtk_latitude_ - end_lat), 2) +
               pow((goal_rtk_longitude_ - end_lon), 2));
-
-  // std::cout << "traj=================" << std::endl;
-  // std::cout << traj << std::endl;
-  // std::cout << "goal=================" << std::endl;
-  // std::cout << goal_pos << std::endl;
-  // std::cout << "diff=================" << std::endl;
-  // std::cout << goal_rtk_latitude_ << "   " << goal_rtk_longitude_ <<
-  // std::endl; std::cout << end_lat << "   " << end_lon << std::endl; std::cout
-  // << cost << std::endl;
-
   return cost;
 }
 
 double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
   double cost;
-  // std::cout << "row size" << traj.rows() << "," << obstacle_pos_.rows() <<
-  // std::endl;
-  Eigen::MatrixXd distance_to_obs(traj.rows(), obstacle_pos_.rows());
-
-  for (int i = 0; i < traj.rows(); i++) {
-    for (int j = 0; j < obstacle_pos_.rows(); j++) {
-      distance_to_obs(i, j) = sqrt(pow((obstacle_pos_(j, 0) - traj(i, 0)), 2) +
-                                   pow((obstacle_pos_(j, 1) - traj(i, 1)), 2));
+  if (obstacle_avoidance_) {
+    Eigen::MatrixXd distance_to_obs(traj.rows(), obstacle_pos_.rows());
+    for (int i = 0; i < traj.rows(); i++) {
+      for (int j = 0; j < obstacle_pos_.rows(); j++) {
+        distance_to_obs(i, j) =
+            sqrt(pow((obstacle_pos_(j, 0) - traj(i, 0)), 2) +
+                 pow((obstacle_pos_(j, 1) - traj(i, 1)), 2));
+      }
     }
+    Eigen::MatrixXd::Index minRow, minCol;
+    double min = distance_to_obs.minCoeff(&minRow, &minCol);
+    // std::cout << "Index" << minRow << "," << minCol << std::endl;
+    if (min < collsion_radius_) {
+      cost = FLT_MAX;
+    } else {
+      cost = 1.0 / min;
+    }
+  } else {  // not consider obstacle cost for UAV
+    cost = 0;
   }
-  Eigen::MatrixXd::Index minRow, minCol;
-  double min = distance_to_obs.minCoeff(&minRow, &minCol);
-  // std::cout << "Index" << minRow << "," << minCol << std::endl;
-  if (min < collsion_radius_) {
-    cost = FLT_MAX;
-  } else {
-    cost = 1.0 / min;
-  }
-  // std::cout << "traj=================" << std::endl;
-  // std::cout << traj << std::endl;
-  // std::cout << "obs-------------------" << std::endl;
-  // std::cout << obstacle_pos_ << std::endl;
-  // std::cout << "dist to obst-----------------" << std::endl;
-  // std::cout << distance_to_obs << std::endl;
   return cost;
 }
+
 // bool FakeAgentNode::collect_temperature_sample() {
 //   sampling_msgs::RequestGroundTruthTemperature srv;
 //   srv.request.latitude = current_latitude_;
