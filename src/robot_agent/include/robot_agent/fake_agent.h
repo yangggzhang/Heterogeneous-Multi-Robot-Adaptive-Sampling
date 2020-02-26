@@ -5,9 +5,6 @@
 #include <Eigen/Dense>
 #include <random>
 #include "robot_agent/robot_agent.h"
-// const double M_PI = 3.1415926;
-
-// double pdf(const Eigen::VectorXd &x) const {};
 
 namespace sampling {
 namespace agent {

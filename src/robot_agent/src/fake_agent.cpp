@@ -1,12 +1,5 @@
 #include "robot_agent/fake_agent.h"
 #include <math.h>
-// double pdf(const Eigen::VectorXd &x) const {
-//   double n = x.rows();
-//   double sqrt2pi = std::sqrt(2 * M_PI);
-//   double quadform = (x - mean).transpose() * sigma.inverse() * (x - mean);
-//   double norm = std::pow(sqrt2pi, -n) * std::pow(sigma.determinant(), -0.5);
-//   return norm * exp(-0.5 * quadform);
-// }
 namespace sampling {
 namespace agent {
 FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
