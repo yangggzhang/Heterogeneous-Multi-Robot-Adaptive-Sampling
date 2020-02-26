@@ -26,6 +26,7 @@ class Voronoi {
                                    const double &euclidean_distance);
 
   double HeteroDistance(const std::vector<HeterogenitySpace> &hetero_space,
+                        const std::vector<double> &scale_factor,
                         const std::vector<double> &motion_primitive,
                         const double &euclidean_distance);
 

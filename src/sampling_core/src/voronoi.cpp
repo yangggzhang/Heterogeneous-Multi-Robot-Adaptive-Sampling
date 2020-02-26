@@ -87,7 +87,9 @@ Eigen::MatrixXd Voronoi::GetDistanceMap(
     Eigen::MatrixXd distance = location_;
     distance.col(0) = distance.col(0).array() - agent_locations(i, 0);
     distance.col(1) = distance.col(1).array() - agent_locations(i, 1);
-    distance_map.col(i) = distance.rowwise().norm();
+    distance_map.col(i) = distance_map.col(i).array().abs();
+    // distance_map.col(i) = distance.rowwise().norm();
+    distance_map.col(i) = distance.rowwise().sum();
     max_distance = std::max(max_distance, distance_map.col(i).maxCoeff());
   }
   return distance_map.array() / max_distance;
@@ -95,6 +97,7 @@ Eigen::MatrixXd Voronoi::GetDistanceMap(
 
 double Voronoi::HeteroDistance(
     const std::vector<HeterogenitySpace> &hetero_space,
+    const std::vector<double> &scale_factor,
     const std::vector<double> &motion_primitive,
     const double &euclidean_distance) {
   Eigen::VectorXd distance_vec(hetero_space.size());
@@ -124,6 +127,7 @@ double Voronoi::HeteroDistance(
       default:
         break;
     }
+    distance_vec(i) = distance_vec(i) * scale_factor[i];
   }
   return distance_vec.norm();
 }
@@ -133,14 +137,15 @@ bool Voronoi::IsAgentClosest(
     const std::vector<std::vector<double>> &motion_primitives,
     const Eigen::VectorXd &distance_vec, const int &agent_id) {
   assert(distance_vec.size() == num_robots_);
-  const double agent_distance = HeteroDistance(
-      hetero_space, motion_primitives_[agent_id], distance_vec(agent_id));
+  const double agent_distance =
+      HeteroDistance(hetero_space, scale_factors_, motion_primitives_[agent_id],
+                     distance_vec(agent_id));
   for (int i = 0; i < num_robots_; ++i) {
     if (i == agent_id)
       continue;
     else {
-      double temp_distance =
-          HeteroDistance(hetero_space, motion_primitives_[i], distance_vec(i));
+      double temp_distance = HeteroDistance(
+          hetero_space, scale_factors_, motion_primitives_[i], distance_vec(i));
       if (temp_distance < agent_distance) return false;
     }
   }
@@ -170,8 +175,8 @@ int Voronoi::FindClosestAgent(
   int closest_agent = -1;
   double closest_distance = std::numeric_limits<double>::infinity();
   for (int i = 0; i < num_robots_; ++i) {
-    double temp_distance =
-        HeteroDistance(hetero_space, motion_primitives[i], distance_vec(i));
+    double temp_distance = HeteroDistance(
+        hetero_space, scale_factors_, motion_primitives[i], distance_vec(i));
     if (temp_distance < closest_distance) {
       closest_distance = temp_distance;
       closest_agent = i;

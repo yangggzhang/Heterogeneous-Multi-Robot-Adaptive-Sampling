@@ -128,9 +128,9 @@ visualization_msgs::Marker VoronoiVisualization::GetRobotMarker(
   robot_array.action = visualization_msgs::Marker::ADD;
   robot_array.id = 1;
   robot_array.type = visualization_msgs::Marker::SPHERE_LIST;
-  robot_array.scale.x = 2.0;
-  robot_array.scale.y = 2.0;
-  robot_array.scale.z = 2.0;
+  robot_array.scale.x = 5.0;
+  robot_array.scale.y = 5.0;
+  robot_array.scale.z = 5.0;
 
   robot_array.points.resize(robot_locations.rows());
   robot_array.colors.resize(robot_locations.rows());
