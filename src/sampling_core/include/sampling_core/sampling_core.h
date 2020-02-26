@@ -10,6 +10,7 @@
 
 #include "sampling_core/gmm.h"
 #include "sampling_core/gpmm.h"
+#include "sampling_core/informative_point_selection.h"
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
 #include "sampling_core/voronoi.h"
@@ -17,8 +18,6 @@
 
 namespace sampling {
 namespace core {
-
-enum HeuristicMode { VARIANCE, UCB, DISTANCE_UCB };
 
 class GPSHashFunction {
  public:
@@ -40,13 +39,11 @@ class SamplingCore {
   bool AssignInterestPoint(sampling_msgs::RequestGoal::Request &req,
                            sampling_msgs::RequestGoal::Response &res);
 
-  void UpdateHeuristic();
-
   bool ParseFromRosParam();
 
   bool InitializeVisualization();
 
-  void UpdateGPModel();
+  void UpdateModel();
 
   void UpdateVisualization();
 
@@ -116,21 +113,22 @@ class SamplingCore {
 
   std::vector<visualization::MAP_PARAM> visualization_params_;
 
+  // Informative Selection Params
+  SAMPLINGMODE selection_mode_;
+  double variance_coef_;
+  std::unique_ptr<informative_sampling::InformativeSampling>
+      informative_sampling_node_;
+
   // sampling
   bool update_flag_;
   int sample_size_;
-  voronoi::Voronoi voronoi_cell_;
+  voronoi::Voronoi voronoi_node_;
   std::string Jackal_id_;
   std::string Pelican_id_;
   ros::ServiceClient Jackal_GPS_client_;
   ros::ServiceClient Pelican_GPS_client_;
-  Eigen::VectorXd distance_scale_factor_;
-  double variance_coeff_;
-  std::unordered_map<Eigen::MatrixXd, double, GPSHashFunction> sample_count_;
-  pq heuristic_pq_;
-  std::vector<pq> heuristic_pq_v_;
   ros::ServiceServer interest_point_assignment_ser_;
-  HeuristicMode heuristic_mode_;
+  std::unordered_map<std::string, int> agent_id_;
 };
 }  // namespace core
 }  // namespace sampling

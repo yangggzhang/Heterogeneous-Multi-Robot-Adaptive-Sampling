@@ -85,13 +85,6 @@ class Voronoi {
 
   std::vector<int> GetVoronoiIndex(const Eigen::MatrixXd &agent_locations);
 
-  bool UpdateVoronoiMap(const Eigen::MatrixXd &agent_locations,
-                        const Eigen::VectorXd &scale_factor,
-                        std::vector<std::vector<int>> &labels,
-                        Eigen::MatrixXd &distance_matrix);
-
-  Eigen::MatrixXd GetLocation();
-
  private:
   Eigen::MatrixXd location_;
   int num_robots_;

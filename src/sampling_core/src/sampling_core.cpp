@@ -18,6 +18,8 @@ bool SamplingCore::Init() {
   Jackal_latitude_ = boost::optional<double>{};
   Pelican_longitude_ = boost::optional<double>{};
   Pelican_latitude_ = boost::optional<double>{};
+  agent_id_["Jackal"] = 0;
+  agent_id_["Pelican"] = 1;
   // Load parameters
   if (!ParseFromRosParam()) {
     ROS_ERROR_STREAM("Missing required ros parameter");
@@ -58,11 +60,11 @@ bool SamplingCore::Init() {
   Pelican_position_pub_ =
       nh_.advertise<visualization_msgs::Marker>("pelican_visualization", 1);
 
-  voronoi_cell_ = voronoi::Voronoi(location_);
+  voronoi_node_ = voronoi::Voronoi(location_);
   update_flag_ = false;
   sample_size_ = 0;
 
-  // GP
+  // Model initialization
   if (!gt_gp_hyperparams_.empty()) {
     gt_model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
         new gpmm::GaussianProcessMixtureModel(
@@ -73,6 +75,12 @@ bool SamplingCore::Init() {
   model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
       new gpmm::GaussianProcessMixtureModel(num_gaussian_, gp_hyperparams_,
                                             max_iteration_, eps_));
+
+  // Information selection initialization
+  informative_sampling_node_ =
+      std::unique_ptr<informative_sampling::InformativeSampling>(
+          new informative_sampling::InformativeSampling(
+              location_, selection_mode_, variance_coef_));
 
   // Initial data
   if (init_sample_temperature_.rows() > 0) {
@@ -121,78 +129,23 @@ bool SamplingCore::AssignInterestPoint(
     sampling_msgs::RequestGoal::Response &res) {
   ROS_INFO_STREAM(
       "Master Computer received request from robot : " << req.robot_id);
-  // todo \yang add hetegeneous functionality
-  switch (heuristic_mode_) {
-    case VARIANCE: {
-      if (heuristic_pq_.empty()) {
-        model_->Predict(location_, mean_prediction_, var_prediction_);
-        UpdateHeuristic();
-        if (heuristic_pq_.empty()) {
-          ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
-          return false;
-        }
-      }
-      std::pair<double, int> interest_point_pair = heuristic_pq_.top();
-      res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
-      res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
-      heuristic_pq_.pop();
-    }
-    case UCB: {
-      if (heuristic_pq_.empty()) {
-        model_->Predict(location_, mean_prediction_, var_prediction_);
-        UpdateHeuristic();
-        if (heuristic_pq_.empty()) {
-          ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
-          return false;
-        }
-      }
-      std::pair<double, int> interest_point_pair = heuristic_pq_.top();
-      res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
-      res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
-      heuristic_pq_.pop();
-    }
-    case DISTANCE_UCB: {
-      if (heuristic_pq_v_.empty()) {
-        model_->Predict(location_, mean_prediction_, var_prediction_);
-        UpdateHeuristic();
-        if (heuristic_pq_v_.empty()) {
-          ROS_ERROR_STREAM("Error! Heuristice priority queue empty!");
-          return false;
-        }
-      }
-      if (!req.robot_id.compare(Jackal_id_) == 0) {
-        if (!heuristic_pq_v_[0].empty()) {
-          std::pair<double, int> interest_point_pair = heuristic_pq_v_[0].top();
-          res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
-          res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
-          heuristic_pq_v_[0].pop();
-        } else {
-          return false;
-        }
-      } else if (!req.robot_id.compare(Pelican_id_) == 0) {
-        if (!heuristic_pq_v_[1].empty()) {
-          std::pair<double, int> interest_point_pair = heuristic_pq_v_[1].top();
-          res.latitude = location_(interest_point_pair.second, 0) / map_scale_;
-          res.longitude = location_(interest_point_pair.second, 1) / map_scale_;
-          heuristic_pq_v_[1].pop();
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    default: { return false; }
-  }
-  if (req.robot_id.compare(Jackal_id_) == 0) {
-    Jackal_visualization_node_->UpdateTarget(res.latitude * map_scale_,
-                                             res.longitude * map_scale_);
-  } else if (req.robot_id.compare(Pelican_id_) == 0) {
-    Pelican_visualization_node_->UpdateTarget(res.latitude * map_scale_,
-                                              res.longitude * map_scale_);
-  } else {
-    return false;
-  }
+
+  // Update Voronoi map
+  int agent_id = agent_id_[req.robot_id];
+  Eigen::MatrixXd agent_locations(2, 2);
+  agent_locations(0, 0) = Jackal_latitude_.get();
+  agent_locations(0, 1) = Jackal_longitude_.get();
+  agent_locations(1, 0) = Pelican_latitude_.get();
+  agent_locations(1, 1) = Pelican_longitude_.get();
+
+  std::vector<int> cell_index =
+      voronoi_node_.GetSingleVoronoiCellIndex(agent_locations, agent_id);
+
+  std::pair<double, double> next_location =
+      informative_sampling_node_->SelectInformativeLocation(
+          mean_prediction_, var_prediction_, cell_index);
+  res.latitude = next_location.first;
+  res.longitude = next_location.second;
   return true;
 }
 
@@ -208,7 +161,6 @@ void SamplingCore::CollectSampleCallback(
     utils::MsgToMatrix(msg, new_location, new_feature);
     new_location(0, 0) = new_location(0, 0) * map_scale_;
     new_location(0, 1) = new_location(0, 1) * map_scale_;
-    sample_count_[new_location]++;
 
     collected_temperatures_.conservativeResize(collected_temperatures_.size() +
                                                1);
@@ -223,76 +175,6 @@ void SamplingCore::CollectSampleCallback(
   } else {
     ROS_INFO_STREAM(
         "Master computer received invalid sample from : " << msg.robot_id);
-  }
-}
-
-void SamplingCore::UpdateHeuristic() {
-  switch (heuristic_mode_) {
-    case VARIANCE: {
-      heuristic_pq_ = std::priority_queue<std::pair<double, int>,
-                                          std::vector<std::pair<double, int>>,
-                                          std::less<std::pair<double, int>>>();
-      for (int i = 0; i < location_.rows(); ++i) {
-        heuristic_pq_.push(std::make_pair(var_prediction_(i), i));
-      }
-      break;
-    }
-    case UCB: {
-      heuristic_pq_ = std::priority_queue<std::pair<double, int>,
-                                          std::vector<std::pair<double, int>>,
-                                          std::less<std::pair<double, int>>>();
-      for (int i = 0; i < location_.rows(); ++i) {
-        heuristic_pq_.push(std::make_pair(
-            mean_prediction_(i) +
-                variance_coeff_ / std::sqrt(sample_count_[location_.row(i)]) *
-                    var_prediction_(i),
-            i));
-      }
-      break;
-    }
-    case DISTANCE_UCB: {
-      heuristic_pq_v_.clear();
-      Eigen::MatrixXd robot_locations = Eigen::MatrixXd::Zero(2, 2);
-      sampling_msgs::RequestLocation srv;
-      srv.request.robot_id = Jackal_id_;
-      if (!Jackal_GPS_client_.call(srv)) {
-        ROS_INFO_STREAM("Can not get Jackal GPS location!");
-        break;
-      }
-      robot_locations(0, 0) = srv.response.latitude;
-      robot_locations(0, 1) = srv.response.longitude;
-      srv.request.robot_id = Pelican_id_;
-      if (!Pelican_GPS_client_.call(srv)) {
-        ROS_INFO_STREAM("Can not get Pelican GPS location!");
-        break;
-      }
-      robot_locations(1, 0) = srv.response.latitude;
-      robot_locations(1, 1) = srv.response.longitude;
-
-      std::vector<std::vector<int>> labels;
-      Eigen::MatrixXd distance;
-      voronoi_cell_.UpdateVoronoiMap(robot_locations, distance_scale_factor_,
-                                     labels, distance);
-      for (size_t i = 0; i < labels.size(); ++i) {
-        for (size_t j = 0; j < labels[i].size(); ++j) {
-          double q = 0.0;
-          const Eigen::MatrixXd point_location = location_.row(labels[i][j]);
-          for (const auto &index : labels[i]) {
-            double confidence_bound =
-                mean_prediction_(index) +
-                variance_coeff_ /
-                    std::sqrt(sample_count_[location_.row(index)]) *
-                    var_prediction_(index);
-            q = q + utils::L2Distance(point_location, location_.row(index)) *
-                        confidence_bound;
-          }
-          heuristic_pq_v_[i].push(std::make_pair(q, labels[i][j]));
-        }
-      }
-      break;
-    }
-    default:
-      break;
   }
 }
 
@@ -311,10 +193,6 @@ bool SamplingCore::ParseFromRosParam() {
     std::string location_data;
     if (!utils::GetParamData(data_path, "location_data", location_)) {
       return false;
-    } else {
-      for (size_t i = 0; i < location_.rows(); ++i) {
-        sample_count_[location_.row(i)] = 1.0;
-      }
     }
 
     if (!utils::GetParamData(data_path, "ground_truth_temperature_data",
@@ -424,29 +302,28 @@ bool SamplingCore::ParseFromRosParam() {
     }
     XmlRpc::XmlRpcValue sampling_param = sampling_param_list[0];
 
-    int heuristic_mode_int;
-    if (!utils::GetParam(sampling_param, "heuristic_mode",
-                         heuristic_mode_int)) {
+    int selection_model;
+    if (!utils::GetParam(sampling_param, "selection_model", selection_model)) {
       return false;
     } else {
-      switch (heuristic_mode_int) {
+      switch (selection_model) {
         case 0: {
-          heuristic_mode_ = VARIANCE;
+          selection_mode_ = VARIANCE;
           break;
         }
         case 1: {
-          heuristic_mode_ = UCB;
-          break;
-        }
-        case 2: {
-          heuristic_mode_ = DISTANCE_UCB;
+          selection_mode_ = UCB;
           break;
         }
         default: {
-          heuristic_mode_ = VARIANCE;
+          selection_mode_ = VARIANCE;
           break;
         }
       }
+    }
+
+    if (!utils::GetParam(sampling_param, "selection_model", selection_model)) {
+      return false;
     }
 
     if (!utils::GetParam(sampling_param, "Jackal_id", Jackal_id_)) {
@@ -457,12 +334,7 @@ bool SamplingCore::ParseFromRosParam() {
       return false;
     }
 
-    if (!utils::GetParam(sampling_param, "scale_factor",
-                         distance_scale_factor_)) {
-      return false;
-    }
-
-    if (!utils::GetParam(sampling_param, "variable_coeff", variance_coeff_)) {
+    if (!utils::GetParam(sampling_param, "variance_coef_", variance_coef_)) {
       return false;
     }
     ROS_INFO_STREAM("Successfully loaded sampling parameters!");
@@ -533,7 +405,7 @@ bool SamplingCore::InitializeVisualization() {
   return true;
 }
 
-void SamplingCore::UpdateGPModel() {
+void SamplingCore::UpdateModel() {
   model_->Train(collected_temperatures_, collected_locations_);
   model_->Predict(location_, mean_prediction_, var_prediction_);
 }
@@ -598,8 +470,7 @@ void SamplingCore::Update() {
   if (update_flag_) {
     ROS_INFO_STREAM("Update!");
     update_flag_ = false;
-    UpdateGPModel();
-    UpdateHeuristic();
+    UpdateModel();
     double rms = RMSError(gt_mean_, mean_prediction_);
     ROS_INFO_STREAM("RME Error : " << rms);
   }
