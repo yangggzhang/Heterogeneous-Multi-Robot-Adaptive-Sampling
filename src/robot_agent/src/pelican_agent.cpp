@@ -223,8 +223,8 @@ void PelicanNode::update_GPS_location_callback(
 
   last_latitude_ = current_latitude_;
   last_longitude_ = current_longitude_;
-  current_latitude_ = msg.latitude;
-  current_longitude_ = msg.longitude;
+  current_latitude_ = msg.longitude;
+  current_longitude_ = msg.latitude;
 
   gps_converg_flag_ = gps_is_converged(
       (last_latitude_ * pow(10, 7)), (last_longitude_ * pow(10, 7)),
@@ -238,7 +238,7 @@ void PelicanNode::update_GPS_location_callback(
 bool PelicanNode::ReportGPSService(
     sampling_msgs::RequestLocation::Request &req,
     sampling_msgs::RequestLocation::Response &res) {
-  if (agent_id_.compare(req.robot_id) != 0) {
+  if (agent_id_ != req.robot_id) {
     return false;
   } else {
     Eigen::MatrixXd GPS_matrix = Eigen::MatrixXd::Zero(1, 2);

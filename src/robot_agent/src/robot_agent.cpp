@@ -89,7 +89,7 @@ void AgentNode::update_GPS_location_callback(
 bool AgentNode::ReportGPSService(
     sampling_msgs::RequestLocation::Request &req,
     sampling_msgs::RequestLocation::Response &res) {
-  if (agent_id_.compare(req.robot_id) != 0) {
+  if (agent_id_ != 0) {
     return false;
   } else {
     res.latitude = current_latitude_;
@@ -136,8 +136,8 @@ void AgentNode::report_temperature_sample() {
   sampling_msgs::measurement msg;
   msg.valid = true;
   msg.robot_id = agent_id_;
-  msg.latitude = current_latitude_;
-  msg.longitude = current_longitude_;
+  msg.location_x = current_latitude_;
+  msg.location_y = current_longitude_;
   msg.measurement = temperature_measurement_;
   temperature_sample_pub_.publish(msg);
 }

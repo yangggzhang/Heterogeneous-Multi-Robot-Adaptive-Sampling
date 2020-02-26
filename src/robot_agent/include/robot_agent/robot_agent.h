@@ -48,7 +48,7 @@ class AgentNode {
 
  protected:
   STATE agent_state_;
-  std::string agent_id_;
+  int agent_id_;
 
   ros::NodeHandle nh_, rh_;
   int ros_queue_size_;

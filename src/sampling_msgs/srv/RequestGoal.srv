@@ -1,4 +1,4 @@
-string robot_id
+int32 robot_id
 float64 robot_latitude
 float64 robot_longitude
 ---

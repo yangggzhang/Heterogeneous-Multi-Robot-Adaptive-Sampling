@@ -74,12 +74,26 @@ bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
   return true;
 }
 
+bool GetParamDataVec(XmlRpc::XmlRpcValue &YamlNode,
+                     const std::string &param_name, Eigen::VectorXd &data) {
+  std::string file_dir;
+  if (!GetParam(YamlNode, param_name, file_dir)) {
+    return false;
+  } else {
+    file_dir = ros::package::getPath("sampling_data") + "/data/" + file_dir;
+    if (!LoadDataVec(file_dir, data)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void MsgToMatrix(const sampling_msgs::measurement &msg,
                  Eigen::MatrixXd &location, Eigen::MatrixXd &feature) {
   location = Eigen::MatrixXd::Zero(1, 2);
   feature = Eigen::MatrixXd::Zero(1, 1);
-  location(0, 0) = msg.latitude;
-  location(0, 1) = msg.longitude;
+  location(0, 0) = msg.location_x;
+  location(0, 1) = msg.location_y;
   feature(0, 0) = msg.measurement;
 }
 

@@ -53,10 +53,10 @@ class MeasurementReporterNode {
       const sensor_msgs::NavSatFixConstPtr &gps_msg,
       const sampling_msgs::temperature_measurementConstPtr &temperature_msg) {
     sampling_msgs::measurement msg;
-    msg.robot_id = "Jackal";
+    msg.robot_id = 0;
     msg.valid = true;
-    msg.latitude = gps_msg->latitude;
-    msg.longitude = gps_msg->longitude;
+    msg.location_x = gps_msg->latitude;
+    msg.location_y = gps_msg->longitude;
     msg.measurement = temperature_msg->filtered_temperature;
     ROS_INFO_STREAM("Publishing!");
     measurement_pub_.publish(msg);

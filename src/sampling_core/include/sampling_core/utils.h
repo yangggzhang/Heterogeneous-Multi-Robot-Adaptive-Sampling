@@ -20,6 +20,9 @@ bool LoadDataVec(const std::string &path, Eigen::VectorXd &data);
 bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
                   Eigen::MatrixXd &data);
 
+bool GetParamDataVec(XmlRpc::XmlRpcValue &YamlNode,
+                     const std::string &param_name, Eigen::VectorXd &data);
+
 template <typename T>
 bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
               T &data);

@@ -18,18 +18,15 @@ JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing jackal navigation time threshold!");
   }
 
-  if (!rh_.getParam("facing_heatsource",
-                    facing_heatsource_)) {
+  if (!rh_.getParam("facing_heatsource", facing_heatsource_)) {
     ROS_ERROR("Error! Missing if jackal need to face heat source!");
   }
 
-  if (!rh_.getParam("heat_source_lat",
-                    heat_source_lat_)) {
+  if (!rh_.getParam("heat_source_lat", heat_source_lat_)) {
     ROS_ERROR("Error! Missing heat_source_lat!");
   }
 
-  if (!rh_.getParam("heat_source_lng",
-                    heat_source_lng_)) {
+  if (!rh_.getParam("heat_source_lng", heat_source_lng_)) {
     ROS_ERROR("Error! Missing heat_source_lat!");
   }
   ROS_INFO_STREAM("Finish Jackal Loading!");
@@ -58,14 +55,15 @@ bool JackalNode::update_goal_from_gps() {
   move_base_goal_.target_pose.pose.position = map_goal.point;
 
   /// todo \yang calculate
-  if (facing_heatsource_){
+  if (facing_heatsource_) {
     tf::Matrix3x3 rot_euler;
     tf::Quaternion rot_quat;
     geometry_msgs::PointStamped utm_heatsource =
-      GPStoUTM(heat_source_lat_, heat_source_lng_);
+        GPStoUTM(heat_source_lat_, heat_source_lng_);
     geometry_msgs::PointStamped map_heatsource = UTMtoMapPoint(utm_heatsource);
     float delta_x = map_heatsource.point.x - map_goal.point.x;
-    float delta_y = map_heatsource.point.y - map_goal.point.y;   // change in coords.
+    float delta_y =
+        map_heatsource.point.y - map_goal.point.y;  // change in coords.
     float yaw_curr = atan2(delta_y, delta_x);
     float pitch_curr = 0;
     float roll_curr = 0;
@@ -77,8 +75,7 @@ bool JackalNode::update_goal_from_gps() {
     move_base_goal_.target_pose.pose.orientation.y = rot_quat.getY();
     move_base_goal_.target_pose.pose.orientation.z = rot_quat.getZ();
     move_base_goal_.target_pose.pose.orientation.w = rot_quat.getW();
-  }
-  else{
+  } else {
     move_base_goal_.target_pose.pose.orientation.w = 1.0;
   }
 

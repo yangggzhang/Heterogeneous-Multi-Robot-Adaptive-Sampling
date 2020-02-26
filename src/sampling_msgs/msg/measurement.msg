@@ -1,5 +1,5 @@
 bool valid
-string robot_id
-float64 latitude
-float64 longitude
+int32 robot_id
+float64 location_x
+float64 location_y
 float64 measurement

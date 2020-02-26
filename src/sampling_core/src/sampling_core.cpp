@@ -448,8 +448,8 @@ void SamplingCore::UpdateVisualization() {
 }
 
 void SamplingCore::JackalGPSCallback(const sensor_msgs::NavSatFix &msg) {
-  Jackal_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
-  Jackal_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
+  Jackal_latitude_ = boost::optional<double>{msg.location_x * map_scale_};
+  Jackal_longitude_ = boost::optional<double>{msg.location_y * map_scale_};
   Jackal_visualization_node_->UpdateMap(Jackal_latitude_.get(),
                                         Jackal_longitude_.get());
   visualization_msgs::Marker marker = Jackal_visualization_node_->GetMarker();
@@ -457,8 +457,8 @@ void SamplingCore::JackalGPSCallback(const sensor_msgs::NavSatFix &msg) {
 }
 
 void SamplingCore::PelicanGPSCallback(const sensor_msgs::NavSatFix &msg) {
-  Pelican_latitude_ = boost::optional<double>{msg.latitude * map_scale_};
-  Pelican_longitude_ = boost::optional<double>{msg.longitude * map_scale_};
+  Pelican_latitude_ = boost::optional<double>{msg.location_x * map_scale_};
+  Pelican_longitude_ = boost::optional<double>{msg.location_y * map_scale_};
 
   Pelican_visualization_node_->UpdateMap(Pelican_latitude_.get(),
                                          Pelican_longitude_.get());
