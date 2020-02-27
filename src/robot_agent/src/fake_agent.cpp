@@ -22,11 +22,6 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing fake agent navigation time threshold!");
   }
 
-  // if (!rh_.getParam("fake_distance_threshold_s", fake_distance_threshold_s_))
-  // {
-  //   ROS_ERROR("Error! Missing fake agent navigation distance threshold!");
-  // }
-
   if (!rh_.getParam("nagivate_loop_rate", nagivate_loop_rate_int_)) {
     ROS_ERROR("Error! Missing loop rate during navigation!");
   }
@@ -103,7 +98,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   for (int i = 0; i < num_obstacles_; i++) {
     obstacle_pos_.row(i) << obstacles[2 * i], obstacles[2 * i + 1];
   }
-  std::cout << obstacle_pos_ << std::endl;
+  // std::cout << obstacle_pos_ << std::endl;
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
 }
 
@@ -146,7 +141,7 @@ bool FakeAgentNode::move_to_goal() {
     navigate_loop_rate.sleep();
     // update new position
     dt = ros::Time::now() - previous;
-    std::cout << dt << std::endl;
+    // std::cout << dt << std::endl;
     current_latitude_ += best_vel[0] * dt.toSec();
     current_longitude_ += best_vel[1] * dt.toSec();
     ROS_INFO_STREAM("Robot " << agent_id_ << " current location ("
@@ -190,8 +185,6 @@ std::vector<double> FakeAgentNode::get_best_vel() {
     }
   }
   std::vector<double> best_vel{best_vx, best_vy};
-  std::cout << "cost: " << best_goal_cost << "," << best_obstacle_cost
-            << std::endl;
   return best_vel;
 }
 
@@ -231,7 +224,6 @@ double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
     }
     Eigen::MatrixXd::Index minRow, minCol;
     double min = distance_to_obs.minCoeff(&minRow, &minCol);
-    // std::cout << "Index" << minRow << "," << minCol << std::endl;
     if (min < collsion_radius_) {
       cost = FLT_MAX;
     } else {
