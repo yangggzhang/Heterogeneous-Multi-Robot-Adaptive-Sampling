@@ -9,6 +9,7 @@
 #include <sampling_msgs/measurement.h>
 #include <Eigen/Dense>
 #include <string>
+#include "sampling_core/sampling_visualization.h"
 
 namespace sampling {
 namespace utils {
@@ -16,6 +17,9 @@ namespace utils {
 bool LoadData(const std::string &path, Eigen::MatrixXd &data);
 
 bool LoadDataVec(const std::string &path, Eigen::VectorXd &data);
+
+bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
+                  sampling::visualization::MAP_PARAM &param);
 
 bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
                   Eigen::MatrixXd &data);

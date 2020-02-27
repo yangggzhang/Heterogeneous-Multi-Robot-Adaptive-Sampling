@@ -18,35 +18,6 @@ float RandomFloat(float a, float b) {
   return a + r;
 }
 
-bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
-                  sampling::visualization::MAP_PARAM &param) {
-  if (!sampling::utils::GetParam(YamlNode, "map_frame", param.map_frame)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "map_id", param.map_id)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "x_scale", param.x_scale)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "y_scale", param.y_scale)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "x_offset", param.x_offset)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "y_offset", param.y_offset)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "lower_bound", param.lower_bound)) {
-    return false;
-  }
-  if (!sampling::utils::GetParam(YamlNode, "upper_bound", param.upper_bound)) {
-    return false;
-  }
-  return true;
-}
-
 int main(int argc, char **argv) {
   ros::init(argc, argv, "gmm_test_node");
   int num_gau, max_iteration;
@@ -136,7 +107,7 @@ int main(int argc, char **argv) {
   for (int32_t i = 0; i < visualization_param_list.size(); ++i) {
     XmlRpc::XmlRpcValue visualization_param = visualization_param_list[i];
     sampling::visualization::MAP_PARAM param;
-    if (!LoadMapParam(visualization_param, param)) {
+    if (!sampling::utils::LoadMapParam(visualization_param, param)) {
       ROS_ERROR_STREAM("ERROR LOADING VISUALIZATION PARAM!");
       return -1;
     }

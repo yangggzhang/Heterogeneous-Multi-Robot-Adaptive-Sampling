@@ -37,6 +37,9 @@ bool SamplingCoreSimulation::Initialize() {
       nh_.subscribe("sample_collection_channel", 1,
                     &SamplingCoreSimulation::CollectSampleCallback, this);
 
+  visualization_pub_ = nh_.advertise<visualization_msgs::MarkerArray>(
+      "sampling_visualization", 1);
+
   // Model initialization
   model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
       new gpmm::GaussianProcessMixtureModel(num_gaussian_, gp_hyperparams_,
@@ -51,6 +54,11 @@ bool SamplingCoreSimulation::Initialize() {
   // Voronoi Update
   voronoi_node_ =
       std::unique_ptr<voronoi::Voronoi>(new voronoi::Voronoi(test_location_));
+
+  visualization_node_ = std::unique_ptr<visualization::SamplingVisualization>(
+      new visualization::SamplingVisualization(graph_visualization_params_,
+                                               robot_visualization_params_,
+                                               num_agents_, test_location_));
 
   UpdateModel();
 
@@ -212,6 +220,28 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
     }
     ROS_INFO_STREAM("Successfully loaded sampling parameters!");
   }
+
+  // load visualization params
+  graph_visualization_params_.clear();
+  XmlRpc::XmlRpcValue visualization_param_list;
+  ph_.getParam("graph_visualization_parameters", visualization_param_list);
+  for (int32_t i = 0; i < visualization_param_list.size(); ++i) {
+    XmlRpc::XmlRpcValue visualization_param = visualization_param_list[i];
+    visualization::MAP_PARAM param;
+    if (!utils::LoadMapParam(visualization_param, param)) {
+      ROS_ERROR_STREAM("ERROR LOADING GRAPH VISUALIZATION PARAM!");
+      return false;
+    }
+    graph_visualization_params_.push_back(param);
+  }
+
+  ph_.getParam("robot_visualization_parameter", visualization_param_list);
+  XmlRpc::XmlRpcValue visualization_param = visualization_param_list[0];
+  if (!utils::LoadMapParam(visualization_param, robot_visualization_params_)) {
+    ROS_ERROR_STREAM("ERROR LOADING ROBOT VISUALIZATION PARAM!");
+    return false;
+  }
+
   ROS_INFO_STREAM("Finish loading data!");
   return true;
 }
@@ -221,11 +251,20 @@ void SamplingCoreSimulation::UpdateModel() {
   model_->Predict(test_location_, mean_prediction_, var_prediction_);
 }
 
+void SamplingCoreSimulation::UpdateVisualization() {
+  visualization_msgs::MarkerArray marker_array =
+      visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
+  marker_array.markers.push_back(
+      visualization_node_->UpdateRobot(agent_locations_));
+  visualization_pub_.publish(marker_array);
+}
+
 void SamplingCoreSimulation::Update() {
   if (update_flag_) {
     ROS_INFO_STREAM("Update!");
     update_flag_ = false;
     UpdateModel();
+    UpdateVisualization();
   }
 }
 

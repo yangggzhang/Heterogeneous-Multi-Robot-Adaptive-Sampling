@@ -64,3 +64,6 @@ target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV
 add_executable(voronoi_test_node node/voronoi_test_node.cpp)
 target_link_libraries(voronoi_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
+add_executable(sampling_simulation_node node/sampling_simulation_node.cpp)
+target_link_libraries(sampling_simulation_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+

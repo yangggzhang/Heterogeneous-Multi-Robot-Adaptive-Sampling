@@ -60,6 +60,35 @@ bool LoadDataVec(const std::string &path, Eigen::VectorXd &data) {
   return true;
 }
 
+bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
+                  sampling::visualization::MAP_PARAM &param) {
+  if (!GetParam(YamlNode, "map_frame", param.map_frame)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "map_id", param.map_id)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "x_scale", param.x_scale)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "y_scale", param.y_scale)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "x_offset", param.x_offset)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "y_offset", param.y_offset)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "lower_bound", param.lower_bound)) {
+    return false;
+  }
+  if (!GetParam(YamlNode, "upper_bound", param.upper_bound)) {
+    return false;
+  }
+  return true;
+}
+
 bool GetParamData(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
                   Eigen::MatrixXd &data) {
   std::string file_dir;

@@ -32,6 +32,8 @@ class SamplingCoreSimulation {
 
   void UpdateModel();
 
+  void UpdateVisualization();
+
   void Update();
 
   bool LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
@@ -46,6 +48,8 @@ class SamplingCoreSimulation {
   ros::Subscriber agent_location_sub_;
 
   ros::Subscriber sample_sub_;
+
+  ros::Publisher visualization_pub_;
 
   void CollectSampleCallback(const sampling_msgs::measurement &msg);
 
@@ -96,6 +100,13 @@ class SamplingCoreSimulation {
       informative_sampling_node_;
 
   ros::ServiceServer interest_point_assignment_server_;
+
+  // visualization
+  std::unique_ptr<visualization::SamplingVisualization> visualization_node_;
+
+  std::vector<visualization::MAP_PARAM> graph_visualization_params_;
+
+  visualization::MAP_PARAM robot_visualization_params_;
 };
 }  // namespace core
 }  // namespace sampling
