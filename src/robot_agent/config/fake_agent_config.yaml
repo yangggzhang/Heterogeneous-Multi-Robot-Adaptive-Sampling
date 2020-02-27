@@ -8,7 +8,7 @@ fake_moving_duration_threshold_s: 20
 fake_distance_threshold_s: 0.1
 nagivate_loop_rate: 5 #10
 # for dwa planner
-speed_resolution: 0.1
+num_speed_premitive: 20
 orientation_resolution: 0.01
 collision_radius: 0.5
 # obstacle_pos: [4,3,
