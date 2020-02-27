@@ -22,9 +22,10 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing fake agent navigation time threshold!");
   }
 
-  if (!rh_.getParam("fake_distance_threshold_s", fake_distance_threshold_s_)) {
-    ROS_ERROR("Error! Missing fake agent navigation distance threshold!");
-  }
+  // if (!rh_.getParam("fake_distance_threshold_s", fake_distance_threshold_s_))
+  // {
+  //   ROS_ERROR("Error! Missing fake agent navigation distance threshold!");
+  // }
 
   if (!rh_.getParam("nagivate_loop_rate", nagivate_loop_rate_int_)) {
     ROS_ERROR("Error! Missing loop rate during navigation!");
@@ -42,6 +43,8 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing num_speed_premitive_!");
   }
   speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
+  fake_distance_threshold_s_ =
+      1.5 * (1.0 / (float)nagivate_loop_rate_int_) * speed_resolution_;
 
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
