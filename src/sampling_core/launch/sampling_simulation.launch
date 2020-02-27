@@ -1,7 +1,7 @@
 <launch>
   <node pkg="sampling_core" type="sampling_simulation_node" name="sampling_simulation" output="screen"> 
     <rosparam>
-            num_agents: 3
+            num_agents: 1
             model_parameters:
                 - num_gaussian: 3
                   param0: [0.75, 0.75, 0.1]
@@ -46,8 +46,8 @@
                 - hetero_spaces: [ 0, 1, 2]
                   hetero_scale_factors: [ 1.0, 1.0, 1.0]
                   mp0: [ 1.0, 0.5, 1.0]
-                  mp1: [ 1.0, 0.2, 1.0]
-                  mp2: [ 1.0, 1.0, 1.0]
+                  <!-- mp1: [ 1.0, 0.2, 1.0]
+                  mp2: [ 1.0, 1.0, 1.0] -->
          </rosparam>
   </node>
 

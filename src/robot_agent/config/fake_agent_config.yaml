@@ -20,9 +20,9 @@ goal_cost_gain: 0.15
 obstacle_cost_gain: 1
 # To create groundtruth distribution
 observation_noise_std: 0.1
-ground_truth_mu: [0, 0, 
-                  74, 10, 
-                  14, 8]
+ground_truth_mu: [5, 15, 
+                  10, 33, 
+                  41, 23]
 
 ground_truth_sig: [5, 3, 
                    12, 8, 

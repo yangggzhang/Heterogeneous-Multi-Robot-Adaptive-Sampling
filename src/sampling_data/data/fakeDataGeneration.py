@@ -8,7 +8,7 @@ longitude1 = 0
 
 latitude2 = 50
 longitude2 = 50
-scale = 1
+scale = 10
 
 min_lat = min(latitude1, latitude2)
 max_lat = max(latitude1, latitude2)
@@ -19,8 +19,8 @@ resolution = 1
 print("latitude_range: [" + str(min_lat) + ", " + str(max_lat) + "]")
 print("longitude_range: [" + str(min_lng) + ", " + str(max_lng) + "]")
 
-gps_file = open("gt_fake_GPS.txt", "w")
-temp_file = open("gt_fake_temperature.txt","w")
+gps_file = open("init_fake_GPS.txt", "w")
+temp_file = open("init_fake_temperature.txt","w")
 
 # # gps_file = open("gt_GPS.txt", "w")
 # # temp_file = open("gt_temperature.txt","w")
@@ -34,9 +34,9 @@ temp_file = open("gt_fake_temperature.txt","w")
 # max_distance = 0.00001
 
 
-ground_truth_mu = [0, 0, 
-                  74, 10, 
-                  14, 8]
+ground_truth_mu = [5, 15, 
+                  10, 33, 
+                  41, 23]
 
 ground_truth_sig = [5, 3, 
                    12, 8, 
