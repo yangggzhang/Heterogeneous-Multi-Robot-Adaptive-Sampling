@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     ROS_INFO_STREAM("Failed to initialize sampling core!");
     return -1;
   }
-  ros::Rate r(10);
+  ros::Rate r(2);
   while (ros::ok()) {
     node.Update();
     ros::spinOnce();

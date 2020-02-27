@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 
 #include "sampling_core/sampling_core_simulation.h"
+#include "sampling_core/utils.h"
 #include "sampling_msgs/RequestLocation.h"
 
 #include <visualization_msgs/MarkerArray.h>
@@ -155,7 +156,7 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
     ROS_INFO_STREAM("Successfully loaded model parameters!");
   }
 
-  /// learning data
+  // learning data
   XmlRpc::XmlRpcValue data_list;
   if (!ph_.getParam("data_path", data_list)) {
     ROS_ERROR_STREAM("Missing necessary data");
