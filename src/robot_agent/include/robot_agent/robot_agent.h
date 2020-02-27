@@ -4,6 +4,7 @@
 #include <sampling_msgs/RequestGoal.h>
 #include <sampling_msgs/RequestLocation.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
+#include <sampling_msgs/agent_location.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <string>
 
@@ -36,6 +37,8 @@ class AgentNode {
 
   void report_temperature_sample();
 
+  void ReportLocationCallback(const ros::TimerEvent &);
+
   bool collect_temperature_sample(
       sampling_msgs::RequestTemperatureMeasurement::Request &req,
       sampling_msgs::RequestTemperatureMeasurement::Response &res);
@@ -47,6 +50,8 @@ class AgentNode {
   void collect_sample();
 
  protected:
+  ros::Timer event_timer_;
+
   STATE agent_state_;
   int agent_id_;
 
@@ -55,6 +60,7 @@ class AgentNode {
   ros::ServiceClient request_target_client_;
   ros::ServiceClient temperature_measurement_client_;
   ros::Publisher temperature_sample_pub_;
+  ros::Publisher agent_location_pub_;
   ros::Subscriber gps_location_sub_;
   ros::ServiceServer gps_location_server_;
 

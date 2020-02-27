@@ -1,7 +1,6 @@
 #pragma once
 
 #include <geometry_msgs/PointStamped.h>
-#include <sampling_msgs/RequestGroundTruthTemperature.h>
 #include <Eigen/Dense>
 #include <random>
 #include "robot_agent/robot_agent.h"
@@ -34,6 +33,7 @@ class FakeAgentNode : public AgentNode {
   bool collect_temperature_sample() override;
 
   double getGroundTruth();
+
   double getPdf(const Eigen::VectorXd &x, const Eigen::VectorXd &meanVec,
                 const Eigen::MatrixXd &covMat);
   //   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg)

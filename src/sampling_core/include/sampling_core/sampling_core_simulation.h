@@ -32,7 +32,7 @@ class SamplingCoreSimulation {
 
   void UpdateModel();
 
-  void UpdateVisualization();
+  void UpdateVisualization(const bool &update_model);
 
   void Update();
 
@@ -107,6 +107,13 @@ class SamplingCoreSimulation {
   std::vector<visualization::MAP_PARAM> graph_visualization_params_;
 
   visualization::MAP_PARAM robot_visualization_params_;
+
+  // heteregeneous
+  std::vector<HeterogenitySpace> hetero_spaces_;
+
+  std::vector<double> hetero_scale_factors_;
+
+  std::vector<std::vector<double>> motion_primitives_;
 };
 }  // namespace core
 }  // namespace sampling

@@ -62,15 +62,18 @@ AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   } else {
     agent_state_ = IDLE;
   }
-  request_target_client_ =
-      nh_.serviceClient<sampling_msgs::RequestGoal>(request_target_channel_);
+  request_target_client_ = nh_.serviceClient<sampling_msgs::RequestGoal>(
+      "interest_point_service_channel");
 
   temperature_measurement_client_ =
       nh_.serviceClient<sampling_msgs::RequestTemperatureMeasurement>(
           temperature_measurement_channel_);
 
   temperature_sample_pub_ = nh_.advertise<sampling_msgs::measurement>(
-      temperature_update_channel_, ros_queue_size_);
+      "sample_collection_channel", ros_queue_size_);
+
+  agent_location_pub_ =
+      nh_.advertise<sampling_msgs::agent_location>("agent_location_channel", 1);
 
   gps_location_sub_ =
       nh_.subscribe(gps_location_channel_, ros_queue_size_,
@@ -78,6 +81,17 @@ AgentNode::AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
 
   gps_location_server_ = nh_.advertiseService(
       report_gps_location_channel_, &AgentNode::ReportGPSService, this);
+
+  event_timer_ = nh_.createTimer(ros::Duration(0.2),
+                                 &AgentNode::ReportLocationCallback, this);
+}
+
+void AgentNode::ReportLocationCallback(const ros::TimerEvent &) {
+  sampling_msgs::agent_location msg;
+  msg.agent_id = agent_id_;
+  msg.location_x = current_latitude_;
+  msg.location_y = current_longitude_;
+  agent_location_pub_.publish(msg);
 }
 
 void AgentNode::update_GPS_location_callback(

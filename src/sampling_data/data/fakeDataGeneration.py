@@ -6,8 +6,8 @@ from scipy.stats import multivariate_normal
 latitude1 = 0
 longitude1 = 0
 
-latitude2 = 100
-longitude2 = 100
+latitude2 = 20
+longitude2 = 20
 scale = 1
 
 min_lat = min(latitude1, latitude2)

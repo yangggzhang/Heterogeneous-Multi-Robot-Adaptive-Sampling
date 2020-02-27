@@ -115,7 +115,7 @@ SamplingVisualization::SamplingVisualization(
   robot_marker_.type = visualization_msgs::Marker::SPHERE_LIST;
   robot_marker_.scale.x = robot_params_.x_scale;
   robot_marker_.scale.y = robot_params_.y_scale;
-  robot_marker_.scale.z = 1.0;
+  robot_marker_.scale.z = 5.0;
   robot_marker_.points.resize(num_robots_);
   robot_marker_.colors.resize(num_robots_);
 
@@ -125,42 +125,49 @@ SamplingVisualization::SamplingVisualization(
         robot_marker_.colors[i].r = KRGBRed[0];
         robot_marker_.colors[i].g = KRGBRed[1];
         robot_marker_.colors[i].b = KRGBRed[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       case 1: {
         robot_marker_.colors[i].r = KRGBGreen[0];
         robot_marker_.colors[i].g = KRGBGreen[1];
         robot_marker_.colors[i].b = KRGBGreen[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       case 2: {
         robot_marker_.colors[i].r = KRGBBlue[0];
         robot_marker_.colors[i].g = KRGBBlue[1];
         robot_marker_.colors[i].b = KRGBBlue[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       case 3: {
         robot_marker_.colors[i].r = KRGBYellow[0];
         robot_marker_.colors[i].g = KRGBYellow[1];
         robot_marker_.colors[i].b = KRGBYellow[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       case 4: {
         robot_marker_.colors[i].r = KRGBGray[0];
         robot_marker_.colors[i].g = KRGBGray[1];
         robot_marker_.colors[i].b = KRGBGray[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       case 5: {
         robot_marker_.colors[i].r = KRGBPink[0];
         robot_marker_.colors[i].g = KRGBPink[1];
         robot_marker_.colors[i].b = KRGBPink[2];
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
       default: {
-        robot_marker_.colors[i].r = 255.0;
-        robot_marker_.colors[i].g = 255.0;
-        robot_marker_.colors[i].b = 255.0;
+        robot_marker_.colors[i].r = 0.0;
+        robot_marker_.colors[i].g = 0.0;
+        robot_marker_.colors[i].b = 0.0;
+        robot_marker_.colors[i].a = 1.0;
         break;
       }
     }
@@ -240,8 +247,9 @@ visualization_msgs::Marker SamplingVisualization::UpdateRobot(
     geometry_msgs::Point waypoint;
     waypoint.x = (robot_locations(i, 0) - map_x_origin_) * map_x_scale_;
     waypoint.y = (robot_locations(i, 1) - map_y_origin_) * map_y_scale_;
-    waypoint.z = 0.0;
+    waypoint.z = 2.5;
     robot_marker_.points[i] = waypoint;
+    // ROS_INFO_STREAM("ROBOT LOCATION : " << waypoint.x << " " << waypoint.y);
   }
   return robot_marker_;
 }

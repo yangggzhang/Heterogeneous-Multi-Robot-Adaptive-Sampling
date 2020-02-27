@@ -52,8 +52,9 @@ bool SamplingCoreSimulation::Initialize() {
               test_location_, selection_mode_, variance_coef_));
 
   // Voronoi Update
-  voronoi_node_ =
-      std::unique_ptr<voronoi::Voronoi>(new voronoi::Voronoi(test_location_));
+  voronoi_node_ = std::unique_ptr<voronoi::Voronoi>(
+      new voronoi::Voronoi(test_location_, num_agents_, hetero_spaces_,
+                           hetero_scale_factors_, motion_primitives_));
 
   visualization_node_ = std::unique_ptr<visualization::SamplingVisualization>(
       new visualization::SamplingVisualization(graph_visualization_params_,
@@ -238,6 +239,61 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
     return false;
   }
 
+  // heteregeneous parameter
+  XmlRpc::XmlRpcValue heterogeneous_param_list;
+  ph_.getParam("heterogeneous_parameter", heterogeneous_param_list);
+  XmlRpc::XmlRpcValue heterogeneous_param = heterogeneous_param_list[0];
+  std::vector<int> hetero_int;
+  if (!utils::GetParam(heterogeneous_param, "hetero_spaces", hetero_int)) {
+    ROS_ERROR_STREAM("ERROR LOADING ROBOT HETERO PARAM!");
+    return false;
+  }
+
+  hetero_spaces_.clear();
+  for (const int &index : hetero_int) {
+    switch (index) {
+      case 0: {
+        hetero_spaces_.push_back(HeterogenitySpace::DISTANCE);
+        break;
+      }
+      case 1: {
+        hetero_spaces_.push_back(HeterogenitySpace::SPEED);
+        break;
+      }
+      case 2: {
+        hetero_spaces_.push_back(HeterogenitySpace::BATTERYLIFE);
+        break;
+      }
+      case 3: {
+        hetero_spaces_.push_back(HeterogenitySpace::MOBILITY);
+        break;
+      }
+      case 4: {
+        hetero_spaces_.push_back(HeterogenitySpace::REACHABILITY);
+        break;
+      }
+      default: {
+        ROS_ERROR_STREAM("Undefined heterogeneous space!");
+        return -1;
+      }
+    }
+  }
+  if (!utils::GetParam(heterogeneous_param, "hetero_scale_factors",
+                       hetero_scale_factors_)) {
+    ROS_ERROR_STREAM("ERROR LOADING ROBOT HETERO PARAM!");
+    return false;
+  }
+
+  motion_primitives_.resize(num_agents_);
+  for (int i = 0; i < num_agents_; ++i) {
+    std::string param_name = "mp" + std::to_string(i);
+    if (!utils::GetParam(heterogeneous_param, param_name,
+                         motion_primitives_[i])) {
+      ROS_ERROR_STREAM("ERROR LOADING ROBOT HETERO PARAM!");
+      return false;
+    }
+  }
+
   ROS_INFO_STREAM("Finish loading data!");
   return true;
 }
@@ -247,20 +303,24 @@ void SamplingCoreSimulation::UpdateModel() {
   model_->Predict(test_location_, mean_prediction_, var_prediction_);
 }
 
-void SamplingCoreSimulation::UpdateVisualization() {
-  visualization_msgs::MarkerArray marker_array =
-      visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
+void SamplingCoreSimulation::UpdateVisualization(const bool &update_model) {
+  visualization_msgs::MarkerArray marker_array;
+  if (update_model) {
+    marker_array =
+        visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
+  }
   marker_array.markers.push_back(
       visualization_node_->UpdateRobot(agent_locations_));
   visualization_pub_.publish(marker_array);
 }
 
 void SamplingCoreSimulation::Update() {
+  UpdateVisualization(update_flag_);
   if (update_flag_) {
     ROS_INFO_STREAM("Update!");
-    update_flag_ = false;
     UpdateModel();
-    UpdateVisualization();
+    UpdateVisualization(update_flag_);
+    update_flag_ = false;
   }
 }
 
