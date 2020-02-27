@@ -22,7 +22,7 @@ bool SamplingCoreSimulation::Initialize() {
   // initialize private elements
   agent_locations_ = Eigen::MatrixXd::Zero(num_agents_, 2);
 
-  update_flag_ = false;
+  update_flag_ = true;
 
   // Ros service and channel initialization.
   interest_point_assignment_server_ =
@@ -211,11 +211,7 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
         }
       }
     }
-
-    if (!utils::GetParam(sampling_param, "selection_model", selection_model)) {
-      return false;
-    }
-    if (!utils::GetParam(sampling_param, "variance_coef_", variance_coef_)) {
+    if (!utils::GetParam(sampling_param, "variance_coef", variance_coef_)) {
       return false;
     }
     ROS_INFO_STREAM("Successfully loaded sampling parameters!");

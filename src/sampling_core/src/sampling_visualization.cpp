@@ -235,7 +235,7 @@ visualization_msgs::MarkerArray SamplingVisualization::UpdateMap(
 
 visualization_msgs::Marker SamplingVisualization::UpdateRobot(
     const Eigen::MatrixXd &robot_locations) {
-  assert(robot_locations.size() == num_robots_);
+  assert(robot_locations.rows() == num_robots_);
   for (int i = 0; i < num_robots_; ++i) {
     geometry_msgs::Point waypoint;
     waypoint.x = (robot_locations(i, 0) - map_x_origin_) * map_x_scale_;
