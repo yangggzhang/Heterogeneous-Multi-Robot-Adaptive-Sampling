@@ -38,9 +38,10 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing obstacle avoidance!");
   }
 
-  if (!rh_.getParam("speed_resolution", speed_resolution_)) {
-    ROS_ERROR("Error! Missing speed_resolution!");
+  if (!rh_.getParam("num_speed_premitive", num_speed_premitive_)) {
+    ROS_ERROR("Error! Missing num_speed_premitive_!");
   }
+  speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
 
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
@@ -166,7 +167,8 @@ std::vector<double> FakeAgentNode::get_best_vel() {
   double best_vy = 0;
   double best_goal_cost;
   double best_obstacle_cost;
-  for (double speed = 0.0; speed < max_vel_; speed += speed_resolution_) {
+  for (double speed = 0.0; speed < max_vel_ + speed_resolution_;
+       speed += speed_resolution_) {
     for (double angle = -M_PI; angle < M_PI; angle += angle_resolution_) {
       double v_x = speed * cos(angle);
       double v_y = speed * sin(angle);

@@ -43,6 +43,7 @@ class FakeAgentNode : public AgentNode {
   bool goal_reached_;
   bool obstacle_avoidance_;
   int gt_num_gaussian_;
+  int num_speed_premitive_;
   double fake_moving_duration_threshold_s_;
   double fake_distance_threshold_s_;
   double observation_noise_std_;
