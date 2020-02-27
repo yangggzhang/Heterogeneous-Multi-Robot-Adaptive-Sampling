@@ -13,6 +13,8 @@
                 - test_location: "gt_fake_GPS.txt"
                   initial_measurements: "init_fake_temperature.txt"
                   initial_locations: "init_fake_GPS.txt"
+                  gt_measurements: "gt_fake_temperature.txt"
+                  gt_locations: "gt_fake_GPS.txt"
             sampling_parameters:
                 - selection_model: 1
                   variance_coef: 2.5

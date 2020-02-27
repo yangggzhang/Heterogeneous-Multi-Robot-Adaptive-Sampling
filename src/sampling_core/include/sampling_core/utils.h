@@ -50,6 +50,8 @@ inline double L2Distance(const Eigen::MatrixXd &location0,
   return dx * dx + dy * dy;
 }
 
+double CalculateRMS(Eigen::VectorXd &pred, Eigen::VectorXd &gt);
+
 }  // namespace utils
 }  // namespace sampling
 #include "utils_impl.h"

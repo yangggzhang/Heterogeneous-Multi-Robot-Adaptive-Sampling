@@ -11,6 +11,7 @@ add_message_files(
   measurement.msg
   temperature_measurement.msg
   agent_location.msg
+  report.msg
 )
 
 add_service_files(

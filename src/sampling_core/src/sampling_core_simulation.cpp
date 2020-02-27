@@ -25,6 +25,8 @@ bool SamplingCoreSimulation::Initialize() {
 
   update_flag_ = true;
 
+  initial_sample_size_ = collected_measurements_.rows();
+
   // Ros service and channel initialization.
   interest_point_assignment_server_ =
       nh_.advertiseService("interest_point_service_channel",
@@ -40,6 +42,11 @@ bool SamplingCoreSimulation::Initialize() {
 
   visualization_pub_ = nh_.advertise<visualization_msgs::MarkerArray>(
       "sampling_visualization", 1);
+
+  report_pub_ = nh_.advertise<sampling_msgs::report>("report", 1);
+
+  event_timer_ = nh_.createTimer(ros::Duration(1.0),
+                                 &SamplingCoreSimulation::ReportCallback, this);
 
   // Model initialization
   model_ = std::unique_ptr<gpmm::GaussianProcessMixtureModel>(
@@ -73,6 +80,20 @@ bool SamplingCoreSimulation::Initialize() {
 
   ROS_INFO_STREAM("Finish initialization!");
   return true;
+}
+
+void SamplingCoreSimulation::ReportCallback(const ros::TimerEvent &) {
+  sampling_msgs::report msg;
+  msg.header.stamp = ros::Time::now();
+  msg.num_samples = collected_measurements_.rows() - initial_sample_size_;
+  for (int i = 0; i < agent_locations_.rows(); ++i) {
+    msg.location_x.push_back(agent_locations_(i, 0));
+    msg.location_y.push_back(agent_locations_(i, 1));
+  }
+  Eigen::VectorXd gt_pred_mean, gt_pred_var;
+  model_->Predict(gt_locations_, gt_pred_mean, gt_pred_var);
+  msg.rms = utils::CalculateRMS(gt_pred_mean, gt_measurements_);
+  report_pub_.publish(msg);
 }
 
 bool SamplingCoreSimulation::AssignInterestPoint(
@@ -180,11 +201,23 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
 
     if (!utils::GetParamDataVec(data_path, "initial_measurements",
                                 collected_measurements_)) {
+      return false;
     }
 
     if (!utils::GetParamData(data_path, "initial_locations",
                              collected_locations_)) {
+      return false;
     }
+
+    if (!utils::GetParamData(data_path, "gt_locations", gt_locations_)) {
+      return false;
+    }
+
+    if (!utils::GetParamDataVec(data_path, "gt_measurements",
+                                gt_measurements_)) {
+      return false;
+    }
+
     ROS_INFO_STREAM("Successfully loaded data!");
   }
 

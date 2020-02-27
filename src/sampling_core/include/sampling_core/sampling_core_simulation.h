@@ -17,6 +17,7 @@
 #include "sampling_core/voronoi_visualization.h"
 #include "sampling_msgs/RequestGoal.h"
 #include "sampling_msgs/agent_location.h"
+#include "sampling_msgs/report.h"
 
 namespace sampling {
 namespace core {
@@ -44,6 +45,8 @@ class SamplingCoreSimulation {
   // ROS
   ros::NodeHandle nh_, ph_;
 
+  ros::Timer event_timer_;
+
   int num_agents_;
 
   ros::Subscriber agent_location_sub_;
@@ -52,6 +55,8 @@ class SamplingCoreSimulation {
 
   ros::Publisher visualization_pub_;
 
+  ros::Publisher report_pub_;
+
   void CollectSampleCallback(const sampling_msgs::measurement &msg);
 
   void AgentLocationCallback(const sampling_msgs::agent_location &msg);
@@ -59,11 +64,15 @@ class SamplingCoreSimulation {
   bool AssignInterestPoint(sampling_msgs::RequestGoal::Request &req,
                            sampling_msgs::RequestGoal::Response &res);
 
+  void ReportCallback(const ros::TimerEvent &);
+
   // Agent locations matrix, an num_agent x 2 matrix
   Eigen::MatrixXd agent_locations_;
 
   // model parameter
   int num_gaussian_;
+
+  int initial_sample_size_;
 
   std::vector<std::vector<double>> gp_hyperparams_;
 
@@ -79,6 +88,10 @@ class SamplingCoreSimulation {
 
   // data
   Eigen::MatrixXd test_location_;
+
+  Eigen::VectorXd gt_measurements_;
+
+  Eigen::MatrixXd gt_locations_;
 
   Eigen::VectorXd collected_measurements_;
 

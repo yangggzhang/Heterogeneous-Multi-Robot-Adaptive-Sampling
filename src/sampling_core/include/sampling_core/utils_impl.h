@@ -126,6 +126,12 @@ void MsgToMatrix(const sampling_msgs::measurement &msg,
   feature(0, 0) = msg.measurement;
 }
 
+double CalculateRMS(Eigen::VectorXd &pred, Eigen::VectorXd &gt) {
+  Eigen::VectorXd diff = pred - gt;
+  double rms = diff.squaredNorm() / (double)diff.size();
+  return std::sqrt(rms);
+}
+
 template <typename T>
 bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
               T &data) {
