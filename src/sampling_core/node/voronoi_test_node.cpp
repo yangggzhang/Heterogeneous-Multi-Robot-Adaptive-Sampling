@@ -78,6 +78,10 @@ int main(int argc, char **argv) {
         hetero_spaces.push_back(sampling::HeterogenitySpace::MOBILITY);
         break;
       }
+      case 4: {
+        hetero_spaces.push_back(sampling::HeterogenitySpace::REACHABILITY);
+        break;
+      }
       default: {
         ROS_ERROR_STREAM("Undefined heterogeneous space!");
         return -1;
@@ -104,9 +108,36 @@ int main(int argc, char **argv) {
     motion_primitives.push_back(param);
   }
 
+  std::vector<int> obstacle_for_robot_id;
+  std::vector<Eigen::MatrixXd> obstacles_for_robots;
+  obstacles_for_robots.resize(num_robot);
+
+  XmlRpc::XmlRpcValue obstacle_list;
+  if (!nh.getParam("obstacle_list", obstacle_list)) {
+    ROS_ERROR_STREAM("Missing model parameters");
+    return false;
+  } else {
+    if (obstacle_list.size() == 0) {
+      ROS_ERROR_STREAM("Empty model parameters!");
+      return false;
+    }
+    for (int32_t i = 0; i < obstacle_list.size(); ++i) {
+      XmlRpc::XmlRpcValue obstacle_param = obstacle_list[i];
+      int agent_id;
+      if (!sampling::utils::GetParam(obstacle_param, "agent_id", agent_id)) {
+        return false;
+      }
+      if (!sampling::utils::GetParamData(obstacle_param, "obstacle_path",
+                                         obstacles_for_robots[agent_id])) {
+        return false;
+      }
+    }
+    ROS_INFO_STREAM("Successfully loaded model parameters!");
+  }
+
   sampling::voronoi::Voronoi voronoi_map(map, num_robot, hetero_spaces,
                                          scale_factor, motion_primitives);
-
+  voronoi_map.UpdateUnreachableLocations(obstacles_for_robots);
   Eigen::MatrixXd robot_locations(num_robot, 2);
   for (int i = 0; i < num_robot; i++) {
     robot_locations(i, 0) = RandomFloat(x_range.front(), x_range.back());

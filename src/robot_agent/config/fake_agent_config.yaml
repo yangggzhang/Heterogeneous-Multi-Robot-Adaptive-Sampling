@@ -10,11 +10,11 @@ nagivate_loop_rate: 5 #10
 # for dwa planner
 num_speed_premitive: 20
 orientation_resolution: 0.01
-collision_radius: 0.5
+collision_radius: 5
 # obstacle_pos: [4,3,
 #                6,6,
 #                8,9]
-obstacle_pos: [1,2]
+obstacle_pos: [10,20]
 prediction_time: 1 #2
 goal_cost_gain: 0.15
 obstacle_cost_gain: 1
@@ -27,5 +27,5 @@ ground_truth_mu: [5, 15,
 ground_truth_sig: [5, 3, 
                    12, 8, 
                    4, 8]
-gaussian_weights: [200,140,1500]
+gaussian_weights: [2000,1400,1500]
 
