@@ -1,10 +1,10 @@
 <launch>
   <node pkg="sampling_core" type="sampling_simulation_node" name="sampling_simulation" output="screen"> 
     <rosparam>
-            num_agents: 2
+            num_agents: 3
             model_parameters:
                 - num_gaussian: 3
-                  param0: [2.5, 2.5, 0.1]
+                  param0: [0.75, 0.75, 0.1]
                   param1: [1.5, 1.5, 0.1]
                   param2: [0.5, 0.5, 0.1]
                   max_iteration: 100
@@ -14,8 +14,8 @@
                   initial_measurements: "init_fake_temperature.txt"
                   initial_locations: "init_fake_GPS.txt"
             sampling_parameters:
-                - selection_model: 0
-                  variance_coef: 0.5
+                - selection_model: 1
+                  variance_coef: 2.5
             graph_visualization_parameters:
                 - map_frame: "mean"
                   map_id: 1
@@ -29,7 +29,7 @@
                   map_id: 2
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 30.0
+                  x_offset: 60.0
                   y_offset: 0.0
                   lower_bound: 0.0
                   upper_bound: 1.0
@@ -45,9 +45,9 @@
             heterogeneous_parameter:
                 - hetero_spaces: [ 0, 1, 2]
                   hetero_scale_factors: [ 1.0, 1.0, 1.0]
-                  mp0: [ 1.0, 1.0, 1.0]
-                  mp1: [ 1.0, 1.0, 1.0]
-                  <!-- mp2: [ 1.0, 1.0, 1.0] -->
+                  mp0: [ 1.0, 0.5, 1.0]
+                  mp1: [ 1.0, 0.2, 1.0]
+                  mp2: [ 1.0, 1.0, 1.0]
          </rosparam>
   </node>
 

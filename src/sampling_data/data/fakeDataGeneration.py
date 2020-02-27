@@ -6,21 +6,21 @@ from scipy.stats import multivariate_normal
 latitude1 = 0
 longitude1 = 0
 
-latitude2 = 20
-longitude2 = 20
+latitude2 = 50
+longitude2 = 50
 scale = 1
 
 min_lat = min(latitude1, latitude2)
 max_lat = max(latitude1, latitude2)
 min_lng = min(longitude1, longitude2)
 max_lng = max(longitude1, longitude2)
-resolution = 5
+resolution = 1
 
 print("latitude_range: [" + str(min_lat) + ", " + str(max_lat) + "]")
 print("longitude_range: [" + str(min_lng) + ", " + str(max_lng) + "]")
 
-gps_file = open("init_fake_GPS.txt", "w")
-temp_file = open("init_fake_temperature.txt","w")
+gps_file = open("gt_fake_GPS.txt", "w")
+temp_file = open("gt_fake_temperature.txt","w")
 
 # # gps_file = open("gt_GPS.txt", "w")
 # # temp_file = open("gt_temperature.txt","w")
