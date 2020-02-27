@@ -2,13 +2,8 @@ import rospy
 import numpy as np
 
 collision_radius = 10
-# obstacle_pos: [4,3,
-#                6,6,
-#                8,9]
-obstacle_pos= [1,2]
-# data = rosparam.load_file("fake_agent_config.yaml")
-# collision_radius = rospy.get_param("collision_radius")
-# obstacle_pos = rospy.get_param("obstacle_pos")
+
+obstacle_pos= [14,37]
 obstacle_pos = np.array(obstacle_pos).reshape(-1,2)
 
 
@@ -24,7 +19,7 @@ min_lng = min(longitude1, longitude2)
 max_lng = max(longitude1, longitude2)
 resolution = 1
 
-gps_file = open("obstacle_pos.txt", "w")
+obstacle_file = open("obstacle_1.txt", "w")
 
 
 def distance(lat1, lng1, lat2, lng2):
@@ -39,8 +34,8 @@ for lat in np.arange(min_lat, max_lat + resolution, resolution):
             obs_long = obstacle_pos[i,1]
             distance = np.sqrt((lat-obs_lat)**2+(lng-obs_long)**2)
             if distance<collision_radius:
-                gps_file.write("%f,%f \n" %(lat, lng))
-gps_file.close()
+                obstacle_file.write("%f,%f \n" %(lat, lng))
+obstacle_file.close()
 
 
 

@@ -14,6 +14,7 @@
 #include "sampling_core/sampling_visualization.h"
 #include "sampling_core/utils.h"
 #include "sampling_core/voronoi.h"
+#include "sampling_core/voronoi_visualization.h"
 #include "sampling_msgs/RequestGoal.h"
 #include "sampling_msgs/agent_location.h"
 
@@ -108,12 +109,19 @@ class SamplingCoreSimulation {
 
   visualization::MAP_PARAM robot_visualization_params_;
 
+  std::unique_ptr<visualization::VoronoiVisualization>
+      voronoi_visualization_node_;
+
+  visualization::MAP_PARAM voronoi_visualization_params_;
+
   // heteregeneous
   std::vector<HeterogenitySpace> hetero_spaces_;
 
   std::vector<double> hetero_scale_factors_;
 
   std::vector<std::vector<double>> motion_primitives_;
+
+  std::vector<Eigen::MatrixXd> obstacles_for_robots_;
 };
 }  // namespace core
 }  // namespace sampling

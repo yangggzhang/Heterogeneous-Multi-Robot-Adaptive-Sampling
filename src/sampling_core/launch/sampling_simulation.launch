@@ -21,7 +21,7 @@
                   map_id: 1
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 0.0
+                  x_offset: 60.0
                   y_offset: 0.0
                   lower_bound: 0.0
                   upper_bound: 1.5
@@ -29,13 +29,22 @@
                   map_id: 2
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 60.0
+                  x_offset: 120.0
                   y_offset: 0.0
                   lower_bound: 0.0
                   upper_bound: 1.0
             robot_visualization_parameter:
                 - map_frame: "robot"
                   map_id: 3
+                  x_scale: 5.0
+                  y_scale: 5.0
+                  x_offset: 0.0
+                  y_offset: 0.0
+                  lower_bound: 0.0
+                  upper_bound: 1.0
+            voronoi_visualization_parameter:
+                - map_frame: "voronoi"
+                  map_id: 4
                   x_scale: 1.0
                   y_scale: 1.0
                   x_offset: 0.0
@@ -43,11 +52,16 @@
                   lower_bound: 0.0
                   upper_bound: 1.0
             heterogeneous_parameter:
-                - hetero_spaces: [ 0, 1, 2]
-                  hetero_scale_factors: [ 1.0, 1.0, 1.0]
-                  mp0: [ 1.0, 0.5, 1.0]
-                  mp1: [ 1.0, 0.2, 1.0]
-                  mp2: [ 1.0, 1.0, 1.0]
+                - hetero_spaces: [ 0, 1, 4]
+                  hetero_scale_factors: [ 1.0, 1.0, 1.0, 1.0]
+                  mp0: [ 1.0, 1.0, 1.0, 1.0]
+                  mp1: [ 1.0, 0.5, 1.0, 1.0]
+                  mp2: [ 1.0, 1.5, 1.0, 1.0]
+            obstacle_list:
+                - agent_id: 0
+                  obstacle_path: "obstacle_0.txt"
+                - agent_id: 1
+                  obstacle_path: "obstacle_1.txt"
          </rosparam>
   </node>
 

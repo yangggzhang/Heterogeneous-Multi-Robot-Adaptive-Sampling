@@ -8,7 +8,7 @@ longitude1 = 0
 
 latitude2 = 50
 longitude2 = 50
-scale = 10
+scale = 1
 
 min_lat = min(latitude1, latitude2)
 max_lat = max(latitude1, latitude2)

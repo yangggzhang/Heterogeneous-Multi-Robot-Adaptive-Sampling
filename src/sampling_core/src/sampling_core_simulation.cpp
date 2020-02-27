@@ -57,10 +57,17 @@ bool SamplingCoreSimulation::Initialize() {
       new voronoi::Voronoi(test_location_, num_agents_, hetero_spaces_,
                            hetero_scale_factors_, motion_primitives_));
 
+  voronoi_visualization_node_ =
+      std::unique_ptr<visualization::VoronoiVisualization>(
+          new visualization::VoronoiVisualization(voronoi_visualization_params_,
+                                                  test_location_));
+
   visualization_node_ = std::unique_ptr<visualization::SamplingVisualization>(
       new visualization::SamplingVisualization(graph_visualization_params_,
                                                robot_visualization_params_,
                                                num_agents_, test_location_));
+
+  voronoi_node_->UpdateUnreachableLocations(obstacles_for_robots_);
 
   UpdateModel();
 
@@ -86,7 +93,6 @@ bool SamplingCoreSimulation::AssignInterestPoint(
 
   res.latitude = next_location.first;
   res.longitude = next_location.second;
-
   return true;
 }
 
@@ -240,6 +246,14 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
     return false;
   }
 
+  ph_.getParam("voronoi_visualization_parameter", visualization_param_list);
+  visualization_param = visualization_param_list[0];
+  if (!utils::LoadMapParam(visualization_param,
+                           voronoi_visualization_params_)) {
+    ROS_ERROR_STREAM("ERROR LOADING ROBOT VISUALIZATION PARAM!");
+    return false;
+  }
+
   // heteregeneous parameter
   XmlRpc::XmlRpcValue heterogeneous_param_list;
   ph_.getParam("heterogeneous_parameter", heterogeneous_param_list);
@@ -279,6 +293,7 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
       }
     }
   }
+
   if (!utils::GetParam(heterogeneous_param, "hetero_scale_factors",
                        hetero_scale_factors_)) {
     ROS_ERROR_STREAM("ERROR LOADING ROBOT HETERO PARAM!");
@@ -293,6 +308,31 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
       ROS_ERROR_STREAM("ERROR LOADING ROBOT HETERO PARAM!");
       return false;
     }
+  }
+
+  obstacles_for_robots_.resize(num_agents_);
+
+  XmlRpc::XmlRpcValue obstacle_list;
+  if (!ph_.getParam("obstacle_list", obstacle_list)) {
+    ROS_ERROR_STREAM("Missing model parameters");
+    return false;
+  } else {
+    if (obstacle_list.size() == 0) {
+      ROS_ERROR_STREAM("Empty model parameters!");
+      return false;
+    }
+    for (int32_t i = 0; i < obstacle_list.size(); ++i) {
+      XmlRpc::XmlRpcValue obstacle_param = obstacle_list[i];
+      int agent_id;
+      if (!sampling::utils::GetParam(obstacle_param, "agent_id", agent_id)) {
+        return false;
+      }
+      if (!sampling::utils::GetParamData(obstacle_param, "obstacle_path",
+                                         obstacles_for_robots_[agent_id])) {
+        return false;
+      }
+    }
+    ROS_INFO_STREAM("Successfully loaded model parameters!");
   }
 
   ROS_INFO_STREAM("Finish loading data!");
@@ -312,6 +352,10 @@ void SamplingCoreSimulation::UpdateVisualization(const bool &update_model) {
   }
   marker_array.markers.push_back(
       visualization_node_->UpdateRobot(agent_locations_));
+  std::vector<int> cell_index =
+      voronoi_node_->GetVoronoiIndex(agent_locations_);
+  voronoi_visualization_node_->UpdateMap(cell_index);
+  marker_array.markers.push_back(voronoi_visualization_node_->GetVoronoiMap());
   visualization_pub_.publish(marker_array);
 }
 

@@ -4,6 +4,7 @@
 #include <visualization_msgs/Marker.h>
 #include <Eigen/Dense>
 #include <vector>
+#include "sampling_core/sampling_visualization.h"
 
 namespace sampling {
 namespace visualization {
@@ -20,6 +21,9 @@ class VoronoiVisualization {
   VoronoiVisualization();
 
   VoronoiVisualization(const Eigen::MatrixXd &map);
+
+  VoronoiVisualization(const MAP_PARAM &graph_params,
+                       const Eigen::MatrixXd &map);
 
   void UpdateMap(const std::vector<int> &cell_labels);
 
