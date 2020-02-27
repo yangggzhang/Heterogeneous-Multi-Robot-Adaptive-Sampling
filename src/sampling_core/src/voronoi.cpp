@@ -72,7 +72,9 @@ double Voronoi::HeteroDistance(
     const std::vector<double> &scale_factor,
     const std::vector<double> &motion_primitive,
     const double &euclidean_distance, const Eigen::VectorXd &grid_location,
-    const std::unordered_set<std::pair<double, double>> &unreachable_points) {
+    const std::unordered_set<std::pair<double, double>,
+                             boost::hash<std::pair<double, double>>>
+        &unreachable_points) {
   Eigen::VectorXd distance_vec(hetero_space.size());
   for (int i = 0; i < hetero_space.size(); ++i) {
     switch (hetero_space[i]) {

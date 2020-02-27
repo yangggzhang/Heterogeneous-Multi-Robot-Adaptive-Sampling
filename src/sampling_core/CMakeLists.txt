@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS thread)
 find_package(OpenCV)
 
 catkin_package(
@@ -37,6 +38,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   include
   libgp/include
 )

@@ -5,21 +5,15 @@
 
 #pragma once
 #include <Eigen/Dense>
+#include <boost/functional/hash.hpp>
 #include <functional>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-template <>
-struct std::hash<std::pair<double, double>> {
-  inline size_t operator()(const std::pair<double, double> &v) const {
-    std::hash<double> double_hasher;
-    return double_hasher(v.first) ^ double_hasher(v.second);
-  }
-};
-
 namespace sampling {
 enum HeterogenitySpace { DISTANCE, SPEED, BATTERYLIFE, MOBILITY, REACHABILITY };
+typedef std::pair<double, double> pair;
 
 namespace voronoi {
 class Voronoi {
@@ -40,7 +34,9 @@ class Voronoi {
       const std::vector<double> &scale_factor,
       const std::vector<double> &motion_primitive,
       const double &euclidean_distance, const Eigen::VectorXd &grid_location,
-      const std::unordered_set<std::pair<double, double>> &unreachable_points);
+      const std::unordered_set<std::pair<double, double>,
+                               boost::hash<std::pair<double, double>>>
+          &unreachable_points);
 
   // agent_locations is a N x 2 matrix, where N is the number of agents.
   // Returnn an m x n distance map, where map(i,j) represents robot_j 's
@@ -91,7 +87,8 @@ class Voronoi {
   std::vector<double> scale_factors_;
   std::vector<std::vector<double>> motion_primitives_;
   std::vector<HeterogenitySpace> hetero_space_;
-  std::vector<std::unordered_set<std::pair<double, double>>>
+  std::vector<std::unordered_set<std::pair<double, double>,
+                                 boost::hash<std::pair<double, double>>>>
       unreachable_locations_;
 };
 }  // namespace voronoi
