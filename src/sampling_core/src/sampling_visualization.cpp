@@ -1,88 +1,10 @@
 #include "sampling_core/sampling_visualization.h"
+#include "sampling_core/voronoi_visualization.h"
 #include "sampling_msgs/RequestLocation.h"
 
 namespace sampling {
 namespace visualization {
 SamplingVisualization::SamplingVisualization() {}
-
-SamplingVisualization::SamplingVisualization(ros::NodeHandle &nh,
-                                             const MAP_PARAM &param,
-                                             const Eigen::MatrixXd &map)
-    : param_(param), map_(map) {
-  marker_array_ = visualization_msgs::Marker();
-  marker_array_.header.frame_id = "sampling_visualization";
-  marker_array_.header.stamp = ros::Time::now();
-  marker_array_.ns = "sampling_visualization";
-  marker_array_.pose.orientation.w = 0.0;
-  marker_array_.action = visualization_msgs::Marker::ADD;
-  marker_array_.id = param.map_id;
-  marker_array_.type = visualization_msgs::Marker::CUBE_LIST;
-  marker_array_.scale.x = param.x_scale;
-  marker_array_.scale.y = param.y_scale;
-  marker_array_.scale.z = 1.0;
-
-  std::unordered_set<double> x_array;
-  std::unordered_set<double> y_array;
-  for (size_t i = 0; i < map.rows(); ++i) {
-    x_array.insert(map(i, 0));
-    y_array.insert(map(i, 1));
-  }
-  size_t x_range = x_array.size();
-  size_t y_range = y_array.size();
-  double map_x_range = map.col(0).maxCoeff() - map.col(0).minCoeff();
-  double map_y_range = map.col(1).maxCoeff() - map.col(1).minCoeff();
-  double map_x_origin = (map.col(0).maxCoeff() + map.col(0).minCoeff()) / 2.0;
-  double map_y_origin = (map.col(1).maxCoeff() + map.col(1).minCoeff()) / 2.0;
-  double map_x_scale = (double)x_range / map_x_range;
-  double map_y_scale = (double)y_range / map_y_range;
-
-  // assert(x_range * y_range == map.rows());
-
-  marker_array_.points.resize(map.rows());
-  marker_array_.colors.resize(map.rows());
-
-  std_msgs::ColorRGBA color = std_msgs::ColorRGBA();
-  color.r = 1.0;
-  color.g = 0.0;
-  color.b = 0.0;
-  color.a = 1.0;
-
-  for (size_t i = 0; i < map.rows(); ++i) {
-    geometry_msgs::Point waypoint;
-    waypoint.x = (map(i, 0) - map_x_origin) * map_x_scale;
-    waypoint.y = (map(i, 1) - map_y_origin) * map_y_scale;
-    waypoint.z = 0.0;
-    waypoint.x = waypoint.x + param.x_offset;
-    waypoint.y = waypoint.y + param.y_offset;
-    marker_array_.points[i] = waypoint;
-    marker_array_.colors[i] = color;
-  }
-}
-
-void SamplingVisualization::UpdateMap(const Eigen::VectorXd &filling_value) {
-  if (map_.rows() != filling_value.rows()) {
-    ROS_ERROR_STREAM(
-        "Map size does not match filling value for map : " << param_.map_frame);
-    ROS_ERROR_STREAM("Map size : " << map_.rows());
-    ROS_ERROR_STREAM("Filling value size : " << filling_value.rows());
-    return;
-  }
-
-  marker_array_.header.stamp = ros::Time::now();
-
-  double lower_bound = std::min(param_.lower_bound, filling_value.minCoeff());
-  double upper_bound = std::max(param_.upper_bound, filling_value.maxCoeff());
-
-  for (size_t i = 0; i < filling_value.rows(); ++i) {
-    double norm;
-    if (std::isnan(filling_value(i)) || lower_bound == upper_bound) {
-      norm = 0;
-    } else {
-      norm = (filling_value(i) - lower_bound) / (upper_bound - lower_bound);
-    }
-    marker_array_.colors[i] = GetHeatMapColor(norm);
-  }
-}
 
 void SamplingVisualization::HSVtoRGB(const double &fH, const double &fS,
                                      const double &fV, double &fR, double &fG,
@@ -126,6 +48,125 @@ void SamplingVisualization::HSVtoRGB(const double &fH, const double &fS,
   fB += fM;
 }
 
+SamplingVisualization::SamplingVisualization(
+    const std::vector<MAP_PARAM> &graph_params, const MAP_PARAM &robot_param,
+    const int &num_robots, const Eigen::MatrixXd &map)
+    : graph_params_(graph_params),
+      robot_params_(robot_param),
+      map_(map),
+      num_robots_(num_robots) {
+  std::unordered_set<double> x_array;
+  std::unordered_set<double> y_array;
+  for (size_t i = 0; i < map.rows(); ++i) {
+    x_array.insert(map(i, 0));
+    y_array.insert(map(i, 1));
+  }
+
+  size_t x_range = x_array.size();
+  size_t y_range = y_array.size();
+  double map_x_range = map.col(0).maxCoeff() - map.col(0).minCoeff();
+  double map_y_range = map.col(1).maxCoeff() - map.col(1).minCoeff();
+  map_x_origin_ = (map.col(0).maxCoeff() + map.col(0).minCoeff()) / 2.0;
+  map_y_origin_ = (map.col(1).maxCoeff() + map.col(1).minCoeff()) / 2.0;
+  map_x_scale_ = (double)x_range / map_x_range;
+  map_y_scale_ = (double)y_range / map_y_range;
+
+  std_msgs::ColorRGBA default_color = std_msgs::ColorRGBA();
+  default_color.r = 0.0;
+  default_color.g = 0.0;
+  default_color.b = 0.0;
+  default_color.a = 1.0;
+
+  for (int i = 0; i < graph_params.size(); ++i) {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "sampling_visualization";
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "sampling_visualization";
+    marker.pose.orientation.w = 0.0;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.id = graph_params_[i].map_id;
+    marker.type = visualization_msgs::Marker::CUBE_LIST;
+    marker.scale.x = graph_params_[i].x_scale;
+    marker.scale.y = graph_params_[i].y_scale;
+    marker.scale.z = 1.0;
+    marker.points.resize(map.rows());
+    marker.colors.resize(map.rows());
+
+    for (size_t j = 0; j < map.rows(); ++j) {
+      geometry_msgs::Point waypoint;
+      waypoint.x = (map(j, 0) - map_x_origin_) * map_x_scale_ +
+                   graph_params_[i].x_offset;
+      waypoint.y = (map(j, 1) - map_y_origin_) * map_y_scale_ +
+                   graph_params_[i].y_offset;
+      waypoint.z = 0.0;
+      marker.points[j] = waypoint;
+      marker.colors[j] = default_color;
+    }
+    graph_markers_.push_back(marker);
+  }
+
+  robot_marker_ = visualization_msgs::Marker();
+  robot_marker_.header.frame_id = "sampling_visualization";
+  robot_marker_.header.stamp = ros::Time::now();
+  robot_marker_.ns = "sampling_visualization";
+  robot_marker_.pose.orientation.w = 0.0;
+  robot_marker_.action = visualization_msgs::Marker::ADD;
+  robot_marker_.id = robot_params_.map_id;
+  robot_marker_.type = visualization_msgs::Marker::SPHERE_LIST;
+  robot_marker_.scale.x = robot_params_.x_scale;
+  robot_marker_.scale.y = robot_params_.y_scale;
+  robot_marker_.scale.z = 1.0;
+  robot_marker_.points.resize(num_robots_);
+  robot_marker_.colors.resize(num_robots_);
+
+  for (size_t i = 0; i < num_robots_; ++i) {
+    switch (i) {
+      case 0: {
+        robot_marker_.colors[i].r = KRGBRed[0];
+        robot_marker_.colors[i].g = KRGBRed[1];
+        robot_marker_.colors[i].b = KRGBRed[2];
+        break;
+      }
+      case 1: {
+        robot_marker_.colors[i].r = KRGBGreen[0];
+        robot_marker_.colors[i].g = KRGBGreen[1];
+        robot_marker_.colors[i].b = KRGBGreen[2];
+        break;
+      }
+      case 2: {
+        robot_marker_.colors[i].r = KRGBBlue[0];
+        robot_marker_.colors[i].g = KRGBBlue[1];
+        robot_marker_.colors[i].b = KRGBBlue[2];
+        break;
+      }
+      case 3: {
+        robot_marker_.colors[i].r = KRGBYellow[0];
+        robot_marker_.colors[i].g = KRGBYellow[1];
+        robot_marker_.colors[i].b = KRGBYellow[2];
+        break;
+      }
+      case 4: {
+        robot_marker_.colors[i].r = KRGBGray[0];
+        robot_marker_.colors[i].g = KRGBGray[1];
+        robot_marker_.colors[i].b = KRGBGray[2];
+        break;
+      }
+      case 5: {
+        robot_marker_.colors[i].r = KRGBPink[0];
+        robot_marker_.colors[i].g = KRGBPink[1];
+        robot_marker_.colors[i].b = KRGBPink[2];
+        break;
+      }
+      default: {
+        robot_marker_.colors[i].r = 255.0;
+        robot_marker_.colors[i].g = 255.0;
+        robot_marker_.colors[i].b = 255.0;
+        break;
+      }
+    }
+  }
+}
+
 std_msgs::ColorRGBA SamplingVisualization::GetHeatMapColor(const double &norm) {
   std_msgs::ColorRGBA color;
   double r, g, b;
@@ -138,72 +179,72 @@ std_msgs::ColorRGBA SamplingVisualization::GetHeatMapColor(const double &norm) {
   return color;
 }
 
-visualization_msgs::Marker SamplingVisualization::GetMarker() {
-  return marker_array_;
-}
-
-RobotVisualization::RobotVisualization() {}
-
-RobotVisualization::RobotVisualization(ros::NodeHandle &nh,
-                                       const MAP_PARAM &param,
-                                       const std_msgs::ColorRGBA &color,
-                                       const Eigen::MatrixXd &map)
-    : param_(param) {
-  marker_ = visualization_msgs::Marker();
-  marker_.header.frame_id = "sampling_visualization";
-  marker_.header.stamp = ros::Time::now();
-  marker_.ns = "sampling_visualization";
-  marker_.pose.orientation.w = 0.0;
-  marker_.action = visualization_msgs::Marker::ADD;
-  marker_.id = param.map_id;
-  marker_.type = visualization_msgs::Marker::SPHERE;
-  marker_.scale.x = param.x_scale;
-  marker_.scale.y = param.y_scale;
-  marker_.scale.z = 1.0;
-
-  std::unordered_set<double> x_array;
-  std::unordered_set<double> y_array;
-  for (size_t i = 0; i < map.rows(); ++i) {
-    x_array.insert(map(i, 0));
-    y_array.insert(map(i, 1));
+visualization_msgs::Marker SamplingVisualization::UpdateMap(
+    const int &map_id, const Eigen::VectorXd &filling_value) {
+  if (map_.rows() != filling_value.size()) {
+    ROS_ERROR_STREAM("Map size does not match filling value for map : "
+                     << graph_params_[map_id].map_frame);
+    ROS_ERROR_STREAM("Map size : " << map_.rows());
+    ROS_ERROR_STREAM("Filling value size : " << filling_value.size());
+    return visualization_msgs::Marker();
   }
-  size_t x_range = x_array.size();
-  size_t y_range = y_array.size();
-  double map_x_range = map.col(0).maxCoeff() - map.col(0).minCoeff();
-  double map_y_range = map.col(1).maxCoeff() - map.col(1).minCoeff();
-  map_x_origin_ = (map.col(0).maxCoeff() + map.col(0).minCoeff()) / 2.0;
-  map_y_origin_ = (map.col(1).maxCoeff() + map.col(1).minCoeff()) / 2.0;
-  map_x_scale_ = (double)x_range / map_x_range;
-  map_y_scale_ = (double)y_range / map_y_range;
 
-  marker_.color = color;
+  graph_markers_[map_id].header.stamp = ros::Time::now();
 
-  target_ = marker_;
-  target_.id = target_.id++;
-  target_.type = visualization_msgs::Marker::CUBE;
+  double lower_bound =
+      std::min(graph_params_[map_id].lower_bound, filling_value.minCoeff());
+  double upper_bound =
+      std::max(graph_params_[map_id].upper_bound, filling_value.maxCoeff());
+
+  for (size_t i = 0; i < filling_value.rows(); ++i) {
+    double norm =
+        (filling_value(i) - lower_bound) / (upper_bound - lower_bound);
+    graph_markers_[map_id].colors[i] = GetHeatMapColor(norm);
+  }
+  return graph_markers_[map_id];
 }
 
-void RobotVisualization::UpdateMap(const double &robot_x,
-                                   const double &robot_y) {
-  marker_.pose.position.x =
-      ((robot_x - map_x_origin_) * map_x_scale_) + param_.x_offset;
-  marker_.pose.position.y =
-      ((robot_y - map_y_origin_) * map_y_scale_) + param_.y_offset;
-  marker_.pose.position.z = 0.5;
+visualization_msgs::MarkerArray SamplingVisualization::UpdateMap(
+    const std::vector<Eigen::VectorXd> &filling_values) {
+  visualization_msgs::MarkerArray marker_array;
+  for (int i = 0; i < filling_values.size(); ++i) {
+    if (map_.rows() != filling_values[i].size()) {
+      ROS_ERROR_STREAM("Map size does not match filling value for map : "
+                       << graph_params_[i].map_frame);
+      ROS_ERROR_STREAM("Map size : " << map_.rows());
+      ROS_ERROR_STREAM("Filling value size : " << filling_values.size());
+      return marker_array;
+    }
+
+    graph_markers_[i].header.stamp = ros::Time::now();
+
+    double lower_bound =
+        std::min(graph_params_[i].lower_bound, filling_values[i].minCoeff());
+    double upper_bound =
+        std::max(graph_params_[i].upper_bound, filling_values[i].maxCoeff());
+
+    for (size_t j = 0; j < filling_values[i].rows(); ++j) {
+      double norm =
+          (filling_values[i](j) - lower_bound) / (upper_bound - lower_bound);
+      graph_markers_[i].colors[j] = GetHeatMapColor(norm);
+    }
+    marker_array.markers.push_back(graph_markers_[i]);
+  }
+  return marker_array;
 }
 
-void RobotVisualization::UpdateTarget(const double &target_x,
-                                      const double &target_y) {
-  marker_.pose.position.x =
-      ((target_x - map_x_origin_) * map_x_scale_) + param_.x_offset;
-  marker_.pose.position.y =
-      ((target_y - map_y_origin_) * map_y_scale_) + param_.y_offset;
-  marker_.pose.position.z = 0.5;
+visualization_msgs::Marker SamplingVisualization::UpdateRobot(
+    const Eigen::MatrixXd &robot_locations) {
+  assert(robot_locations.size() == num_robots_);
+  for (int i = 0; i < num_robots_; ++i) {
+    geometry_msgs::Point waypoint;
+    waypoint.x = (robot_locations(i, 0) - map_x_origin_) * map_x_scale_;
+    waypoint.y = (robot_locations(i, 1) - map_y_origin_) * map_y_scale_;
+    waypoint.z = 0.0;
+    robot_marker_.points[i] = waypoint;
+  }
+  return robot_marker_;
 }
-
-visualization_msgs::Marker RobotVisualization::GetMarker() { return marker_; }
-
-visualization_msgs::Marker RobotVisualization::GetTarget() { return marker_; }
 
 }  // namespace visualization
 }  // namespace sampling

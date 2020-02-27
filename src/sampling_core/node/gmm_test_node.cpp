@@ -129,10 +129,6 @@ int main(int argc, char **argv) {
   model.Train(init_sample_utilities, init_sample_locations);
   Eigen::VectorXd pred_mean, pred_var;
   model.Predict(test_locations, pred_mean, pred_var);
-  // for (int i = 0; i < pred_mean.size(); ++i) {
-  //   ROS_INFO_STREAM("Sample : " << i << " Mean : " << pred_mean(i)
-  //                               << " Var : " << pred_var(i));
-  // }
 
   std::vector<sampling::visualization::MAP_PARAM> visualization_params;
   XmlRpc::XmlRpcValue visualization_param_list;
@@ -147,29 +143,15 @@ int main(int argc, char **argv) {
     visualization_params.push_back(param);
   }
 
-  std::unique_ptr<sampling::visualization::SamplingVisualization> mean_viz_node,
-      var_viz_node;
-  for (const sampling::visualization::MAP_PARAM &viz_param :
-       visualization_params) {
-    std::string frame_str = viz_param.map_frame;
-    if (frame_str.compare("mean") == 0) {
-      mean_viz_node =
-          std::unique_ptr<sampling::visualization::SamplingVisualization>(
-              new sampling::visualization::SamplingVisualization(
-                  nh, viz_param, test_locations));
-    }
-    if (frame_str.compare("variance") == 0) {
-      var_viz_node =
-          std::unique_ptr<sampling::visualization::SamplingVisualization>(
-              new sampling::visualization::SamplingVisualization(
-                  nh, viz_param, test_locations));
-    }
-  }
-  mean_viz_node->UpdateMap(pred_mean);
-  var_viz_node->UpdateMap(pred_var);
-  visualization_msgs::MarkerArray marker_array;
-  marker_array.markers.push_back(mean_viz_node->GetMarker());
-  marker_array.markers.push_back(var_viz_node->GetMarker());
+  sampling::visualization::MAP_PARAM robot_param;
+
+  std::unique_ptr<sampling::visualization::SamplingVisualization> gmm_viz_node =
+      std::unique_ptr<sampling::visualization::SamplingVisualization>(
+          new sampling::visualization::SamplingVisualization(
+              visualization_params, robot_param, 0, test_locations));
+  std::vector<Eigen::VectorXd> viz_values{pred_mean, pred_var};
+  visualization_msgs::MarkerArray marker_array =
+      gmm_viz_node->UpdateMap(viz_values);
   ros::Rate r(60);  // 10 hz
   while (ros::ok()) {
     distribution_visualization_pub.publish(marker_array);

@@ -1,6 +1,7 @@
 #pragma once
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <Eigen/Core>
 #include <unordered_set>
 
@@ -22,55 +23,47 @@ class SamplingVisualization {
  public:
   SamplingVisualization();
 
-  SamplingVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
+  SamplingVisualization(const std::vector<MAP_PARAM> &graph_params,
+                        const MAP_PARAM &robot_param, const int &num_robots,
                         const Eigen::MatrixXd &map);
 
-  void UpdateMap(const Eigen::VectorXd &filling_value);
+  visualization_msgs::Marker UpdateMap(const int &map_id,
+                                       const Eigen::VectorXd &filling_value);
+
+  visualization_msgs::MarkerArray UpdateMap(
+      const std::vector<Eigen::VectorXd> &filling_values);
+
+  visualization_msgs::Marker UpdateRobot(
+      const Eigen::MatrixXd &robot_locations);
+
+ private:
+  std::vector<MAP_PARAM> graph_params_;
+
+  MAP_PARAM robot_params_;
+
+  int num_robots_;
+
+  std::vector<visualization_msgs::Marker> graph_markers_;
+
+  Eigen::MatrixXd map_;
+
+  double map_x_origin_;
+
+  double map_y_origin_;
+
+  double map_x_scale_;
+
+  double map_y_scale_;
+
+  visualization_msgs::Marker robot_marker_;
 
   void HSVtoRGB(const double &fH, const double &fS, const double &fV,
                 double &fR, double &fG, double &fB);
-
-  visualization_msgs::Marker GetMarker();
-
- private:
-  MAP_PARAM param_;
-
-  visualization_msgs::Marker marker_array_;
-
-  Eigen::MatrixXd map_;
 
   // this function gets the color for each pixel given the normalized value
   // of the pixel
   std_msgs::ColorRGBA GetHeatMapColor(const double &norm);
 };
 
-class RobotVisualization {
- public:
-  RobotVisualization();
-
-  RobotVisualization(ros::NodeHandle &nh, const MAP_PARAM &param,
-                     const std_msgs::ColorRGBA &color,
-                     const Eigen::MatrixXd &map);
-
-  void UpdateMap(const double &robot_x, const double &robot_y);
-
-  visualization_msgs::Marker GetMarker();
-
-  void UpdateTarget(const double &target_x, const double &target_y);
-
-  visualization_msgs::Marker GetTarget();
-
- private:
-  MAP_PARAM param_;
-
-  double map_x_origin_;
-  double map_y_origin_;
-  double map_x_scale_;
-  double map_y_scale_;
-
-  visualization_msgs::Marker marker_;
-
-  visualization_msgs::Marker target_;
-};
 }  // namespace visualization
 }  // namespace sampling
