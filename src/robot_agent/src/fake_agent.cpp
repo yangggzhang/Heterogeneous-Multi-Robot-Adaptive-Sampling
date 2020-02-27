@@ -44,7 +44,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   }
   speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
   fake_distance_threshold_s_ =
-      1.5 * (1.0 / (float)nagivate_loop_rate_int_) * speed_resolution_;
+      1.5 * (1.0 / (float)nagivate_loop_rate_int_) * max_vel_;
 
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
@@ -149,9 +149,10 @@ bool FakeAgentNode::move_to_goal() {
     std::cout << dt << std::endl;
     current_latitude_ += best_vel[0] * dt.toSec();
     current_longitude_ += best_vel[1] * dt.toSec();
-    ROS_INFO_STREAM("Robot " << agent_id_ << " current location with state ("
+    ROS_INFO_STREAM("Robot " << agent_id_ << " current location ("
                              << current_latitude_ << ", " << current_longitude_
-                             << ")");
+                             << ") goal (" << goal_rtk_latitude_ << ", "
+                             << goal_rtk_longitude_ << ")");
     previous = ros::Time::now();
     totalNavigationTime = ros::Time::now() - begin;
   }
