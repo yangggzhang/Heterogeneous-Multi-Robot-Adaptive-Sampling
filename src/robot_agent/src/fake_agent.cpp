@@ -42,7 +42,8 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing num_speed_premitive_!");
   }
   speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
-
+  std::cout << speed_resolution_ << std::endl;
+  // fake_distance_threshold_s_ = speed_resolution_;
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
   }
