@@ -1,31 +1,32 @@
 import rospy
+import roslib
+roslib.load_manifest("rosparam")
+import rosparam
+import rospkg
 import numpy as np
 
-collision_radius = 10
-
-obstacle_pos= [14,37]
+rospack = rospkg.RosPack()
+paramlist = rosparam.load_file(rospack.get_path('robot_agent')+"/config/fake_agent_config.yaml")
+for params, ns in paramlist:
+    rosparam.upload_params(ns, params)
+collision_radius = rospy.get_param('collision_radius')
+obstacle_pos = rospy.get_param('obstacle_pos')
+map_range = rospy.get_param('map_range')
+resolution = rospy.get_param('map_resolution')
 obstacle_pos = np.array(obstacle_pos).reshape(-1,2)
 
 
-latitude1 = 0
-longitude1 = 0
-
-latitude2 = 50
-longitude2 = 50
+latitude1 = map_range[0]
+longitude1 = map_range[1]
+latitude2 = map_range[2]
+longitude2 = map_range[3]
 
 min_lat = min(latitude1, latitude2)
 max_lat = max(latitude1, latitude2)
 min_lng = min(longitude1, longitude2)
 max_lng = max(longitude1, longitude2)
-resolution = 1
 
 obstacle_file = open("obstacle_1.txt", "w")
-
-
-def distance(lat1, lng1, lat2, lng2):
-	d_lat = lat1 - lat2
-	d_lng = lng1 - lng2
-	return np.sqrt((d_lat * d_lat) + (d_lng * d_lng))
 
 for lat in np.arange(min_lat, max_lat + resolution, resolution):
     for lng in np.arange(min_lng, max_lng + resolution, resolution):
