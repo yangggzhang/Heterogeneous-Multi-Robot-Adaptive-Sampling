@@ -36,6 +36,8 @@ class FakeAgentNode : public AgentNode {
 
   double getPdf(const Eigen::VectorXd &x, const Eigen::VectorXd &meanVec,
                 const Eigen::MatrixXd &covMat);
+
+  double getPoly(double x, double y);
   //   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg)
   //   override;
 
@@ -44,6 +46,7 @@ class FakeAgentNode : public AgentNode {
   bool obstacle_avoidance_;
   int gt_num_gaussian_;
   int num_speed_premitive_;
+  int groundtruth_type_;
   double fake_moving_duration_threshold_s_;
   double fake_distance_threshold_s_;
   double observation_noise_std_;
@@ -59,6 +62,7 @@ class FakeAgentNode : public AgentNode {
   std::default_random_engine generator;
   Eigen::MatrixXd gt_mu_, gt_sigma_, obstacle_pos_;
   std::vector<double> gt_weights_;
+  std::vector<double> poly_coeff_;
 };
 }  // namespace agent
 }  // namespace sampling
