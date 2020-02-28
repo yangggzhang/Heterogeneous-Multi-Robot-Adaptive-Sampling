@@ -105,7 +105,7 @@ bool SamplingCoreSimulation::AssignInterestPoint(
   int agent_id = req.robot_id;
 
   agent_locations_(agent_id, 0) = req.robot_latitude;
-  agent_locations_(agent_id, 0) = req.robot_longitude;
+  agent_locations_(agent_id, 1) = req.robot_longitude;
 
   std::vector<int> cell_index =
       voronoi_node_->GetSingleVoronoiCellIndex(agent_locations_, agent_id);
