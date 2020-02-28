@@ -87,6 +87,10 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing obstacle_pos!");
   }
 
+  if (!rh_.getParam("battery_life_", battery_life_)) {
+    ROS_ERROR("Error! Missing battery_life_!");
+  }
+
   assert(mu.size() == sigma.size());
   assert((mu.size() % 2) == 0);  // can reshape to n*2 (mu_x, mu_y)
   gt_num_gaussian_ = ((int)mu.size()) / 2;
@@ -109,6 +113,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     obstacle_pos_.row(i) << obstacles[2 * i], obstacles[2 * i + 1];
   }
   // std::cout << obstacle_pos_ << std::endl;
+  robot_start_time_ = ros::Time::now();
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
 }
 
@@ -118,13 +123,23 @@ bool FakeAgentNode::update_goal_from_gps() {
 }
 
 bool FakeAgentNode::navigate() {
-  if (move_to_goal()) {
-    return true;
+  robot_alive_duration_ = ros::Time::now() - robot_start_time_;
+  if (robot_alive_duration_.toSec() > battery_life_) {
+    if (move_to_goal()) {
+      return true;
+    } else {
+      ROS_INFO_STREAM(
+          "Robot " << agent_id_
+                   << " failed to reach the target location with state ("
+                   << current_latitude_ << ", " << current_longitude_ << ")");
+      return false;
+    }
   } else {
-    ROS_INFO_STREAM("Robot "
-                    << agent_id_
-                    << " failed to reach the target location with state ("
-                    << current_latitude_ << ", " << current_longitude_ << ")");
+    current_latitude_ = FLT_MAX;
+    current_longitude_ = FLT_MAX;
+    ROS_INFO_STREAM("Robot " << agent_id_ << " Battery used up!! Died... TAT ("
+                             << current_latitude_ << ", " << current_longitude_
+                             << ")");
     return false;
   }
 }
@@ -304,7 +319,7 @@ double FakeAgentNode::getPdf(const Eigen::VectorXd &x,
 
 double FakeAgentNode::getPoly(double x_, double y_) {
   double value;
-  double x=x_+1, y=y_+1;
+  double x = x_ + 1, y = y_ + 1;
   value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
           poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
           poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
