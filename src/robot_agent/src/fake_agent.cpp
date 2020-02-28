@@ -87,7 +87,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing obstacle_pos!");
   }
 
-  if (!rh_.getParam("battery_life_", battery_life_)) {
+  if (!rh_.getParam("battery_life", battery_life_)) {
     ROS_ERROR("Error! Missing battery_life_!");
   }
 

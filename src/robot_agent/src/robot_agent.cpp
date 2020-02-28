@@ -218,6 +218,9 @@ void AgentNode::collect_sample() {
           break;
         }
       } else {
+        if(agent_state_ == DIED) {
+          break;
+        }
         if (initial_loop_) {
           ROS_INFO_STREAM("Faliled to navigate to waypoint : "
                           << goal_rtk_latitude_ << " " << goal_rtk_longitude_);
@@ -245,6 +248,9 @@ void AgentNode::collect_sample() {
         report_temperature_sample();
         agent_state_ = REQUEST;
       }
+    }
+    case DIED: {
+      break;
     }
     default: {
       agent_state_ = REQUEST;
