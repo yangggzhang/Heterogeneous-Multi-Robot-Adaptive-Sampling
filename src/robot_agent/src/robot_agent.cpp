@@ -231,7 +231,7 @@ void AgentNode::collect_sample() {
         } else {
           ROS_INFO_STREAM("Robot " << agent_id_
                                    << " failed to reach the target location. ");
-          agent_state_ = REQUEST;
+          agent_state_ = REPORT;
           break;
         }
       }

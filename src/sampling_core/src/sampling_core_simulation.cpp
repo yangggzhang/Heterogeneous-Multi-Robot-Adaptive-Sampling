@@ -23,7 +23,7 @@ bool SamplingCoreSimulation::Initialize() {
   // initialize private elements
   agent_locations_ = Eigen::MatrixXd::Zero(num_agents_, 2);
 
-  update_flag_ = true;
+  update_flag_ = false;
 
   initial_sample_size_ = collected_measurements_.rows();
 
