@@ -124,7 +124,7 @@ bool FakeAgentNode::update_goal_from_gps() {
 
 bool FakeAgentNode::navigate() {
   robot_alive_duration_ = ros::Time::now() - robot_start_time_;
-  if (robot_alive_duration_.toSec() > battery_life_) {
+  if (robot_alive_duration_.toSec() <= battery_life_) {
     if (move_to_goal()) {
       return true;
     } else {
