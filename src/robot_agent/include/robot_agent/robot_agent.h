@@ -17,7 +17,7 @@ namespace agent {
 /// Request : Request next interest point from master computer
 /// Navigate : navigate to target location
 /// Report : measure temperature and report to master computer
-enum STATE { IDLE, LOOP, REQUEST, NAVIGATE, REPORT };
+enum STATE { IDLE, LOOP, REQUEST, NAVIGATE, REPORT, DIED };
 
 class AgentNode {
  public:
