@@ -2,8 +2,8 @@
   
     <!-- BEGIN ROBOT 1-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="1.8" />
-        <arg name="lon" value="10.5"/>
+        <arg name="lat" value="10.8" />
+        <arg name="lon" value="1.5"/>
         <arg name="max_vel" value="0.3"/>
         <arg name="obstacle" value="True"/>
         <arg name="id"  value="0" />
@@ -11,8 +11,8 @@
     
     <!-- BEGIN ROBOT 2-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="9" />
-        <arg name="lon" value="14"/>
+        <arg name="lat" value="13" />
+        <arg name="lon" value="8"/>
         <arg name="max_vel" value="0.5"/>
         <arg name="obstacle" value="True"/>
         <arg name="id"  value="1" />

@@ -49,11 +49,11 @@ print(ground_truth_sig)
 def poly(x_, y_):
     x = x_ + 1
     y = y_ + 1
-    temperature = poly_coeff[0] + poly_coeff[1]*x + poly_coeff[2]*y + poly_coeff[3]*(x**2)
-    + poly_coeff[4]*x*y + poly_coeff[5]*(y**2) + poly_coeff[6]*(x**3)
-    + poly_coeff[7]*(x**2)*y + poly_coeff[8]*x*(y**2) + poly_coeff[9]*(y**3) + poly_coeff[10]*x**4 + poly_coeff[11]*((x**3))*y
-    + poly_coeff[12]*(x**2)*(y**2) + poly_coeff[13]*x*(y**3) + poly_coeff[14]*(y**4) + poly_coeff[15]*(x**5) + poly_coeff[16]*(x**4)*y
-    + poly_coeff[17]*(x**3)*(y**2) + poly_coeff[18]*(x**2)*(y**3) + poly_coeff[19]*x*(y**4) + poly_coeff[20]*y**5
+    temperature = poly_coeff[0] + poly_coeff[1]*x + poly_coeff[2]*y + poly_coeff[3]*(x**2) + \
+    poly_coeff[4]*x*y + poly_coeff[5]*(y**2) + poly_coeff[6]*(x**3) + \
+    poly_coeff[7]*(x**2)*y + poly_coeff[8]*x*(y**2) + poly_coeff[9]*(y**3) + poly_coeff[10]*x**4 + poly_coeff[11]*((x**3))*y + \
+    poly_coeff[12]*(x**2)*(y**2) + poly_coeff[13]*x*(y**3) + poly_coeff[14]*(y**4) + poly_coeff[15]*(x**5) + poly_coeff[16]*(x**4)*y + \
+    poly_coeff[17]*(x**3)*(y**2) + poly_coeff[18]*(x**2)*(y**3) + poly_coeff[19]*x*(y**4) + poly_coeff[20]*y**5
     return temperature
 
 for lat in np.arange(min_lat, max_lat + resolution, init_resolution):
