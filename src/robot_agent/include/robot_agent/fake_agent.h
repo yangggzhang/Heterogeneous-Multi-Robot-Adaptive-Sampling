@@ -59,6 +59,9 @@ class FakeAgentNode : public AgentNode {
   double collsion_radius_;
   double goal_cost_gain_;
   double obstacle_cost_gain_;
+  double battery_life_;
+  ros::Time robot_start_time_;
+  ros::Duration robot_alive_duration_;
   std::default_random_engine generator;
   Eigen::MatrixXd gt_mu_, gt_sigma_, obstacle_pos_;
   std::vector<double> gt_weights_;
