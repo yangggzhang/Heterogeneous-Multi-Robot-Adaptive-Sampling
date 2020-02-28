@@ -135,8 +135,9 @@ bool FakeAgentNode::navigate() {
       return false;
     }
   } else {
-    current_latitude_ = FLT_MAX;
-    current_longitude_ = FLT_MAX;
+    current_latitude_ = -1000;
+    current_longitude_ = -1000;
+    agent_state_ = DIED;
     ROS_INFO_STREAM("Robot " << agent_id_ << " Battery used up!! Died... TAT ("
                              << current_latitude_ << ", " << current_longitude_
                              << ")");
