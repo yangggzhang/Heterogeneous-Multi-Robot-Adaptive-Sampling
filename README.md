@@ -13,7 +13,7 @@ To install all additional ROS packages, dependencies and python packages. Please
 # Build the project
 Add following commands to the end of **~/.bashrc**. Please modify **${path-to-heterogeneous-sampling}** according to the actual path.
 ```
-catkin_make
+catkin build
 ```
 # Run the project
 ```bat
