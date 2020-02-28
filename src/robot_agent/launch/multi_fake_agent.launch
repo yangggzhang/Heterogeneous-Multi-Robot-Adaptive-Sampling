@@ -2,26 +2,26 @@
   
     <!-- BEGIN ROBOT 1-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="25" />
-        <arg name="lon" value="10"/>
-        <arg name="max_vel" value="3"/>
-        <arg name="obstacle" value="False"/>
+        <arg name="lat" value="1.8" />
+        <arg name="lon" value="10.5"/>
+        <arg name="max_vel" value="0.3"/>
+        <arg name="obstacle" value="True"/>
         <arg name="id"  value="0" />
     </include>
     
     <!-- BEGIN ROBOT 2-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="25" />
-        <arg name="lon" value="25"/>
-        <arg name="max_vel" value="5"/>
-        <arg name="obstacle" value="False"/>
+        <arg name="lat" value="9" />
+        <arg name="lon" value="14"/>
+        <arg name="max_vel" value="0.5"/>
+        <arg name="obstacle" value="True"/>
         <arg name="id"  value="1" />
     </include>
 
     <!-- BEGIN ROBOT 3-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="25" />
-        <arg name="lon" value="40"/>
+        <arg name="lat" value="2.5" />
+        <arg name="lon" value="4.0"/>
         <arg name="max_vel" value="1"/>
         <arg name="obstacle" value="False"/>
         <arg name="id"  value="2" />

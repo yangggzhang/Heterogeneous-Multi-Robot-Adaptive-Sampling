@@ -60,8 +60,8 @@ Eigen::MatrixXd Voronoi::GetDistanceMap(
     distance.col(0) = distance.col(0).array() - agent_locations(i, 0);
     distance.col(1) = distance.col(1).array() - agent_locations(i, 1);
     distance_map.col(i) = distance_map.col(i).array().abs();
-    // distance_map.col(i) = distance.rowwise().norm();
-    distance_map.col(i) = distance.rowwise().sum();
+    distance_map.col(i) = distance.rowwise().norm();
+    // distance_map.col(i) = distance.rowwise().sum();
     max_distance = std::max(max_distance, distance_map.col(i).maxCoeff());
   }
   return distance_map.array() / max_distance;

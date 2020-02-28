@@ -4,9 +4,9 @@
             num_agents: 3
             model_parameters:
                 - num_gaussian: 3
-                  param0: [0.75, 0.75, 0.1]
-                  param1: [1.5, 1.5, 0.1]
-                  param2: [0.5, 0.5, 0.1]
+                  param0: [0.1, 0.1, 0.1]
+                  param1: [0.5, 0.5, 0.1]
+                  param2: [0.3, 0.3, 0.1]
                   max_iteration: 100
                   eps: 0.1
             data_path:
@@ -17,24 +17,24 @@
                   gt_locations: "gt_fake_GPS.txt"
             sampling_parameters:
                 - selection_model: 1
-                  variance_coef: 2.5
+                  variance_coef: 5.0
             graph_visualization_parameters:
                 - map_frame: "mean"
                   map_id: 1
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 60.0
+                  x_offset: 100.0
                   y_offset: 0.0
-                  lower_bound: 0.0
-                  upper_bound: 1.5
+                  lower_bound: -5.0
+                  upper_bound: 20.0
                 - map_frame: "variance"
                   map_id: 2
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 120.0
+                  x_offset: 200.0
                   y_offset: 0.0
                   lower_bound: 0.0
-                  upper_bound: 1.0
+                  upper_bound: 10.0
             robot_visualization_parameter:
                 - map_frame: "robot"
                   map_id: 3
@@ -58,10 +58,10 @@
                   hetero_scale_factors: [ 1.0, 1.0, 1.0, 1.0]
                   mp0: [ 1.0, 1.0, 1.0, 1.0]
                   mp1: [ 1.0, 0.5, 1.0, 1.0]
-                  mp2: [ 1.0, 1.5, 1.0, 1.0]
+                  mp2: [ 1.0, 0.3, 1.0, 1.0]
             obstacle_list:
                 - agent_id: 0
-                  obstacle_path: "obstacle_0.txt"
+                  obstacle_path: "obstacle_1.txt"
                 - agent_id: 1
                   obstacle_path: "obstacle_1.txt"
          </rosparam>

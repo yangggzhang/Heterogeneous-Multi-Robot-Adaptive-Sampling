@@ -46,7 +46,9 @@ ground_truth_sig = np.array(ground_truth_sig).reshape(-1,2)
 print(ground_truth_mu)
 print(ground_truth_sig)
 
-def poly(x, y):
+def poly(x_, y_):
+    x = x_ + 1
+    y = y_ + 1
     temperature = poly_coeff[0] + poly_coeff[1]*x + poly_coeff[2]*y + poly_coeff[3]*(x**2)
     + poly_coeff[4]*x*y + poly_coeff[5]*(y**2) + poly_coeff[6]*(x**3)
     + poly_coeff[7]*(x**2)*y + poly_coeff[8]*x*(y**2) + poly_coeff[9]*(y**3) + poly_coeff[10]*x**4 + poly_coeff[11]*((x**3))*y
@@ -81,7 +83,7 @@ for lat in np.arange(min_lat, max_lat + resolution, resolution):
                 # print(y)
         elif ground_truth_type == 1:
             temperature = poly(lat, lng)
-        temperature+=np.random.normal(0, noise_sigma)
+        # temperature+=np.random.normal(0, noise_sigma)
         gt_gps_file.write("%f,%f \n" %(lat , lng))
         gt_temp_file.write("%f\n" % (temperature))
 
