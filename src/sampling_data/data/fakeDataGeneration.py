@@ -19,6 +19,8 @@ resolution = rospy.get_param('map_resolution')
 init_resolution = rospy.get_param('init_resolution')
 gaussian_weights = rospy.get_param('gaussian_weights')
 noise_sigma = rospy.get_param('observation_noise_std')
+ground_truth_type = rospy.get_param('ground_truth_type')
+poly_coeff = rospy.get_param('poly_coeff')
 
 latitude1 = map_range[0]
 longitude1 = map_range[1]
@@ -44,13 +46,25 @@ ground_truth_sig = np.array(ground_truth_sig).reshape(-1,2)
 print(ground_truth_mu)
 print(ground_truth_sig)
 
+def poly(x, y):
+    temperature = poly_coeff[0] + poly_coeff[1]*x + poly_coeff[2]*y + poly_coeff[3]*(x**2)
+    + poly_coeff[4]*x*y + poly_coeff[5]*(y**2) + poly_coeff[6]*(x**3)
+    + poly_coeff[7]*(x**2)*y + poly_coeff[8]*x*(y**2) + poly_coeff[9]*(y**3) + poly_coeff[10]*x**4 + poly_coeff[11]*((x**3))*y
+    + poly_coeff[12]*(x**2)*(y**2) + poly_coeff[13]*x*(y**3) + poly_coeff[14]*(y**4) + poly_coeff[15]*(x**5) + poly_coeff[16]*(x**4)*y
+    + poly_coeff[17]*(x**3)*(y**2) + poly_coeff[18]*(x**2)*(y**3) + poly_coeff[19]*x*(y**4) + poly_coeff[20]*y**5
+    return temperature
+
 for lat in np.arange(min_lat, max_lat + resolution, init_resolution):
     for lng in np.arange(min_lng, max_lng + resolution, init_resolution):
         temperature = 0
-        for m in range(ground_truth_mu.shape[0]):
-            y = multivariate_normal.pdf(np.array([lat,lng]), ground_truth_mu[m,:], ground_truth_sig[m,:]*np.eye(2))
-            # print(y)
-            temperature+=gaussian_weights[m]*y+np.random.normal(0, noise_sigma)
+        if ground_truth_type == 0:
+            for m in range(ground_truth_mu.shape[0]):
+                y = multivariate_normal.pdf(np.array([lat,lng]), ground_truth_mu[m,:], ground_truth_sig[m,:]*np.eye(2))
+                temperature+=gaussian_weights[m]*y
+                # print(y)
+        elif ground_truth_type == 1:
+            temperature = poly(lat, lng)
+        temperature+=np.random.normal(0, noise_sigma)
         init_gps_file.write("%f,%f \n" %(lat , lng ))
         init_temp_file.write("%f\n" % (temperature))
 
@@ -60,10 +74,14 @@ init_temp_file.close()
 for lat in np.arange(min_lat, max_lat + resolution, resolution):
     for lng in np.arange(min_lng, max_lng + resolution, resolution):
         temperature = 0
-        for m in range(ground_truth_mu.shape[0]):
-            y = multivariate_normal.pdf(np.array([lat,lng]), ground_truth_mu[m,:], ground_truth_sig[m,:]*np.eye(2))
-            # print(y)
-            temperature+=gaussian_weights[m]*y+np.random.normal(0, noise_sigma)
+        if ground_truth_type == 0:
+            for m in range(ground_truth_mu.shape[0]):
+                y = multivariate_normal.pdf(np.array([lat,lng]), ground_truth_mu[m,:], ground_truth_sig[m,:]*np.eye(2))
+                temperature+=gaussian_weights[m]*y
+                # print(y)
+        elif ground_truth_type == 1:
+            temperature = poly(lat, lng)
+        temperature+=np.random.normal(0, noise_sigma)
         gt_gps_file.write("%f,%f \n" %(lat , lng))
         gt_temp_file.write("%f\n" % (temperature))
 

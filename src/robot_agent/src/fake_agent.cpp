@@ -61,6 +61,15 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing obstacle cost gain!");
   }
 
+  if (!rh_.getParam("ground_truth_type", groundtruth_type_)) {
+    ROS_ERROR("Error! Missing ground truth type");
+  }
+
+  if (!rh_.getParam("poly_coeff", poly_coeff_)) {
+    ROS_ERROR("Error! Missing poly_coeff");
+  }
+  assert(poly_coeff_.size() == 21);
+
   std::vector<double> mu, sigma, obstacles;
   if (!rh_.getParam("ground_truth_mu", mu)) {
     ROS_ERROR("Error! Missing ground truth mu !");
@@ -77,6 +86,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   if (!rh_.getParam("obstacle_pos", obstacles)) {
     ROS_ERROR("Error! Missing obstacle_pos!");
   }
+
   assert(mu.size() == sigma.size());
   assert((mu.size() % 2) == 0);  // can reshape to n*2 (mu_x, mu_y)
   gt_num_gaussian_ = ((int)mu.size()) / 2;
@@ -267,9 +277,13 @@ double FakeAgentNode::getGroundTruth() {
   Eigen::Vector2d location;
   location << current_latitude_, current_longitude_;
   double total_value = 0;
-  for (int i = 0; i < gt_num_gaussian_; i++) {
-    total_value += gt_weights_[i] * getPdf(location, gt_mu_.row(i),
-                                           gt_sigma_.row(i).asDiagonal());
+  if (groundtruth_type_ == 0) {
+    for (int i = 0; i < gt_num_gaussian_; i++) {
+      total_value += gt_weights_[i] * getPdf(location, gt_mu_.row(i),
+                                             gt_sigma_.row(i).asDiagonal());
+    }
+  } else if (groundtruth_type_ == 1) {
+    total_value = getPoly(current_latitude_, current_longitude_);
   }
   return total_value;
 }
@@ -286,6 +300,23 @@ double FakeAgentNode::getPdf(const Eigen::VectorXd &x,
   const Chol::Traits::MatrixL &L = chol.matrixL();
   double quadform = (L.solve(x - meanVec)).squaredNorm();
   return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
+}
+
+double FakeAgentNode::getPoly(double x, double y) {
+  double value;
+  value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
+          poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
+          poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
+          poly_coeff_[7] * pow(x, 2) * y + poly_coeff_[8] * x * pow(y, 2) +
+          poly_coeff_[9] * pow(y, 3) + poly_coeff_[10] * pow(x, 4) +
+          poly_coeff_[11] * pow(x, 3) * y +
+          poly_coeff_[12] * pow(x, 2) * pow(y, 2) +
+          poly_coeff_[13] * x * pow(y, 3) + poly_coeff_[14] * pow(y, 4) +
+          poly_coeff_[15] * pow(x, 5) + poly_coeff_[16] * pow(x, 4) * y +
+          poly_coeff_[17] * pow(x, 3) * pow(y, 2) +
+          poly_coeff_[18] * pow(x, 2) * pow(y, 3) +
+          poly_coeff_[19] * x * pow(y, 4) + poly_coeff_[20] * pow(y, 5);
+  return value;
 }
 
 }  // namespace agent
