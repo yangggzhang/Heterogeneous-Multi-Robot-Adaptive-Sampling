@@ -124,6 +124,7 @@ bool Voronoi::IsAgentClosest(
   const double agent_distance = HeteroDistance(
       hetero_space, scale_factors_, motion_primitives_[agent_id],
       distance_vec(agent_id), grid_location, unreachable_locations_[agent_id]);
+  if (agent_distance == std::numeric_limits<double>::infinity()) return false;
   for (int i = 0; i < num_robots_; ++i) {
     if (i == agent_id)
       continue;
