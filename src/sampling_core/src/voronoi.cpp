@@ -102,6 +102,7 @@ double Voronoi::HeteroDistance(
       case REACHABILITY: {
         if (unreachable_points.count({grid_location(0), grid_location(1)})) {
           distance_vec(i) = std::numeric_limits<double>::infinity();
+          return std::numeric_limits<double>::infinity();
         } else {
           distance_vec(i) = 0;
         }

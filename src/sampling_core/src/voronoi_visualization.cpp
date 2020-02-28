@@ -41,9 +41,9 @@ VoronoiVisualization::VoronoiVisualization(const Eigen::MatrixXd &map)
   marker_array_.colors.resize(map.rows());
 
   std_msgs::ColorRGBA color = std_msgs::ColorRGBA();
-  color.r = 0.0;
-  color.g = 0.0;
-  color.b = 0.0;
+  color.r = 1.0;
+  color.g = 1.0;
+  color.b = 1.0;
   color.a = 1.0;
 
   for (size_t i = 0; i < map.rows(); ++i) {
