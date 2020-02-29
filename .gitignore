@@ -2,3 +2,5 @@
 /devel
 /bags
 .vscode/
+.catkin_tools/
+logs/
