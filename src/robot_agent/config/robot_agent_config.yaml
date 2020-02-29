@@ -1,4 +1,4 @@
 #Configuation for robot agent
 initial_loop: true
-latitude_waypoints: []
-longitude_waypoints: []
+latitude_waypoints: [40.4433346233, 40.4433958633]
+longitude_waypoints: [-79.941113395, -79.9409997133] 
