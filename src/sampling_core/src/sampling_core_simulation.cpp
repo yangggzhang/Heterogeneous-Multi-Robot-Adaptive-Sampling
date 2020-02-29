@@ -33,11 +33,11 @@ bool SamplingCoreSimulation::Initialize() {
                            &SamplingCoreSimulation::AssignInterestPoint, this);
 
   agent_location_sub_ =
-      nh_.subscribe("agent_location_channel", 1,
+      nh_.subscribe("agent_location_channel", 10,
                     &SamplingCoreSimulation::AgentLocationCallback, this);
 
   sample_sub_ =
-      nh_.subscribe("sample_collection_channel", 1,
+      nh_.subscribe("sample_collection_channel", 10,
                     &SamplingCoreSimulation::CollectSampleCallback, this);
 
   visualization_pub_ = nh_.advertise<visualization_msgs::MarkerArray>(
