@@ -23,7 +23,7 @@ bool SamplingCoreSimulation::Initialize() {
   // initialize private elements
   agent_locations_ = Eigen::MatrixXd::Zero(num_agents_, 2);
 
-  update_flag_ = true;
+  update_flag_ = false;
 
   initial_sample_size_ = collected_measurements_.rows();
 
@@ -101,9 +101,11 @@ bool SamplingCoreSimulation::AssignInterestPoint(
     sampling_msgs::RequestGoal::Response &res) {
   ROS_INFO_STREAM(
       "Master Computer received request from robot : " << req.robot_id);
-
   // Update Voronoi map
   int agent_id = req.robot_id;
+
+  agent_locations_(agent_id, 0) = req.robot_latitude;
+  agent_locations_(agent_id, 1) = req.robot_longitude;
 
   std::vector<int> cell_index =
       voronoi_node_->GetSingleVoronoiCellIndex(agent_locations_, agent_id);
