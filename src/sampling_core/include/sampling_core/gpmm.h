@@ -11,8 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "cg.h"
 #include "gp.h"
 #include "gp_utils.h"
+#include "rprop.h"
 #include "sampling_core/gmm.h"
 
 namespace sampling {
@@ -23,6 +25,7 @@ const double KGPCov1 = 0.5;
 const double KGPCov2 = 0.5;
 const double KGPNoise = 0.1;
 const int KGPParamNumber = 3;
+const int KGPUpdateNum = 0;
 
 class GaussianProcessMixtureModel {
  private:
@@ -51,8 +54,10 @@ class GaussianProcessMixtureModel {
 
  private:
   int gp_number_;
+  libgp::CG optimizer_;
+  // libgp::RProp optimizer_;
   std::unique_ptr<gmm::GaussianMixtureModel> gmm_model_;
-  std::vector<std::unique_ptr<libgp::GaussianProcess>> gp_model_;
+  std::vector<libgp::GaussianProcess*> gp_model_;
 };
 }  // namespace gpmm
 }  // namespace sampling

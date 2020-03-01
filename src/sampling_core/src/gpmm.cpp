@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ros/ros.h>
 
 #include "sampling_core/gpmm.h"
 
@@ -10,12 +11,13 @@ GaussianProcessMixtureModel::GaussianProcessMixtureModel()
       new gmm::GaussianMixtureModel(KGaussianProcessNumber));
   gp_model_.resize(KGaussianProcessNumber);
   for (int i = 0; i < gp_model_.size(); ++i) {
-    gp_model_[i] = std::unique_ptr<libgp::GaussianProcess>(
-        new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)"));
+    gp_model_[i] =
+        new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)");
     Eigen::VectorXd params(KGPParamNumber);
     params << KGPCov1, KGPCov2, KGPNoise;
     gp_model_[i]->covf().set_loghyper(params);
   }
+  // optimizer_.init();
 }
 
 GaussianProcessMixtureModel::GaussianProcessMixtureModel(
@@ -27,13 +29,14 @@ GaussianProcessMixtureModel::GaussianProcessMixtureModel(
   assert(gp_number == gp_hyperparams.size());
   gp_model_.resize(gp_number);
   for (int i = 0; i < gp_number; ++i) {
-    gp_model_[i] = std::unique_ptr<libgp::GaussianProcess>(
-        new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)"));
+    gp_model_[i] =
+        new libgp::GaussianProcess(2, "CovSum ( CovSEiso, CovNoise)");
     Eigen::VectorXd params(KGPParamNumber);
     assert(gp_hyperparams[i].size() == KGPParamNumber);
     params << gp_hyperparams[i][0], gp_hyperparams[i][1], gp_hyperparams[i][2];
     gp_model_[i]->covf().set_loghyper(params);
   }
+  // optimizer_.init();
 }
 
 void GaussianProcessMixtureModel::Train(
@@ -43,21 +46,26 @@ void GaussianProcessMixtureModel::Train(
 
   // Gaussian Mixture Model Expectation and Maximation Training
   gmm_model_->Train(sample_utilities);
-
   // Gaussian Mixture Model Prediction
   Eigen::MatrixXd prob_matrix = gmm_model_->Predict(sample_utilities);
-
   // Add training pattern to Gaussian Process Mixture model
   for (int i = 0; i < gp_number_; ++i) {
     gp_model_[i]->clear_sampleset();
   }
 
+  std::vector<int> assigned_sample(gp_number_, 0);
   for (int i = 0; i < sample_number; ++i) {
     Eigen::MatrixXd::Index predicted_class;
     double sample_utility = sample_utilities(i);
     double sample_position[] = {sample_positions(i, 0), sample_positions(i, 1)};
     prob_matrix.row(i).maxCoeff(&predicted_class);
     gp_model_[predicted_class]->add_pattern(sample_position, sample_utility);
+    assigned_sample[predicted_class]++;
+  }
+
+  for (int i = 0; i < gp_number_; ++i) {
+    if (assigned_sample[i] == 0) continue;
+    optimizer_.maximize(gp_model_[i], KGPUpdateNum, 0);
   }
 }
 
@@ -74,8 +82,7 @@ void GaussianProcessMixtureModel::GPPredict(const int& GP_index,
 
 Eigen::VectorXd GaussianProcessMixtureModel::GMMPredictForGP(
     const int& GP_index, const Eigen::VectorXd& gp_predictions) {
-  Eigen::MatrixXd probs = gmm_model_->Predict(gp_predictions);
-  return probs.col(GP_index);
+  return gmm_model_->ProbPredict(GP_index, gp_predictions);
 }
 
 void GaussianProcessMixtureModel::Predict(const Eigen::MatrixXd& test_positions,
@@ -93,17 +100,14 @@ void GaussianProcessMixtureModel::Predict(const Eigen::MatrixXd& test_positions,
   Eigen::MatrixXd prob_mat(test_positions.rows(), gp_number_);
   for (int i = 0; i < gp_number_; ++i)
     prob_mat.col(i) = GMMPredictForGP(i, raw_mean_predictions.col(i));
-
   // Normalize probability model
   for (int i = 0; i < test_number; ++i) {
     prob_mat.row(i) = prob_mat.row(i) / prob_mat.row(i).array().sum();
   }
-
   // Calculate weighted preditions
   Eigen::MatrixXd weighted_mean =
       raw_mean_predictions.array() * prob_mat.array();
   Eigen::MatrixXd weighed_var = raw_var_predictions.array() * prob_mat.array();
-
   pred_mean = weighted_mean.rowwise().sum();
   pred_var = weighed_var.rowwise().sum();
 }

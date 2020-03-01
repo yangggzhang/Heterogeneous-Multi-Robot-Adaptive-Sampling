@@ -196,7 +196,6 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
       return false;
     }
     XmlRpc::XmlRpcValue data_path = data_list[0];
-    std::string location_data;
     if (!utils::GetParamData(data_path, "test_location", test_location_)) {
       return false;
     }
