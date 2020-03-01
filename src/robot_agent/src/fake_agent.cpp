@@ -318,9 +318,8 @@ double FakeAgentNode::getPdf(const Eigen::VectorXd &x,
   return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
 }
 
-double FakeAgentNode::getPoly(double x_, double y_) {
+double FakeAgentNode::getPoly(double x, double y) {
   double value;
-  double x = x_ + 1, y = y_ + 1;
   value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
           poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
           poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +

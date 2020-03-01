@@ -2,6 +2,7 @@
 
 #include <std_msgs/String.h>
 #include <Eigen/Dense>
+#include <random>
 #include "robot_agent/robot_agent.h"
 
 /// todo \Paul \Yunfei
@@ -38,6 +39,12 @@ class PelicanNode : public AgentNode {
   bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
                         sampling_msgs::RequestLocation::Response &res) override;
 
+  double getPoly(double x, double y);
+
+  bool collect_temperature_sample() override;
+
+  double getGroundTruth();
+
  private:
   ros::Publisher xb_command_pub_;
   std::string xb_command_channel_;
@@ -61,8 +68,18 @@ class PelicanNode : public AgentNode {
   double last_latitude_;
   double last_longitude_;
 
-  double longitude_origin_;
-  double latitude_origin_;
+  double rtk_longitude_origin_;
+  double rtk_latitude_origin_;
+
+  double pelican_latitude_origin_;
+  double pelican_longitude_origin_;
+
+  bool get_ground_truth_;
+  double observation_noise_std_;
+  std::vector<double> poly_coeff_;
+  std::default_random_engine generator;
+  double lat_constant_;
+  double lng_constant_;
 
   Eigen::Matrix2f calibration_matrix_, inverse_calibration_matrix_;
 };

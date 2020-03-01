@@ -1,6 +1,6 @@
 #Configuation for pelican agent
-ros_queue_size: 10
-agent_id: "Pelican"
+ros_queue_size: 1
+agent_id: 1
 request_target_channel: "interest_point"
 temperature_measurement_channel: "pelican_temperature_measurement"
 temperature_update_channel: "temperature_update_channel"
@@ -9,14 +9,24 @@ xb_command_channel: "/write"
 height_waiting_threshold: 5 #s
 navigate_waiting_threshold: 5 #s waiting time before detecting convergence
 maximum_navigation_time: 20 #s max navigation time, regarded fail if not converged
-hover_height: 5500 #m
-measure_height: 3200 #m
+hover_height: 5000 #m
+measure_height: 3500 #m
 gps_converge_threshold: 1500 #1.5m
 gps_converge_buffer_size: 5
 nagivate_loop_rate: 10
 
-latitude_origin: 40.443697
-longitude_origin: -79.943009
-
-GPS_transformation_matrix: [  0.302789,  -0.151999,  -0.352723,  0.923101]
+rtk_latitude_origin: 40.4433346233
+rtk_longitude_origin: -79.941113395
+pelican_latitude_origin: 40.4433574
+pelican_longitude_origin: -79.9411061
+GPS_transformation_matrix: [1,  0, 0, 1]
 report_gps_location_channel: "Pelican_GPS"
+
+poly_coeff: [3.934400, 1.998334, 0.577054, 0.108236, -0.983421, 
+            -0.053012, -0.120888, 0.066311, 0.071316, 0.015456, 
+            0.011875, 0.011496, -0.009661, 0.002992, -0.002209, 
+            -0.000283, -0.000767, -0.000017, 0.000151, -0.000222, 0.000080]
+observation_noise_std: 0.65
+get_ground_truth: True
+lat_constant: 40.443
+lng_constant: -79.940

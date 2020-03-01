@@ -37,7 +37,7 @@ class FakeAgentNode : public AgentNode {
   double getPdf(const Eigen::VectorXd &x, const Eigen::VectorXd &meanVec,
                 const Eigen::MatrixXd &covMat);
 
-  double getPoly(double x_, double y_);
+  double getPoly(double x, double y);
   //   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg)
   //   override;
 

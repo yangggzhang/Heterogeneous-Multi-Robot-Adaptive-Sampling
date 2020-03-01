@@ -54,7 +54,7 @@ JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_INFO_STREAM(
         "Waiting for the move_base action server for jackal to come up");
   }
-  agent_state_ = REPORT;  // to test wifi,need to delete this !
+  // agent_state_ = REPORT;  // to test wifi,need to delete this !
   ROS_INFO_STREAM("Jackal move base server came up! READY TO GO!!!");
 }
 
@@ -65,8 +65,18 @@ bool JackalNode::update_goal_from_gps() {
   move_base_goal_.target_pose.header.frame_id = jackal_movebase_goal_frame_id_;
   move_base_goal_.target_pose.header.stamp = ros::Time::now();
 
+  // current_latitude_ = (msg.latitude - lat_constant_) * pow(10, 5);
+  // current_longitude_ = (msg.longitude - lng_constant_) * pow(10, 5);
+  double transformed_gps_rtk_latitude_ =
+      goal_rtk_latitude_ / pow(10, 5) + lat_constant_;
+  double transformed_gps_rtk_lonitude_ =
+      goal_rtk_longitude_ / pow(10, 5) + lng_constant_;
+
+  // geometry_msgs::PointStamped utm_goal =
+  //     GPStoUTM(goal_rtk_latitude_, goal_rtk_longitude_);
+
   geometry_msgs::PointStamped utm_goal =
-      GPStoUTM(goal_rtk_latitude_, goal_rtk_longitude_);
+      GPStoUTM(transformed_gps_rtk_latitude_, transformed_gps_rtk_lonitude_);
   geometry_msgs::PointStamped map_goal = UTMtoMapPoint(utm_goal);
   /// to do Use utm to update gps to "map"
   move_base_goal_.target_pose.pose.position = map_goal.point;
@@ -115,8 +125,25 @@ bool JackalNode::navigate() {
 }
 void JackalNode::update_GPS_location_callback(
     const sensor_msgs::NavSatFix &msg) {
-  current_latitude_ = (msg.latitude - lat_constant_) * pow(10, 5);
-  current_longitude_ = (msg.longitude - lng_constant_) * pow(10, 5);
+  // current_latitude_ = (msg.latitude - lat_constant_) * pow(10, 5);
+  // current_longitude_ = (msg.longitude - lng_constant_) * pow(10, 5);
+  current_latitude_ = msg.latitude;
+  current_longitude_ = msg.longitude;
+}
+
+bool JackalNode::ReportGPSService(
+    sampling_msgs::RequestLocation::Request &req,
+    sampling_msgs::RequestLocation::Response &res) {
+  if (agent_id_ != 0) {
+    return false;
+  } else {
+    // res.latitude = current_latitude_;
+    // res.longitude = current_longitude_;
+    res.latitude =
+        (current_latitude_ - lat_constant_) * pow(10, 5);  // GPS tansformed
+    res.longitude = (current_longitude_ - lng_constant_) * pow(10, 5);
+    return true;
+  }
 }
 
 geometry_msgs::PointStamped JackalNode::GPStoUTM(const double &latitude,
@@ -192,9 +219,8 @@ bool JackalNode::collect_temperature_sample() {
   }
 }
 
-double JackalNode::getPoly(double x_, double y_) {
+double JackalNode::getPoly(double x, double y) {
   double value;
-  double x = x_ + 1, y = y_ + 1;
   value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
           poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
           poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
