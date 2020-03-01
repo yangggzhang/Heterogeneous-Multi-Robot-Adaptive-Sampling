@@ -22,9 +22,15 @@ class JackalNode : public AgentNode {
   bool navigate();
 
   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg) override;
-  double getPoly(double x_, double y_);
+
+  double getPoly(double x, double y);
+
   bool collect_temperature_sample() override;
+
   double getGroundTruth();
+
+  bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
+                        sampling_msgs::RequestLocation::Response &res) override;
 
  private:
   std::string jackal_movebase_channel_;
