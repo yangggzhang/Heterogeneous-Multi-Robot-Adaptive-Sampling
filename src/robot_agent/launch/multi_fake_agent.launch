@@ -22,11 +22,11 @@
 
     <!-- BEGIN ROBOT 3-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="7" />
+        <arg name="lat" value="10" />
         <arg name="lon" value="3"/>
         <arg name="max_vel" value="5"/>
         <arg name="obstacle" value="False"/>
-        <arg name="battery_life" value="30"/>
+        <arg name="battery_life" value="25"/>
         <arg name="id"  value="2" />
     </include>
 

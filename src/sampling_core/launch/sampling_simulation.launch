@@ -18,7 +18,7 @@
                   gt_locations: "gt_fake_GPS.txt"
             sampling_parameters:
                 - selection_model: 1
-                  variance_coef: 10.0
+                  variance_coef: 6.0
             graph_visualization_parameters:
                 - map_frame: "mean"
                   map_id: 1
@@ -58,9 +58,9 @@
                 # - hetero_spaces: [0, 1, 2, 4]
                 - hetero_spaces: [0]
                   hetero_scale_factors: [ 2.0, 1.5, 1.0, 1.0]
-                  mp0: [ 1.0, 3.0, 1.0, 1.0]
+                  mp0: [ 1.0, 2.5, 1.0, 1.0]
                   mp1: [ 1.0, 2.0, 1.0, 1.0]
-                  mp2: [ 1.0, 1.0, 5.0, 1.0]
+                  mp2: [ 1.0, 1.0, 7.5, 1.0]
                   # mp3: [ 1.0, 1.0, 2.0, 1.0]
             obstacle_list:
                 - agent_id: 0
