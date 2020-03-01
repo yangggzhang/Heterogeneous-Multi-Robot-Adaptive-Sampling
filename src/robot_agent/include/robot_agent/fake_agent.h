@@ -38,12 +38,15 @@ class FakeAgentNode : public AgentNode {
                 const Eigen::MatrixXd &covMat);
 
   double getPoly(double x_, double y_);
+
+  bool checkCollision(double lat, double lng);
   //   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg)
   //   override;
 
  private:
   bool goal_reached_;
   bool obstacle_avoidance_;
+  bool random_initial_pos_;
   int gt_num_gaussian_;
   int num_speed_premitive_;
   int groundtruth_type_;
@@ -66,6 +69,8 @@ class FakeAgentNode : public AgentNode {
   Eigen::MatrixXd gt_mu_, gt_sigma_, obstacle_pos_;
   std::vector<double> gt_weights_;
   std::vector<double> poly_coeff_;
+  std::vector<double> map_range_;
+  double map_resolution_;
 };
 }  // namespace agent
 }  // namespace sampling

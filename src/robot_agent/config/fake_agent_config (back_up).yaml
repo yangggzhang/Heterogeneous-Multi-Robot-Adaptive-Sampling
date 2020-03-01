@@ -15,8 +15,8 @@ collision_radius: 2
 #                6,6,
 #                8,9]
 random_initial_pos: True
-obstacle_pos: [5,4,
-               6,10]
+obstacle_pos: [3,6,
+               6,11]
 prediction_time: 1 #2
 goal_cost_gain: 0.3
 obstacle_cost_gain: 0.7

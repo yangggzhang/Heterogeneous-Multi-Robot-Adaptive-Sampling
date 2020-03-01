@@ -31,13 +31,12 @@
     </include>
 
     <!-- BEGIN ROBOT 4-->
-    <include file="$(find robot_agent)/launch/fake_agent.launch" >
-        <arg name="lat" value="7" />
-        <arg name="lon" value="3"/>
+    <!-- <include file="$(find robot_agent)/launch/fake_agent.launch" >
+        <arg name="lat" value="2" />
+        <arg name="lon" value="5"/>
         <arg name="max_vel" value="3"/>
         <arg name="obstacle" value="False"/>
-        <arg name="battery_life" value="200"/>
-        <arg name="id"  value="3" />
-    </include>
+        <arg name="id"  value="uav4" />
+    </include> -->
 
 </launch>
