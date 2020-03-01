@@ -4,7 +4,7 @@
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="1" />
         <arg name="lon" value="10"/>
-        <arg name="max_vel" value="1.5"/>
+        <arg name="max_vel" value="1.0"/>
         <arg name="obstacle" value="True"/>
         <arg name="battery_life" value="100000"/>
         <arg name="id"  value="0" />
@@ -14,7 +14,7 @@
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="4" />
         <arg name="lon" value="7"/>
-        <arg name="max_vel" value="1.5"/>
+        <arg name="max_vel" value="2.0"/>
         <arg name="obstacle" value="True"/>
         <arg name="battery_life" value="100000"/>
         <arg name="id"  value="1" />
@@ -24,20 +24,20 @@
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="7" />
         <arg name="lon" value="3"/>
-        <arg name="max_vel" value="3"/>
+        <arg name="max_vel" value="5"/>
         <arg name="obstacle" value="False"/>
-        <arg name="battery_life" value="200"/>
+        <arg name="battery_life" value="30"/>
         <arg name="id"  value="2" />
     </include>
 
     <!-- BEGIN ROBOT 4-->
-    <include file="$(find robot_agent)/launch/fake_agent.launch" >
+<!--     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="7" />
         <arg name="lon" value="3"/>
         <arg name="max_vel" value="3"/>
         <arg name="obstacle" value="False"/>
-        <arg name="battery_life" value="200"/>
+        <arg name="battery_life" value="30"/>
         <arg name="id"  value="3" />
-    </include>
+    </include> -->
 
 </launch>
