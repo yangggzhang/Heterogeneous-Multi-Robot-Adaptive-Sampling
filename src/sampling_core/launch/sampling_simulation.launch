@@ -55,8 +55,8 @@
                   lower_bound: 0.0
                   upper_bound: 1.0
             heterogeneous_parameter:
-                # - hetero_spaces: [0, 1, 2, 4]
-                - hetero_spaces: [0]
+                - hetero_spaces: [0, 1, 2, 4]
+                # - hetero_spaces: [0]
                   hetero_scale_factors: [ 2.0, 1.5, 1.0, 1.0]
                   mp0: [ 1.0, 2.0, 1.0, 1.0]
                   mp1: [ 1.0, 2.0, 1.0, 1.0]
