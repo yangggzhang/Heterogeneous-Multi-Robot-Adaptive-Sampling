@@ -1,0 +1,38 @@
+<launch>   
+   <node pkg="sampling_core" type="gmm_test_node" name="gmm_test" output="screen" >
+         <rosparam>
+            num_gau: 3
+            max_iteration: 10
+            eps: 0.1
+            data_path:
+              - gt_locations: "gt_fake_GPS.txt"
+                gt_measurements: "gt_fake_temperature.txt"
+            num_gps: [1, 2, 3]
+            num_train_samples: [5, 10 ,15, 20, 25, 30, 35, 40, 45, 50]
+            <!-- init_sample_path: "wifi_measurement_new_2router_0.txt"
+            init_location_path: "wifi_pos_new_2router_0.txt"
+            test_location_path: "wifi_pos_new_2router_0.txt"
+            gp_params:
+                - param: [ 0.5, 0.5, 0.1]
+                - param: [ 0.5, 0.5, 0.1]
+                - param: [ 0.5, 0.5, 0.1] -->
+            <!-- visualization_parameters:
+                - map_frame: "mean"
+                  map_id: 1
+                  x_scale: 1.0
+                  y_scale: 1.0
+                  x_offset: 0.0
+                  y_offset: 0.0
+                  lower_bound: 0.0
+                  upper_bound: 1.5
+                - map_frame: "variance"
+                  map_id: 2
+                  x_scale: 1.0
+                  y_scale: 1.0
+                  x_offset: 20.0
+                  y_offset: 0.0
+                  lower_bound: 0.0
+                  upper_bound: 1.0 -->
+         </rosparam>
+   </node>
+</launch>

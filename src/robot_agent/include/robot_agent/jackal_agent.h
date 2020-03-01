@@ -5,6 +5,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <robot_localization/navsat_conversions.h>
 #include <tf/transform_listener.h>
+#include <random>
 #include "robot_agent/robot_agent.h"
 
 namespace sampling {
@@ -22,6 +23,15 @@ class JackalNode : public AgentNode {
 
   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg) override;
 
+  double getPoly(double x, double y);
+
+  bool collect_temperature_sample() override;
+
+  double getGroundTruth();
+
+  bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
+                        sampling_msgs::RequestLocation::Response &res) override;
+
  private:
   std::string jackal_movebase_channel_;
   std::string jackal_movebase_goal_frame_id_;
@@ -32,6 +42,12 @@ class JackalNode : public AgentNode {
   bool facing_heatsource_;
   double heat_source_lat_;
   double heat_source_lng_;
+  bool get_ground_truth_;
+  double observation_noise_std_;
+  std::vector<double> poly_coeff_;
+  std::default_random_engine generator;
+  double lat_constant_;
+  double lng_constant_;
 
   geometry_msgs::PointStamped GPStoUTM(const double &latitude,
                                        const double &longitude);

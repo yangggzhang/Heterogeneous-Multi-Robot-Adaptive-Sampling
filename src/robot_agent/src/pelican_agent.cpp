@@ -45,11 +45,20 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   if (!rh_.getParam("nagivate_loop_rate", nagivate_loop_rate_int_)) {
     ROS_ERROR("Error! Missing loop rate during navigation!");
   }
-  if (!rh_.getParam("latitude_origin", latitude_origin_)) {
+
+  if (!rh_.getParam("rtk_latitude_origin", rtk_latitude_origin_)) {
+    ROS_ERROR("Error! Missing rtk latitude origin (take off point)!");
+  }
+
+  if (!rh_.getParam("rtk_longitude_origin", rtk_longitude_origin_)) {
+    ROS_ERROR("Error! Missing rtk longitude origin (take off point)!");
+  }
+
+  if (!rh_.getParam("pelican_latitude_origin", pelican_latitude_origin_)) {
     ROS_ERROR("Error! Missing latitude origin (take off point)!");
   }
 
-  if (!rh_.getParam("longitude_origin", longitude_origin_)) {
+  if (!rh_.getParam("pelican_longitude_origin", pelican_longitude_origin_)) {
     ROS_ERROR("Error! Missing longitude origin (take off point)!");
   }
 
@@ -57,6 +66,22 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
   if (!rh_.getParam("GPS_transformation_matrix", GPS_transformation_vector)) {
     ROS_ERROR("Error! Missing GPS transformation matrix!");
     ROS_ERROR("Calibrate GPS transformation!");
+  }
+  if (!rh_.getParam("poly_coeff", poly_coeff_)) {
+    ROS_ERROR("Error! Missing poly_coeff");
+  }
+  assert(poly_coeff_.size() == 21);
+  if (!rh_.getParam("get_ground_truth", get_ground_truth_)) {
+    ROS_ERROR("Error! Missing get_ground_truth");
+  }
+  if (!rh_.getParam("observation_noise_std", observation_noise_std_)) {
+    ROS_ERROR("Error! Missing observation noise std!");
+  }
+  if (!rh_.getParam("lat_constant", lat_constant_)) {
+    ROS_ERROR("Error! Missing lat_constant!");
+  }
+  if (!rh_.getParam("lng_constant", lng_constant_)) {
+    ROS_ERROR("Error! Missing observation noise std!");
   }
 
   assert(GPS_transformation_vector.size() == 4);
@@ -92,16 +117,25 @@ bool PelicanNode::initialize_pelican() {
   xb_command_pub_.publish(msg);
   // Wait for initialization of waypint navigation
   ros::Duration(10).sleep();
+  return true;
 }
 
 bool PelicanNode::update_goal_from_gps() {
   /// todo \paul \yunfei
   // cmd_latitude_ = goal_rtk_latitude_;
   // cmd_longitude_ = goal_rtk_longitude_;
-  double relative_rtk_latitude = goal_rtk_latitude_ - latitude_origin_;
-  double relative_rtk_longitude = goal_rtk_longitude_ - longitude_origin_;
 
-  Eigen::MatrixXf pelican_gps_matrix,
+  double transformed_gps_rtk_latitude_ =
+      goal_rtk_latitude_ / pow(10, 5) + lat_constant_;
+  double transformed_gps_rtk_lonitude_ =
+      goal_rtk_longitude_ / pow(10, 5) + lng_constant_;
+
+  double relative_rtk_latitude =
+      transformed_gps_rtk_latitude_ - rtk_latitude_origin_;
+  double relative_rtk_longitude =
+      transformed_gps_rtk_lonitude_ - rtk_longitude_origin_;
+
+  /* Eigen::MatrixXf pelican_gps_matrix,
       rtk_gps_matrix = Eigen::MatrixXf::Zero(1, 2);
   rtk_gps_matrix(0, 0) = relative_rtk_latitude;
   rtk_gps_matrix(0, 1) = relative_rtk_longitude;
@@ -112,8 +146,10 @@ bool PelicanNode::update_goal_from_gps() {
   assert(pelican_gps_matrix.cols() == 2);
 
   // calculate relative command use origin:
-  cmd_latitude_ = pelican_gps_matrix(0, 0) * std::pow(10, 7);
-  cmd_longitude_ = pelican_gps_matrix(0, 1) * std::pow(10, 7);
+  cmd_latitude_ = pelican_gps_matrix(0, 0) * std::pow(10, 8);
+  cmd_longitude_ = pelican_gps_matrix(0, 1) * std::pow(10, 8);*/
+  cmd_latitude_ = relative_rtk_latitude * std::pow(10, 8);
+  cmd_longitude_ = relative_rtk_longitude * std::pow(10, 8);
 
   return true;
 };
@@ -223,12 +259,12 @@ void PelicanNode::update_GPS_location_callback(
 
   last_latitude_ = current_latitude_;
   last_longitude_ = current_longitude_;
-  current_latitude_ = msg.longitude;
-  current_longitude_ = msg.latitude;
+  current_latitude_ = msg.latitude;
+  current_longitude_ = msg.longitude;
 
   gps_converg_flag_ = gps_is_converged(
-      (last_latitude_ * pow(10, 7)), (last_longitude_ * pow(10, 7)),
-      (current_latitude_ * pow(10, 7)), (current_longitude_ * pow(10, 7)),
+      (last_latitude_ * pow(10, 8)), (last_longitude_ * pow(10, 8)),
+      (current_latitude_ * pow(10, 8)), (current_longitude_ * pow(10, 8)),
       gps_converge_threshold_, gps_converge_buffer_size_, converge_count_);
   if (gps_converg_flag_) {
     ROS_INFO_STREAM("Pelican GPS waypoint navigation converged!");
@@ -238,19 +274,74 @@ void PelicanNode::update_GPS_location_callback(
 bool PelicanNode::ReportGPSService(
     sampling_msgs::RequestLocation::Request &req,
     sampling_msgs::RequestLocation::Response &res) {
-  if (agent_id_ != req.robot_id) {
+  if (agent_id_ != 0) {
     return false;
   } else {
-    Eigen::MatrixXd GPS_matrix = Eigen::MatrixXd::Zero(1, 2);
+    /*Eigen::MatrixXd GPS_matrix = Eigen::MatrixXd::Zero(1, 2);
     GPS_matrix(0, 0) = current_latitude_;
     GPS_matrix(0, 1) = current_longitude_;
     res.latitude = current_latitude_ * inverse_calibration_matrix_(0, 0) +
                    current_longitude_ * inverse_calibration_matrix_(1, 0);
     res.longitude = current_latitude_ * inverse_calibration_matrix_(0, 1) +
                     current_longitude_ * inverse_calibration_matrix_(1, 1);
-    ;
+    ;*/
+    double latitude_in_rtk_frame =
+        current_latitude_ + (rtk_latitude_origin_ - pelican_latitude_origin_);
+    double longitude_in_rtk_frame =
+        current_longitude_ +
+        (rtk_longitude_origin_ - pelican_longitude_origin_);
+
+    res.latitude = (latitude_in_rtk_frame - lat_constant_) * pow(10, 5);
+    res.longitude = (longitude_in_rtk_frame - lng_constant_) * pow(10, 5);
+
     return true;
   }
+}
+
+double PelicanNode::getGroundTruth() {
+  double total_value = getPoly(current_latitude_, current_longitude_);
+  return total_value;
+}
+
+bool PelicanNode::collect_temperature_sample() {
+  if (get_ground_truth_) {
+    temperature_measurement_ = getGroundTruth();
+    // add noise:
+    std::normal_distribution<float> dist(
+        0, observation_noise_std_);  // mean followed by stdiv
+    temperature_measurement_ += dist(generator);
+    return true;
+  } else {
+    sampling_msgs::RequestTemperatureMeasurement srv;
+    srv.request.robot_id = agent_id_;
+
+    if (temperature_measurement_client_.call(srv)) {
+      temperature_measurement_ = srv.response.temperature;
+      return true;
+    } else {
+      ROS_INFO_STREAM("Robot "
+                      << agent_id_
+                      << " failed to receive temperature measurement!");
+      return false;
+    }
+  }
+}
+
+double PelicanNode::getPoly(double x, double y) {
+  double value;
+  value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
+          poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
+          poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
+          poly_coeff_[7] * pow(x, 2) * y + poly_coeff_[8] * x * pow(y, 2) +
+          poly_coeff_[9] * pow(y, 3) + poly_coeff_[10] * pow(x, 4) +
+          poly_coeff_[11] * pow(x, 3) * y +
+          poly_coeff_[12] * pow(x, 2) * pow(y, 2) +
+          poly_coeff_[13] * x * pow(y, 3) + poly_coeff_[14] * pow(y, 4) +
+          poly_coeff_[15] * pow(x, 5) + poly_coeff_[16] * pow(x, 4) * y +
+          poly_coeff_[17] * pow(x, 3) * pow(y, 2) +
+          poly_coeff_[18] * pow(x, 2) * pow(y, 3) +
+          poly_coeff_[19] * x * pow(y, 4) + poly_coeff_[20] * pow(y, 5);
+  return value;
 }
 }  // namespace agent
 }  // namespace sampling
