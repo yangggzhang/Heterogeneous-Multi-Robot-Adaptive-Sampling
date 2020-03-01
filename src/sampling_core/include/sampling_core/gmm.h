@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <Eigen/Dense>
+#include <boost/math/distributions/normal.hpp>
 #include <cstdlib>
 #include <opencv2/ml.hpp>
 #include <opencv2/opencv.hpp>
@@ -34,10 +35,19 @@ class GaussianMixtureModel {
 
   Eigen::MatrixXd Predict(const Eigen::VectorXd& samples);
 
+  Eigen::VectorXd ProbPredict(const int& cluster_id,
+                              const Eigen::VectorXd& samples);
+
   Eigen::MatrixXd GetMeans();
 
  private:
   cv::Ptr<cv::ml::EM> model_;
+
+  int cluster_number_;
+
+  boost::math::normal nd;
+
+  std::vector<double> model_mean_, model_stdev_;
 };
 }  // namespace gmm
 }  // namespace sampling

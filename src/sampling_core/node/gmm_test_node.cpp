@@ -22,7 +22,7 @@ float RandomFloat(float a, float b) {
   return a + r;
 }
 
-std::vector<double> KGPParam{0.5, 0.5, 0.1};
+std::vector<double> KGPParam{0.5, 0.5, -2.0};
 
 const int KNumberTests = 30;
 
@@ -36,7 +36,6 @@ void random_sample_from_dataset(const Eigen::MatrixXd &data_locations,
   assert(batch_size < data_measurements.size());
   const int dataset_size = data_measurements.size();
   std::vector<int> batch_index(batch_size, 0);
-  std::srand(unsigned(std::time(0)));
   batch_locations.resize(batch_size, data_locations.cols());
   batch_measurements.resize(batch_size);
   for (int i = 0; i < batch_size; ++i) {
@@ -54,7 +53,7 @@ void result_analysis(const std::vector<double> &rmss, double &mean,
   mean = sum / sample_size;
   double dev = 0.0;
   for (const double &rms : rmss) dev += (rms - mean) * (rms - mean);
-  stdev = dev / (sample_size - 1.0);
+  stdev = std::sqrt(dev / (sample_size - 1.0));
 }
 
 int main(int argc, char **argv) {
@@ -66,6 +65,9 @@ int main(int argc, char **argv) {
   distribution_visualization_pub =
       nh.advertise<visualization_msgs::MarkerArray>("sampling_visualization",
                                                     1);
+
+  std::srand(unsigned(std::time(0)));
+
   // if (!nh.getParam("num_gau", num_gau)) {
   //   num_gau = 3;
   // }

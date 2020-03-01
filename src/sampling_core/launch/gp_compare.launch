@@ -2,13 +2,13 @@
    <node pkg="sampling_core" type="gmm_test_node" name="gmm_test" output="screen" >
          <rosparam>
             num_gau: 3
-            max_iteration: 10000
-            eps: 0.01
+            max_iteration: 10
+            eps: 0.1
             data_path:
               - gt_locations: "gt_fake_GPS.txt"
                 gt_measurements: "gt_fake_temperature.txt"
             num_gps: [1, 2, 3]
-            num_train_samples: [100, 200, 300, 400, 500]
+            num_train_samples: [5, 10 ,15, 20, 25, 30, 35, 40, 45, 50]
             <!-- init_sample_path: "wifi_measurement_new_2router_0.txt"
             init_location_path: "wifi_pos_new_2router_0.txt"
             test_location_path: "wifi_pos_new_2router_0.txt"
