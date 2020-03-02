@@ -26,7 +26,7 @@ max_lat = max(latitude1, latitude2)
 min_lng = min(longitude1, longitude2)
 max_lng = max(longitude1, longitude2)
 
-obstacle_file = open("obstacle_1.txt", "w")
+obstacle_file = open(rospack.get_path('sampling_data')+"/data/obstacle_1.txt", "w")
 
 for lat in np.arange(min_lat, max_lat + resolution, resolution):
     for lng in np.arange(min_lng, max_lng + resolution, resolution):

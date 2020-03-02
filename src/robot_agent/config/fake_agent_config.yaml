@@ -10,12 +10,24 @@ nagivate_loop_rate: 5 #10
 # for dwa planner
 num_speed_premitive: 20
 orientation_resolution: 0.01
+# obstacle 1
 collision_radius: 2
-# obstacle_pos: [4,3,
-#                6,6,
-#                8,9]
-obstacle_pos: [3,6,
-               6,11]
+obstacle_pos: [5,4,
+               8,6,
+               2,13]
+# obstacle 2
+# collision_radius: 2
+# obstacle_pos: [6,7,
+#                5,10,
+#                2,2]
+# obstacle 3
+# collision_radius: 2
+# obstacle_pos: [2,3,
+#                8,6,
+#                2,13,
+#                3,11]
+random_initial_pos: True
+
 prediction_time: 1 #2
 goal_cost_gain: 0.3
 obstacle_cost_gain: 0.7

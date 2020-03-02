@@ -1,5 +1,9 @@
 #include "robot_agent/fake_agent.h"
 #include <math.h>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
+#include <unistd.h>
+
 namespace sampling {
 namespace agent {
 FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
@@ -91,6 +95,9 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing battery_life_!");
   }
 
+  if (!rh_.getParam("random_initial_pos", random_initial_pos_)) {
+    ROS_ERROR("Error! Missing random_initial_pos!");
+  }
   assert(mu.size() == sigma.size());
   assert((mu.size() % 2) == 0);  // can reshape to n*2 (mu_x, mu_y)
   gt_num_gaussian_ = ((int)mu.size()) / 2;
@@ -114,7 +121,57 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   }
   // std::cout << obstacle_pos_ << std::endl;
   robot_start_time_ = ros::Time::now();
+
+  srand(getpid()+time(NULL));
+  // random initialize position
+  if (random_initial_pos_)
+  {
+    if (!rh_.getParam("map_range", map_range_)) {
+    ROS_ERROR("Error! Missing map_range!");
+    }
+
+    if (!rh_.getParam("map_resolution", map_resolution_)) {
+      ROS_ERROR("Error! Missing map_range!");
+    }
+    double min_lat = map_range_[0]/map_resolution_; 
+    double min_lng = map_range_[1]/map_resolution_;
+    double max_lat = map_range_[2]/map_resolution_;
+    double max_lng = map_range_[3]/map_resolution_;
+
+    int lat_range = (int) (max_lat - min_lat + 1);
+    int lng_range = (int) (max_lng - min_lng + 1);
+
+    int rand_lat_int = rand()%lat_range + min_lat;
+    int rand_lng_int = rand()%lng_range + min_lng;
+
+    double rand_lat_d = ((double)rand_lat_int)*map_resolution_;
+    double rand_lng_d = ((double)rand_lng_int)*map_resolution_;
+
+    
+    while (!checkCollision(rand_lat_d, rand_lng_d))
+    {
+      rand_lat_int = rand()%lat_range + min_lat;
+      rand_lng_int = rand()%lng_range + min_lng;
+      rand_lat_d = ((double)rand_lat_int)*map_resolution_;
+      rand_lng_d = ((double)rand_lng_int)*map_resolution_;
+    }
+    current_latitude_ = rand_lat_d;
+    current_longitude_ = rand_lng_d;
+  }
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
+}
+
+
+bool FakeAgentNode::checkCollision(double lat, double lng){
+  double distance;
+  for (int j = 0; j < obstacle_pos_.rows(); j++) {
+        distance = sqrt(pow((obstacle_pos_(j, 0) - lat), 2) +
+                        pow((obstacle_pos_(j, 1) - lng), 2));
+        if (distance <= collsion_radius_){
+          return false;
+        }
+      }
+  return true;
 }
 
 bool FakeAgentNode::update_goal_from_gps() {
@@ -167,7 +224,7 @@ bool FakeAgentNode::move_to_goal() {
     navigate_loop_rate.sleep();
     // update new position
     dt = ros::Time::now() - previous;
-    // std::cout << dt << std::endl;
+    std::cout << dt << std::endl;
     current_latitude_ += best_vel[0] * dt.toSec();
     current_longitude_ += best_vel[1] * dt.toSec();
     ROS_INFO_STREAM("Robot " << agent_id_ << " current location ("
@@ -286,6 +343,9 @@ bool FakeAgentNode::collect_temperature_sample() {
   std::normal_distribution<float> dist(
       0, observation_noise_std_);  // mean followed by stdiv
   temperature_measurement_ += dist(generator);
+  if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]|| current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
+    temperature_measurement_+=2*dist(generator);
+  }
   return true;
 }
 
