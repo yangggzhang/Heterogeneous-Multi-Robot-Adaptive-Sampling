@@ -1,9 +1,9 @@
 <launch>
   <node pkg="sampling_core" type="sampling_simulation_node" name="sampling_simulation" output="screen"> 
     <rosparam>
-            num_agents: 3
+            num_agents: 2
             model_parameters:
-                - num_gaussian: 3
+                - num_gaussian: 2
                   param0: [0.5, 0.5, -2.0]
                   param1: [0.5, 0.5, -2.0]
                   param2: [0.5, 0.5, -2.0]
@@ -11,11 +11,11 @@
                   max_iteration: 100
                   eps: 0.1
             data_path:
-                - test_location: "gt_fake_GPS.txt"
+                - test_location: "wifi_gps_final.txt"
                   initial_measurements: "init_fake_temperature.txt"
                   initial_locations: "init_fake_GPS.txt"
-                  gt_measurements: "gt_fake_temperature.txt"
-                  gt_locations: "gt_fake_GPS.txt"
+                  gt_measurements: "wifi_measurement_final.txt"
+                  gt_locations: "wifi_gps_final.txt"
             sampling_parameters:
                 - selection_model: 1
                   variance_coef: 6.0
@@ -55,13 +55,13 @@
                   lower_bound: 0.0
                   upper_bound: 1.0
             heterogeneous_parameter:
-                # - hetero_spaces: [0, 1, 2, 4]
-                - hetero_spaces: [0]
-                  hetero_scale_factors: [ 2.0, 1.5, 1.0, 1.0]
-                  mp0: [ 1.0, 2.5, 1.0, 1.0]
-                  mp1: [ 1.0, 2.0, 1.0, 1.0]
-                  mp2: [ 1.0, 1.0, 7.5, 1.0]
-                  # mp3: [ 1.0, 1.0, 2.0, 1.0]
+                - hetero_spaces: [0, 1, 2, 4]
+                # - hetero_spaces: [0]
+                  hetero_scale_factors: [ 1.5, 2.0, 1.0, 1.0]
+                  mp0: [ 1.0, 0.1, 1.25, 1.0]
+                  mp1: [ 1.0, 0.5, 0.75, 1.0]
+                  mp2: [ 1.0, 5.0, 0.3, 1.0]
+                  mp3: [ 1.0, 5.0, 0.3, 1.0]
             obstacle_list:
                 - agent_id: 0
                   obstacle_path: "obstacle_1.txt"

@@ -123,6 +123,7 @@ bool AgentNode::request_target_from_master() {
   if (request_target_client_.call(srv)) {
     goal_rtk_latitude_ = srv.response.latitude;
     goal_rtk_longitude_ = srv.response.longitude;
+    ROS_INFO_STREAM("Robot agent : "<<agent_id_<<" received goal : "<<goal_rtk_latitude_<<" "<<goal_rtk_longitude_);
     return true;
   } else {
     ROS_INFO_STREAM("Robot "
@@ -237,6 +238,7 @@ void AgentNode::collect_sample() {
       }
     }
     case REPORT: {
+      ROS_INFO_STREAM("to report!");
       if (!collect_temperature_sample()) {
         ROS_INFO_STREAM("Robot : " << agent_id_
                                    << " failed to measure temperature!");

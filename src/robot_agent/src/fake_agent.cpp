@@ -338,14 +338,25 @@ double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
 // }
 
 bool FakeAgentNode::collect_temperature_sample() {
+  ROS_INFO_STREAM("????");
   temperature_measurement_ = getGroundTruth();
+    ROS_INFO_STREAM("!!!");
+
   // add noise:
   std::normal_distribution<float> dist(
       0, observation_noise_std_);  // mean followed by stdiv
+      ROS_INFO_STREAM("!!!");
+
   temperature_measurement_ += dist(generator);
-  if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]|| current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
-    temperature_measurement_+=2*dist(generator);
-  }
+    ROS_INFO_STREAM("!!!");
+
+    std::cout<<map_range_.size()<<std::endl;
+
+  // if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]|| current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
+  //   temperature_measurement_+=2*dist(generator);
+  // }
+      ROS_INFO_STREAM("!!!");
+
   return true;
 }
 

@@ -359,11 +359,11 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
       XmlRpc::XmlRpcValue obstacle_param = obstacle_list[i];
       int agent_id;
       if (!sampling::utils::GetParam(obstacle_param, "agent_id", agent_id)) {
-        return false;
+        // return false;
       }
       if (!sampling::utils::GetParamData(obstacle_param, "obstacle_path",
                                          obstacles_for_robots_[agent_id])) {
-        return false;
+        // return false;
       }
     }
     ROS_INFO_STREAM("Successfully loaded model parameters!");

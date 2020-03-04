@@ -10,20 +10,12 @@ nagivate_loop_rate: 5 #10
 # for dwa planner
 num_speed_premitive: 20
 orientation_resolution: 0.01
-# obstacle 1
-# collision_radius: 2
-# obstacle_pos: [5,4,
-#                8,6,
-#                2,13]
-# obstacle 2
-# collision_radius: 2
-# obstacle_pos: [6,7,
-#                5,10,
-#                2,2]
-# obstacle 3
-collision_radius: 0.0
-obstacle_pos: [-1,-1]
-random_initial_pos: False
+collision_radius: 1
+obstacle_pos: [2,1,
+               8,14,
+               2,11,
+               8,3]
+random_initial_pos: True
 
 prediction_time: 1 #2
 goal_cost_gain: 0.3
@@ -49,7 +41,7 @@ poly_coeff: [3.934400, 1.998334, 0.577054, 0.108236, -0.983421,
             -0.000283, -0.000767, -0.000017, 0.000151, -0.000222, 0.000080]
 
 # for data generation
-map_range: [ 0, 0, 9, 14] #lat1, lng1, lat2, lng2
+map_range: [0,0,9,14] #lat1, lng1, lat2, lng2
 map_resolution: 0.5
 init_resolution: 5
 
