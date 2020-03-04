@@ -14,11 +14,11 @@ gt_resolution = 0.000002
 
 def callback(data):
     data_path = rospack.get_path('sampling_data') + "/data/"
-    wifi_gps_file = open(data_path + "wifi_gps2.txt", "w")
-    rssi_file = open(data_path + "wifi_measurement2.txt","w")
-    gt_gps_file = open(data_path + "wifi_gps_gt.txt", "w")
-    latitude.append(data.latitude)
-    longitude.append(data.longitude)
+    wifi_gps_file = open(data_path + "wifi_gps_final.txt", "w")
+    rssi_file = open(data_path + "wifi_measurement_final.txt","w")
+    gt_gps_file = open(data_path + "wifi_gps_gt_final.txt", "w")
+    latitude.append(data.location_x)
+    longitude.append(data.location_y)
     wifi.append(data.measurement)
     for lat, lng, rssi in zip(latitude, longitude, wifi):
         wifi_gps_file.write("%f,%f \n" %(lat, lng))
