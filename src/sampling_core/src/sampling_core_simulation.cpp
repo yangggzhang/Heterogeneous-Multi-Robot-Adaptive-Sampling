@@ -96,6 +96,30 @@ void SamplingCoreSimulation::ReportCallback(const ros::TimerEvent &) {
   report_pub_.publish(msg);
 }
 
+//Coordinate Rotation and Translation
+Eigen::MatrixXd SamplingCoreSimulation::CoordinateTransform(double latitude_in, double longitude_in) {
+  Eigen::MatrixXd local_gps_matrix = Eigen::MatrixXd::Random(1,2);
+  local_gps_matrix(0, 0) = latitude_in;
+  local_gps_matrix(0, 1) = longitude_in;
+  assert(traj_rotate_matrix_.rows() == 2);
+  assert(traj_rotate_matrix_.cols() == 2);
+  Eigen::MatrixXd calibrated_gps_matrix = local_gps_matrix * traj_rotate_matrix_;
+  calibrated_gps_matrix(0) += traj_lat_offset_;
+  calibrated_gps_matrix(1) += traj_lng_offset_;
+  return calibrated_gps_matrix;
+}
+
+//Coordinate INVERSE Rotation and Translation
+Eigen::MatrixXd SamplingCoreSimulation::CoordinateInverseTransform(double latitude_in, double longitude_in) {
+  Eigen::MatrixXd local_gps_matrix = Eigen::MatrixXd::Random(1, 2);
+  local_gps_matrix(0, 0) = latitude_in - traj_lat_offset_;
+  local_gps_matrix(0, 1) = longitude_in - traj_lng_offset_;
+  assert(traj_rotate_matrix_.rows() == 2);
+  assert(traj_rotate_matrix_.cols() == 2);
+  Eigen::MatrixXd calibrated_gps_matrix = local_gps_matrix * traj_rotate_matrix_.inverse();
+  return calibrated_gps_matrix;
+}
+
 bool SamplingCoreSimulation::AssignInterestPoint(
     sampling_msgs::RequestGoal::Request &req,
     sampling_msgs::RequestGoal::Response &res) {
@@ -104,8 +128,14 @@ bool SamplingCoreSimulation::AssignInterestPoint(
   // Update Voronoi map
   int agent_id = req.robot_id;
 
-  agent_locations_(agent_id, 0) = req.robot_latitude;
-  agent_locations_(agent_id, 1) = req.robot_longitude;
+  //USE ROTATION TRANSFORM
+  Eigen::MatrixXd calibrated_input_gps_matrix = CoordinateTransform(req.robot_latitude, req.robot_longitude);
+  agent_locations_(agent_id, 0) = calibrated_input_gps_matrix(0);
+  agent_locations_(agent_id, 1) = calibrated_input_gps_matrix(1);
+
+
+  // agent_locations_(agent_id, 0) = req.robot_latitude;
+  // agent_locations_(agent_id, 1) = req.robot_longitude;
 
   std::vector<int> cell_index =
       voronoi_node_->GetSingleVoronoiCellIndex(agent_locations_, agent_id);
@@ -114,8 +144,27 @@ bool SamplingCoreSimulation::AssignInterestPoint(
       informative_sampling_node_->SelectInformativeLocation(
           mean_prediction_, var_prediction_, cell_index);
 
-  res.latitude = next_location.first;
-  res.longitude = next_location.second;
+  if ((traj_follow_) && (agent_id ==0)) {
+    res.latitude = traj_0_(traj_count_0_,0);
+    res.longitude = traj_0_(traj_count_0_,1);
+    ++traj_count_0_;
+  }
+  else if ((traj_follow_)&& (agent_id==1)) {
+    res.latitude = traj_1_(traj_count_1_,0);
+    res.longitude = traj_1_(traj_count_1_,1); 
+    ++traj_count_1_;
+  }
+  else{
+    res.latitude = next_location.first;
+    res.longitude = next_location.second;
+  }
+
+  //Coordinate INVERSE Rotation and Translation
+  Eigen::MatrixXd calibrated_gps_matrix = CoordinateInverseTransform(res.latitude, res.longitude);
+  // Eigen::MatrixXd calibrated_gps_matrix = CoordinateTransform(calibrated_gps_matrix_1(0), calibrated_gps_matrix_1(1));
+  res.latitude = calibrated_gps_matrix(0);
+  res.longitude = calibrated_gps_matrix(1);
+
   return true;
 }
 
@@ -125,15 +174,39 @@ void SamplingCoreSimulation::CollectSampleCallback(
     ROS_INFO_STREAM("Master received temperature : " << msg.measurement);
     update_flag_ = true;
 
+    Eigen::MatrixXd calibrated_input_gps_matrix = CoordinateTransform(msg.location_x, msg.location_y);
+
     collected_measurements_.conservativeResize(collected_measurements_.size() +
                                                1);
-    collected_measurements_(collected_measurements_.size() - 1) =
-        msg.measurement;
+    
+    double x = calibrated_input_gps_matrix(0), y = calibrated_input_gps_matrix(1);
+
+    collected_measurements_(collected_measurements_.size() - 1) = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
+          poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
+          poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
+          poly_coeff_[7] * pow(x, 2) * y + poly_coeff_[8] * x * pow(y, 2) +
+          poly_coeff_[9] * pow(y, 3) + poly_coeff_[10] * pow(x, 4) +
+          poly_coeff_[11] * pow(x, 3) * y +
+          poly_coeff_[12] * pow(x, 2) * pow(y, 2) +
+          poly_coeff_[13] * x * pow(y, 3) + poly_coeff_[14] * pow(y, 4) +
+          poly_coeff_[15] * pow(x, 5) + poly_coeff_[16] * pow(x, 4) * y +
+          poly_coeff_[17] * pow(x, 3) * pow(y, 2) +
+          poly_coeff_[18] * pow(x, 2) * pow(y, 3) +
+          poly_coeff_[19] * x * pow(y, 4) + poly_coeff_[20] * pow(y, 5);
+
+    collected_measurements_(collected_measurements_.size() - 1) = std::max(collected_measurements_(collected_measurements_.size() - 1)*1.5,0.0);
+
+    // collected_measurements_(collected_measurements_.size() - 1) =
+    //     msg.measurement;
 
     collected_locations_.conservativeResize(collected_locations_.rows() + 1,
                                             collected_locations_.cols());
-    collected_locations_(collected_locations_.rows() - 1, 0) = msg.location_x;
-    collected_locations_(collected_locations_.rows() - 1, 1) = msg.location_y;
+
+    collected_locations_(collected_locations_.rows() - 1, 0) = x; 
+    collected_locations_(collected_locations_.rows() - 1, 1) = y;
+
+    // collected_locations_(collected_locations_.rows() - 1, 0) = msg.location_x;
+    // collected_locations_(collected_locations_.rows() - 1, 1) = msg.location_y;
   } else {
     ROS_INFO_STREAM(
         "Master computer received invalid sample from : " << msg.robot_id);
@@ -143,8 +216,14 @@ void SamplingCoreSimulation::CollectSampleCallback(
 void SamplingCoreSimulation::AgentLocationCallback(
     const sampling_msgs::agent_location &msg) {
   ROS_INFO_STREAM("Master received location from agent : " << msg.agent_id);
-  agent_locations_(msg.agent_id, 0) = msg.location_x;
-  agent_locations_(msg.agent_id, 1) = msg.location_y;
+
+  //USE ROTATION TRANSFORM
+  Eigen::MatrixXd calibrated_input_gps_matrix = CoordinateTransform(msg.location_x, msg.location_y);
+  agent_locations_(msg.agent_id, 0) = calibrated_input_gps_matrix(0);
+  agent_locations_(msg.agent_id, 1) = calibrated_input_gps_matrix(1);
+
+  // agent_locations_(msg.agent_id, 0) = msg.location_x;
+  // agent_locations_(msg.agent_id, 1) = msg.location_y;
 }
 
 bool SamplingCoreSimulation::ParseFromRosParam() {
@@ -216,6 +295,45 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
 
     if (!utils::GetParamDataVec(data_path, "gt_measurements",
                                 gt_measurements_)) {
+      return false;
+    }
+
+    // load trajectory data
+    if (!utils::GetParam(data_path, "traj_follow", traj_follow_)) {
+      ROS_ERROR_STREAM("Missing traj_follow");
+      return false;
+    }
+
+    if (traj_follow_){
+      if (!utils::GetParamData(data_path, "traj_0", traj_0_)) {
+        ROS_ERROR_STREAM("Missing traj_0");
+        return false;
+      }
+      if (!utils::GetParamData(data_path, "traj_1", traj_1_)) {
+        ROS_ERROR_STREAM("Missing traj_1_");
+        return false;
+      }
+    }
+
+    if (!utils::GetParam(data_path, "traj_rotate_angle", traj_rotate_angle_)) {
+      ROS_ERROR_STREAM("Missing traj_rotate_angle_");
+      return false;
+    }
+    else {
+      traj_rotate_matrix_ = Eigen::MatrixXd::Random(2, 2);
+      traj_rotate_matrix_(0, 0) = cos(traj_rotate_angle_);
+      traj_rotate_matrix_(0, 1) = -sin(traj_rotate_angle_);
+      traj_rotate_matrix_(1, 0) = sin(traj_rotate_angle_);
+      traj_rotate_matrix_(1, 1) = cos(traj_rotate_angle_);
+    }
+
+    if (!utils::GetParam(data_path, "traj_lat_offset", traj_lat_offset_)) {
+      ROS_ERROR_STREAM("Missing traj_lat_offset");
+      return false;
+    }
+
+    if (!utils::GetParam(data_path, "traj_lng_offset", traj_lng_offset_)) {
+      ROS_ERROR_STREAM("Missing traj_lng_offset");
       return false;
     }
 
@@ -334,6 +452,12 @@ bool SamplingCoreSimulation::ParseFromRosParam() {
     return false;
   }
 
+  if (!utils::GetParam(heterogeneous_param, "poly_coeff",
+                       poly_coeff_)) {
+    ROS_ERROR_STREAM("ERROR LOADING ROBOT poly_coeff PARAM!");
+    return false;
+  }
+
   motion_primitives_.resize(num_agents_);
   for (int i = 0; i < num_agents_; ++i) {
     std::string param_name = "mp" + std::to_string(i);
@@ -382,7 +506,10 @@ void SamplingCoreSimulation::UpdateVisualization(const bool &update_model) {
   visualization_msgs::MarkerArray marker_array;
   if (update_model) {
     marker_array =
-        visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
+    // Change To Update GT
+        visualization_node_->UpdateMap({mean_prediction_, gt_measurements_});
+    // Visualize Mean and Variance
+        // visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
   }
   marker_array.markers.push_back(
       visualization_node_->UpdateRobot(agent_locations_));
@@ -398,7 +525,9 @@ void SamplingCoreSimulation::Update() {
   if (update_flag_) {
     ROS_INFO_STREAM("Update!");
     UpdateModel();
+    // ROS_INFO_STREAM("Update MODEL!");
     UpdateVisualization(update_flag_);
+    // ROS_INFO_STREAM("Update VISUALIZATION!");
     update_flag_ = false;
   }
 }

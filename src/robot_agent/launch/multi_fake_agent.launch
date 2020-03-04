@@ -3,10 +3,10 @@
     <!-- BEGIN ROBOT 1-->
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="1" />
-        <arg name="lon" value="10"/>
-        <arg name="max_vel" value="10.0"/>
-        <arg name="obstacle" value="True"/>
-        <arg name="battery_life" value="10"/>
+        <arg name="lon" value="5"/>
+        <arg name="max_vel" value="2.5"/>
+        <arg name="obstacle" value="False"/>
+        <arg name="battery_life" value="100"/>
         <arg name="id"  value="0" />
     </include>
     
@@ -14,9 +14,9 @@
     <include file="$(find robot_agent)/launch/fake_agent.launch" >
         <arg name="lat" value="2" />
         <arg name="lon" value="3"/>
-        <arg name="max_vel" value="5"/>
-        <arg name="obstacle" value="False"/>
-        <arg name="battery_life" value="200"/>
+        <arg name="max_vel" value="1.25"/>
+        <arg name="obstacle" value="True"/>
+        <arg name="battery_life" value="20000"/>
         <arg name="id"  value="1" />
     </include>
 

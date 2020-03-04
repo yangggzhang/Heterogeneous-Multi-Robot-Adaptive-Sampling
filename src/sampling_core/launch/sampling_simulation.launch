@@ -11,31 +11,37 @@
                   max_iteration: 100
                   eps: 0.1
             data_path:
-                - test_location: "wifi_gps_final.txt"
-                  initial_measurements: "init_fake_temperature.txt"
-                  initial_locations: "init_fake_GPS.txt"
-                  gt_measurements: "wifi_measurement_final.txt"
-                  gt_locations: "wifi_gps_final.txt"
+                - test_location: "gt_final_fake_GPS.txt"
+                  initial_measurements: "init_final_fake_temperature.txt"
+                  initial_locations: "init_final_fake_GPS.txt"
+                  gt_measurements: "gt_final_fake_temperature.txt"
+                  gt_locations: "gt_final_fake_GPS.txt"
+                  traj_0: "robot_0_traj.txt"
+                  traj_1: "robot_1_traj.txt"
+                  traj_follow: True
+                  traj_rotate_angle: 0.41450687
+                  traj_lat_offset: -3.8
+                  traj_lng_offset: 1.0
             sampling_parameters:
                 - selection_model: 1
-                  variance_coef: 6.0
+                  variance_coef: 12.0
             graph_visualization_parameters:
                 - map_frame: "mean"
                   map_id: 1
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 20.0
+                  x_offset: 30.0
                   y_offset: 0.0
                   lower_bound: 0.0
-                  upper_bound: 10.0
+                  upper_bound: 15.0
                 - map_frame: "variance"
                   map_id: 2
                   x_scale: 1.0
                   y_scale: 1.0
-                  x_offset: 40.0
+                  x_offset: 60.0
                   y_offset: 0.0
                   lower_bound: 0.0
-                  upper_bound: 3.0
+                  upper_bound: 15.0
             robot_visualization_parameter:
                 - map_frame: "robot"
                   map_id: 3
@@ -62,9 +68,13 @@
                   mp1: [ 1.0, 0.5, 0.75, 1.0]
                   mp2: [ 1.0, 5.0, 0.3, 1.0]
                   mp3: [ 1.0, 5.0, 0.3, 1.0]
+                  poly_coeff: [-5.120129, 7.906774, 9.684723, -0.136121, -8.459288,
+                  -4.805916, -1.322104, 2.407984, 2.038850, 1.046061, 
+                  0.318280, -0.238998, -0.275353, -0.242692, -0.099094, 
+                  -0.020971, 0.002012, 0.022830, 0.003186, 0.012989, 0.003254]
             obstacle_list:
                 - agent_id: 0
-                  obstacle_path: "obstacle_1.txt"
+                  # obstacle_path: "obstacle_1.txt"
                 - agent_id: 1
                   obstacle_path: "obstacle_1.txt"
          </rosparam>

@@ -43,7 +43,7 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   }
   speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
   fake_distance_threshold_s_ =
-      1.5 * (1.0 / (float)nagivate_loop_rate_int_) * max_vel_;
+      1 * (1.0 / (float)nagivate_loop_rate_int_) * max_vel_;
 
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
@@ -175,7 +175,6 @@ bool FakeAgentNode::checkCollision(double lat, double lng){
 }
 
 bool FakeAgentNode::update_goal_from_gps() {
-  // fake node
   return true;
 }
 
@@ -334,28 +333,28 @@ double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
 //                              << " failed to receive temperature
 //                              measurement!");
 //     return false;
-//   }
+//   } 
 // }
 
 bool FakeAgentNode::collect_temperature_sample() {
-  ROS_INFO_STREAM("????");
+  // ROS_INFO_STREAM("????");
   temperature_measurement_ = getGroundTruth();
-    ROS_INFO_STREAM("!!!");
+    // ROS_INFO_STREAM("!!!");
 
   // add noise:
-  std::normal_distribution<float> dist(
-      0, observation_noise_std_);  // mean followed by stdiv
-      ROS_INFO_STREAM("!!!");
+  // std::normal_distribution<float> dist(
+  //     0, observation_noise_std_);  // mean followed by stdiv
+  //     // ROS_INFO_STREAM("!!!");
 
-  temperature_measurement_ += dist(generator);
-    ROS_INFO_STREAM("!!!");
+  // temperature_measurement_ += dist(generator);
+  //   // ROS_INFO_STREAM("!!!");
 
-    std::cout<<map_range_.size()<<std::endl;
+  //   std::cout<<map_range_.size()<<std::endl;
 
   // if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]|| current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
   //   temperature_measurement_+=2*dist(generator);
   // }
-      ROS_INFO_STREAM("!!!");
+      // ROS_INFO_STREAM("!!!");
 
   return true;
 }
@@ -403,6 +402,7 @@ double FakeAgentNode::getPoly(double x, double y) {
           poly_coeff_[17] * pow(x, 3) * pow(y, 2) +
           poly_coeff_[18] * pow(x, 2) * pow(y, 3) +
           poly_coeff_[19] * x * pow(y, 4) + poly_coeff_[20] * pow(y, 5);
+  value = std::max(value*1.5,0.0);
   return value;
 }
 

@@ -21,9 +21,15 @@ orientation_resolution: 0.01
 #                5,10,
 #                2,2]
 # obstacle 3
-collision_radius: 0.0
-obstacle_pos: [-1,-1]
-random_initial_pos: False
+# collision_radius: 0.0
+# obstacle_pos: [-1,-1]
+# random_initial_pos: False
+
+# Real Obstacles
+collision_radius: 0.35
+obstacle_pos: [1.67,1.42,
+               5.68,4.33,
+               3.5,7.07]
 
 prediction_time: 1 #2
 goal_cost_gain: 0.3
@@ -48,13 +54,15 @@ gaussian_weights: [2000,1400,1500]
 #             0.011875, 0.011496, -0.009661, 0.002992, -0.002209, 
 #             -0.000283, -0.000767, -0.000017, 0.000151, -0.000222, 0.000080]
 # for test
-poly_coeff: [6.432497, -13.209223, 3.256787, 10.725020, -5.227148,
-            -0.682183, -3.628690, 1.815605, 0.974351, 0.113655, 
-            0.538571, -0.182159, -0.271259, -0.069542, -0.008627, 
-            -0.028955, 0.003578, 0.021558, 0.000978, 0.007261, -0.000831]
+poly_coeff: [-5.120129, 7.906774, 9.684723, -0.136121, -8.459288,
+      -4.805916, -1.322104, 2.407984, 2.038850, 1.046061, 
+      0.318280, -0.238998, -0.275353, -0.242692, -0.099094, 
+      -0.020971, 0.002012, 0.022830, 0.003186, 0.012989, 0.003254]
+
+
 
 # for data generation
-map_range: [ 0, 0, 9, 14] #lat1, lng1, lat2, lng2
-map_resolution: 0.5
-init_resolution: 5
+map_range: [ 0, 0, 7, 8] #lat1, lng1, lat2, lng2
+map_resolution: 0.3
+init_resolution: 3
 

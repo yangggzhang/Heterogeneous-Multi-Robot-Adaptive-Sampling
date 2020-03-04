@@ -35,11 +35,11 @@ max_lng = max(longitude1, longitude2)
 print("latitude_range: [" + str(min_lat) + ", " + str(max_lat) + "]")
 print("longitude_range: [" + str(min_lng) + ", " + str(max_lng) + "]")
 
-init_gps_file = open("init_fake_GPS.txt", "w")
-init_temp_file = open("init_fake_temperature.txt","w")
+init_gps_file = open("init_final_fake_GPS.txt", "w")
+init_temp_file = open("init_final_fake_temperature.txt","w")
 
-gt_gps_file = open("gt_fake_GPS.txt", "w")
-gt_temp_file = open("gt_fake_temperature.txt","w")
+gt_gps_file = open("gt_final_fake_GPS.txt", "w")
+gt_temp_file = open("gt_final_fake_temperature.txt","w")
 
 ground_truth_mu = np.array(ground_truth_mu).reshape(-1,2)
 ground_truth_sig = np.array(ground_truth_sig).reshape(-1,2)
@@ -52,10 +52,11 @@ def poly(x, y):
     poly_coeff[7]*(x**2)*y + poly_coeff[8]*x*(y**2) + poly_coeff[9]*(y**3) + poly_coeff[10]*x**4 + poly_coeff[11]*((x**3))*y + \
     poly_coeff[12]*(x**2)*(y**2) + poly_coeff[13]*x*(y**3) + poly_coeff[14]*(y**4) + poly_coeff[15]*(x**5) + poly_coeff[16]*(x**4)*y + \
     poly_coeff[17]*(x**3)*(y**2) + poly_coeff[18]*(x**2)*(y**3) + poly_coeff[19]*x*(y**4) + poly_coeff[20]*y**5
+    temperature = max(temperature*1.5, 0)
     return temperature
 
-for lat in np.arange(min_lat, max_lat + resolution, init_resolution):
-    for lng in np.arange(min_lng, max_lng + resolution, init_resolution):
+for lat in np.arange(min_lat, max_lat, init_resolution):
+    for lng in np.arange(min_lng, max_lng, init_resolution):
         temperature = 0
         if ground_truth_type == 0:
             for m in range(ground_truth_mu.shape[0]):
@@ -71,8 +72,8 @@ for lat in np.arange(min_lat, max_lat + resolution, init_resolution):
 init_gps_file.close()
 init_temp_file.close()
 
-for lat in np.arange(min_lat, max_lat + resolution, resolution):
-    for lng in np.arange(min_lng, max_lng + resolution, resolution):
+for lat in np.arange(min_lat, max_lat, resolution):
+    for lng in np.arange(min_lng, max_lng, resolution):
         temperature = 0
         if ground_truth_type == 0:
             for m in range(ground_truth_mu.shape[0]):

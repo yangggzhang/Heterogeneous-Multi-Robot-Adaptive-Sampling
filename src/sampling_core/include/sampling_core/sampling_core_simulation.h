@@ -135,6 +135,31 @@ class SamplingCoreSimulation {
   std::vector<std::vector<double>> motion_primitives_;
 
   std::vector<Eigen::MatrixXd> obstacles_for_robots_;
+
+  Eigen::MatrixXd traj_0_;
+
+  Eigen::MatrixXd traj_1_;
+
+  bool traj_follow_;
+
+  int traj_count_0_ = 0;
+
+  int traj_count_1_ = 0;
+
+  double traj_rotate_angle_ = 0;
+
+  double traj_lat_offset_ = 0;
+
+  double traj_lng_offset_ = 0;
+
+  Eigen::MatrixXd traj_rotate_matrix_;
+
+  Eigen::MatrixXd CoordinateTransform(double latitude_in, double longitude_in);
+
+  Eigen::MatrixXd CoordinateInverseTransform(double latitude_in, double longitude_in);
+
+  std::vector<double> poly_coeff_;
+
 };
 }  // namespace core
 }  // namespace sampling

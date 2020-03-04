@@ -71,6 +71,10 @@ class FakeAgentNode : public AgentNode {
   std::vector<double> poly_coeff_;
   std::vector<double> map_range_;
   double map_resolution_;
+  
+  // Eigen::MatrixXd CoordinateTransform(double latitude_in, double longitude_in);
+
+  // Eigen::MatrixXd CoordinateInverseTransform(double latitude_in, double longitude_in);
 };
 }  // namespace agent
 }  // namespace sampling

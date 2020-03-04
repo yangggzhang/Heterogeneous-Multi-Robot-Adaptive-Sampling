@@ -33,9 +33,15 @@ for lat in np.arange(min_lat, max_lat + resolution, resolution):
         for i in range(obstacle_pos.shape[0]):
             obs_lat = obstacle_pos[i,0]
             obs_long = obstacle_pos[i,1]
-            distance = np.sqrt((lat-obs_lat)**2+(lng-obs_long)**2)
-            if distance<collision_radius:
-                obstacle_file.write("%f,%f \n" %(lat, lng))
+            # Circle Obstacle
+            # distance = np.sqrt((lat-obs_lat)**2+(lng-obs_long)**2)
+            # if distance<collision_radius:
+            #     obstacle_file.write("%f,%f \n" %(lat, lng))
+
+            # Square Obstacle
+            if lat < obs_lat+collision_radius and lat > obs_lat-collision_radius and lng < obs_long+collision_radius and lng > obs_long-collision_radius:
+            	 obstacle_file.write("%f,%f \n" %(lat, lng))
+            	 
 obstacle_file.close()
 
 
