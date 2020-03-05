@@ -158,13 +158,14 @@ bool SamplingCoreSimulation::AssignInterestPoint(
     res.latitude = next_location.first;
     res.longitude = next_location.second;
   }
+  
 
   //Coordinate INVERSE Rotation and Translation
   Eigen::MatrixXd calibrated_gps_matrix = CoordinateInverseTransform(res.latitude, res.longitude);
   // Eigen::MatrixXd calibrated_gps_matrix = CoordinateTransform(calibrated_gps_matrix_1(0), calibrated_gps_matrix_1(1));
   res.latitude = calibrated_gps_matrix(0);
   res.longitude = calibrated_gps_matrix(1);
-
+  std::cout<<"("<<res.latitude<<", "<<res.longitude<<")"<<std::endl;
   return true;
 }
 
@@ -507,9 +508,9 @@ void SamplingCoreSimulation::UpdateVisualization(const bool &update_model) {
   if (update_model) {
     marker_array =
     // Change To Update GT
-        visualization_node_->UpdateMap({mean_prediction_, gt_measurements_});
+        // visualization_node_->UpdateMap({mean_prediction_, gt_measurements_});
     // Visualize Mean and Variance
-        // visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
+        visualization_node_->UpdateMap({mean_prediction_, var_prediction_});
   }
   marker_array.markers.push_back(
       visualization_node_->UpdateRobot(agent_locations_));

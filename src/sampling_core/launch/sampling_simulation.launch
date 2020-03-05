@@ -18,7 +18,7 @@
                   gt_locations: "gt_final_fake_GPS.txt"
                   traj_0: "robot_0_traj.txt"
                   traj_1: "robot_1_traj.txt"
-                  traj_follow: True
+                  traj_follow: False
                   traj_rotate_angle: 0.41450687
                   traj_lat_offset: -3.8
                   traj_lng_offset: 1.0
@@ -41,7 +41,7 @@
                   x_offset: 60.0
                   y_offset: 0.0
                   lower_bound: 0.0
-                  upper_bound: 15.0
+                  upper_bound: 2.0 #15 for gt
             robot_visualization_parameter:
                 - map_frame: "robot"
                   map_id: 3

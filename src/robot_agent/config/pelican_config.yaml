@@ -30,3 +30,6 @@ observation_noise_std: 0.65
 get_ground_truth: True
 lat_constant: 40.443
 lng_constant: -79.940
+
+battery_life: 600
+battery_died_mode: True
