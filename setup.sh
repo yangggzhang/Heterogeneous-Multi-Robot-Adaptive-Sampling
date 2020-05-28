@@ -9,7 +9,7 @@ cd build
 cmake ..
 make
 pip install pyspread openpyxl scipy cvxopt scandir --user
-ln -s /usr/include/eigen3/Eigen /usr/local/include/Eigen
-echo "alias sshjackal='sshpass -p 'clearpath' ssh administrator@192.168.131.11'" >> ~/.bashrc
-echo "alias sshpelican='sshpass -p 'asctec' ssh asctec@192.168.131.207'" >> ~/.bashrc
-source ~/.bashrc
+# ln -s /usr/include/eigen3/Eigen /usr/local/include/Eigen
+# echo "alias sshjackal='sshpass -p 'clearpath' ssh administrator@192.168.131.11'" >> ~/.bashrc
+# echo "alias sshpelican='sshpass -p 'asctec' ssh asctec@192.168.131.207'" >> ~/.bashrc
+# source ~/.bashrc
