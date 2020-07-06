@@ -11,9 +11,6 @@
 [submodule "src/sampling_core/libgp"]
 	path = src/sampling_core/libgp
 	url = https://github.com/mblum/libgp.git
-[submodule "src/simulation/turtlebot3_msgs"]
-	path = src/simulation/turtlebot3_msgs
-	url = https://github.com/ROBOTIS-GIT/turtlebot3_msgs.git
-[submodule "src/simulation/turtlebot3"]
-	path = src/simulation/turtlebot3
-	url = https://github.com/ROBOTIS-GIT/turtlebot3
+[submodule "src/simulation/hector_quadrotor_navigation"]
+	path = src/simulation/hector_quadrotor_navigation
+	url = https://github.com/yangggzhang/hector_quadrotor_navigation.git
