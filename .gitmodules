@@ -4,3 +4,6 @@
 [submodule "src/simulation/hector_quadrotor_navigation"]
 	path = src/simulation/hector_quadrotor_navigation
 	url = https://github.com/yangggzhang/hector_quadrotor_navigation.git
+[submodule "src/simulation/multi_jackal"]
+	path = src/simulation/multi_jackal
+	url = https://github.com/NicksSimulationsROS/multi_jackal.git
