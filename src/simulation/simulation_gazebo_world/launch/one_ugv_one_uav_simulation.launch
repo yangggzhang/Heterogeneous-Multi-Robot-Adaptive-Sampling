@@ -10,7 +10,7 @@
   <arg name="jackal0_position_y" default="2.5" />
   <arg name="hector0_position_x" default="0.0" />
   <arg name="hector0_position_y" default="0.0" />
-  <arg name="hector0_position_z" default="1.0" />
+  <arg name="hector0_position_z" default="1.2" />
 
   <!-- Launch Gazebo with the specified world -->
   <include file="$(find simulation_gazebo_world)/launch/sampling_world.launch">
