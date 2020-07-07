@@ -1,13 +1,3 @@
-
-[submodule "src/simulation/jackal"]
-	path = src/simulation/jackal
-	url = https://github.com/jackal/jackal.git
-[submodule "src/simulation/jackal_desktop"]
-	path = src/simulation/jackal_desktop
-	url = https://github.com/jackal/jackal_desktop.git
-[submodule "src/simulation/jackal_simulator"]
-	path = src/simulation/jackal_simulator
-	url = https://github.com/jackal/jackal_simulator.git
 [submodule "src/sampling_core/libgp"]
 	path = src/sampling_core/libgp
 	url = https://github.com/mblum/libgp.git
