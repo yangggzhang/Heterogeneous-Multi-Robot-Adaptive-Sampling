@@ -2,11 +2,7 @@
 
 #include <geometry_msgs/Point.h>
 #include <ros/ros.h>
-#include <sampling_msgs/AgentLocation.h>
-#include <sampling_msgs/RequestLocation.h>
-#include <sampling_msgs/RequestTemperatureMeasurement.h>
-#include <sampling_msgs/SamplingGoal.h>
-#include <sensor_msgs/NavSatFix.h>
+#include <sampling_msgs/StopAgent.h>
 
 #include <boost/optional.hpp>
 #include <string>
@@ -20,46 +16,29 @@ namespace agent {
 /// Request : Request next interest point from master computer
 /// Navigate : navigate to target location
 /// Report : measure temperature and report to master computer
-enum STATE { IDLE, REQUEST, NAVIGATE, REPORT, DIED };
+enum STATE { IDLE, REQUEST, NAVIGATE, MEASURE, REPORT, DIED };
 
 class SamplingAgent {
  public:
   SamplingAgent() = delete;
 
-  static std::unique_ptr<SamplingAgent> MakeUniqueFromRos(ros::NodeHandle &nh);
-
   bool Run();
-
-  // SamplingAgent(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
-
-  // virtual bool update_goal_from_gps() = 0;
-
-  // virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix
-  // &msg);
-
-  // virtual bool collect_temperature_sample();
-
-  // void report_temperature_sample();
-
-  // virtual bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
-  //                               sampling_msgs::RequestLocation::Response
-  //                               &res);
-
-  /// State machine
-  // void collect_sample();
 
  protected:
   SamplingAgent(ros::NodeHandle &nh);
 
-  void ReportLocationCallback(const ros::TimerEvent &);
-
   bool RequestTarget();
+
+  virtual void ReportLocationCallback(const ros::TimerEvent &);
 
   virtual bool Navigate() = 0;
 
-  bool CollectMeasurement(
-      sampling_msgs::RequestTemperatureMeasurement::Request &req,
-      sampling_msgs::RequestTemperatureMeasurement::Response &res);
+  virtual bool CollectMeasurement();
+
+  bool ReportSample();
+
+  bool StopAgentService(sampling_msgs::StopAgent::Request &req,
+                        sampling_msgs::StopAgent::Response &res);
 
   ros::Timer event_timer_;
 
@@ -71,13 +50,17 @@ class SamplingAgent {
 
   ros::ServiceClient measurement_service_;
 
-  ros::ServiceClient report_service_;
+  ros::ServiceServer stop_agent_server_;
 
   ros::Publisher agent_location_publisher_;
 
+  ros::Publisher sample_publisher_;
+
   boost::optional<geometry_msgs::Point> current_position_;
 
-  boost::optional<geometry_mgsg::Point> target_position_;
+  boost::optional<geometry_msgs::Point> target_position_;
+
+  boost::optional<double> measurement_;
 };
 }  // namespace agent
 }  // namespace sampling

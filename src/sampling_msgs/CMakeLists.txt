@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  measurement.msg
+  Sample.msg
   temperature_measurement.msg
   AgentLocation.msg
   report.msg
@@ -22,6 +22,8 @@ add_service_files(
   RequestTemperatureMeasurement.srv
   MeasurementService.srv
   ReportSampleService.srv
+  StopAgent.srv
+  RequestMeasurement.srv
 )
 
 generate_messages(
