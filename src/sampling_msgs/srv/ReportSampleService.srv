@@ -1,0 +1,5 @@
+string robot_id
+float64 data
+geometry_msgs/Point position
+---
+bool success

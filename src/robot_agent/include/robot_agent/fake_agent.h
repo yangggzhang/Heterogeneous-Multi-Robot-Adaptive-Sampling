@@ -1,18 +1,20 @@
 #pragma once
 
 #include <geometry_msgs/PointStamped.h>
+
 #include <Eigen/Dense>
 #include <random>
+
 #include "robot_agent/robot_agent.h"
 
 namespace sampling {
 namespace agent {
 
-class FakeAgentNode : public AgentNode {
+class FakeSamplingAgent : public SamplingAgent {
  public:
-  FakeAgentNode(){};
+  FakeSamplingAgent(){};
 
-  FakeAgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
+  FakeSamplingAgent(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
 
   bool update_goal_from_gps();
 

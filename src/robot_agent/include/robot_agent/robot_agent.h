@@ -1,11 +1,14 @@
 #pragma once
 
+#include <geometry_msgs/Point.h>
 #include <ros/ros.h>
-#include <sampling_msgs/RequestGoal.h>
+#include <sampling_msgs/AgentLocation.h>
 #include <sampling_msgs/RequestLocation.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
-#include <sampling_msgs/agent_location.h>
+#include <sampling_msgs/SamplingGoal.h>
 #include <sensor_msgs/NavSatFix.h>
+
+#include <boost/optional.hpp>
 #include <string>
 
 namespace sampling {
@@ -17,70 +20,62 @@ namespace agent {
 /// Request : Request next interest point from master computer
 /// Navigate : navigate to target location
 /// Report : measure temperature and report to master computer
-enum STATE { IDLE, LOOP, REQUEST, NAVIGATE, REPORT, DIED };
+enum STATE { IDLE, REQUEST, NAVIGATE, REPORT, DIED };
 
-class AgentNode {
+class SamplingAgent {
  public:
-  AgentNode(){};
+  SamplingAgent() = delete;
 
-  AgentNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
+  static std::unique_ptr<SamplingAgent> MakeUniqueFromRos(ros::NodeHandle &nh);
 
-  virtual bool update_goal_from_gps() = 0;
+  bool Run();
 
-  virtual bool navigate() = 0;
+  // SamplingAgent(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
 
-  virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg);
+  // virtual bool update_goal_from_gps() = 0;
 
-  bool request_target_from_master();
+  // virtual bool navigate() = 0;
 
-  virtual bool collect_temperature_sample();
+  // virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix
+  // &msg);
 
-  void report_temperature_sample();
+  // bool request_target_from_master();
+
+  // virtual bool collect_temperature_sample();
+
+  // void report_temperature_sample();
+
+  // bool collect_temperature_sample(
+  //     sampling_msgs::RequestTemperatureMeasurement::Request &req,
+  //     sampling_msgs::RequestTemperatureMeasurement::Response &res);
+
+  // virtual bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
+  //                               sampling_msgs::RequestLocation::Response
+  //                               &res);
+
+  /// State machine
+  // void collect_sample();
+
+ protected:
+  SamplingAgent(ros::NodeHandle &nh);
 
   void ReportLocationCallback(const ros::TimerEvent &);
 
-  bool collect_temperature_sample(
-      sampling_msgs::RequestTemperatureMeasurement::Request &req,
-      sampling_msgs::RequestTemperatureMeasurement::Response &res);
-
-  virtual bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
-                                sampling_msgs::RequestLocation::Response &res);
-
-  /// State machine
-  void collect_sample();
-
- protected:
   ros::Timer event_timer_;
 
   STATE agent_state_;
-  int agent_id_;
 
-  ros::NodeHandle nh_, rh_;
-  int ros_queue_size_;
-  ros::ServiceClient request_target_client_;
-  ros::ServiceClient temperature_measurement_client_;
-  ros::Publisher temperature_sample_pub_;
-  ros::Publisher agent_location_pub_;
-  ros::Subscriber gps_location_sub_;
-  ros::ServiceServer gps_location_server_;
+  std::string agent_id_;
 
-  std::string request_target_channel_;
-  std::string temperature_measurement_channel_;
-  std::string temperature_update_channel_;
-  std::string gps_location_channel_;
-  std::string report_gps_location_channel_;
+  ros::ServiceClient sampling_service_;
 
-  double temperature_measurement_;
-  double current_latitude_;
-  double current_longitude_;
-  double goal_rtk_latitude_;
-  double goal_rtk_longitude_;
+  ros::ServiceClient measurement_service_;
 
-  /// True if agent need to go to four corner first
-  bool initial_loop_;
-  size_t loop_count_;
-  std::vector<double> latitude_waypoints_;
-  std::vector<double> longitude_waypoints_;
+  ros::ServiceClient report_service_;
+
+  ros::Publisher agent_location_publisher_;
+
+  boost::optional<geometry_msgs::Point> current_position_;
 };
 }  // namespace agent
 }  // namespace sampling

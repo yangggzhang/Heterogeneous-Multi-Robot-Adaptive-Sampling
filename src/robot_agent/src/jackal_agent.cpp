@@ -3,7 +3,7 @@
 namespace sampling {
 namespace agent {
 JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
-    : AgentNode(nh, rh) {
+    : SamplingAgent(nh, rh) {
   if (!rh_.getParam("jackal_movebase_channel", jackal_movebase_channel_)) {
     ROS_ERROR("Error! Missing jackal movebase channel!");
   }

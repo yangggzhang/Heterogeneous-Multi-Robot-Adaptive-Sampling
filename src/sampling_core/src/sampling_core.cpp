@@ -1,9 +1,9 @@
-#include <ros/ros.h>
-
 #include "sampling_core/sampling_core.h"
-#include "sampling_msgs/RequestLocation.h"
 
+#include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
+
+#include "sampling_msgs/RequestLocation.h"
 
 namespace sampling {
 namespace core {
@@ -125,8 +125,8 @@ bool SamplingCore::LoadMapParam(XmlRpc::XmlRpcValue &YamlNode,
 }
 
 bool SamplingCore::AssignInterestPoint(
-    sampling_msgs::RequestGoal::Request &req,
-    sampling_msgs::RequestGoal::Response &res) {
+    sampling_msgs::SamplingGoal::Request &req,
+    sampling_msgs::SamplingGoal::Response &res) {
   ROS_INFO_STREAM(
       "Master Computer received request from robot : " << req.robot_id);
 

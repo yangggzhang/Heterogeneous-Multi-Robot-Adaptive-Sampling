@@ -3,6 +3,7 @@
 #include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
 #include <sensor_msgs/NavSatFix.h>
+
 #include <boost/optional.hpp>
 #include <queue>
 #include <string>
@@ -15,7 +16,7 @@
 #include "sampling_core/utils.h"
 #include "sampling_core/voronoi.h"
 #include "sampling_core/voronoi_visualization.h"
-#include "sampling_msgs/RequestGoal.h"
+#include "sampling_msgs/SamplingGoal.h"
 #include "sampling_msgs/agent_location.h"
 #include "sampling_msgs/report.h"
 
@@ -61,8 +62,8 @@ class SamplingCoreSimulation {
 
   void AgentLocationCallback(const sampling_msgs::agent_location &msg);
 
-  bool AssignInterestPoint(sampling_msgs::RequestGoal::Request &req,
-                           sampling_msgs::RequestGoal::Response &res);
+  bool AssignInterestPoint(sampling_msgs::SamplingGoal::Request &req,
+                           sampling_msgs::SamplingGoal::Response &res);
 
   void ReportCallback(const ros::TimerEvent &);
 

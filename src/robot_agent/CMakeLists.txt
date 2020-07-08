@@ -39,20 +39,20 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
- src/jackal_agent.cpp
-  src/pelican_agent.cpp
-  src/fake_agent.cpp
+  # src/jackal_agent.cpp
+  # src/pelican_agent.cpp
+  # src/fake_agent.cpp
 )
 
-add_executable(jackal_node node/jackal_node.cpp)
-target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+# add_executable(jackal_node node/jackal_node.cpp)
+# target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(pelican_node node/pelican_node.cpp)
-target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+# add_executable(pelican_node node/pelican_node.cpp)
+# target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(fake_agent_node node/fake_agent_node.cpp)
-target_link_libraries(fake_agent_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+# add_executable(fake_agent_node node/fake_agent_node.cpp)
+# target_link_libraries(fake_agent_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(report_measurement_node node/report_measurement_node.cpp)
-target_link_libraries(report_measurement_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+# add_executable(report_measurement_node node/report_measurement_node.cpp)
+# target_link_libraries(report_measurement_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 

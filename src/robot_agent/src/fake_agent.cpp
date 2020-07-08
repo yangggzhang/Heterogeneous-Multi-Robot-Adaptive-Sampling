@@ -1,14 +1,15 @@
 #include "robot_agent/fake_agent.h"
+
 #include <math.h>
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 #include <unistd.h>
 
 namespace sampling {
 namespace agent {
-FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
-                             const ros::NodeHandle &rh)
-    : AgentNode(nh, rh) {
+FakeSamplingAgent::FakeSamplingAgent(const ros::NodeHandle &nh,
+                                     const ros::NodeHandle &rh)
+    : SamplingAgent(nh, rh) {
   if (!rh_.getParam("fake_agent_initial_latitude", current_latitude_)) {
     ROS_ERROR("Error! Missing fake_agent_initial_latitude!");
   }
@@ -122,38 +123,35 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   // std::cout << obstacle_pos_ << std::endl;
   robot_start_time_ = ros::Time::now();
 
-  srand(getpid()+time(NULL));
+  srand(getpid() + time(NULL));
   // random initialize position
-  if (random_initial_pos_)
-  {
+  if (random_initial_pos_) {
     if (!rh_.getParam("map_range", map_range_)) {
-    ROS_ERROR("Error! Missing map_range!");
+      ROS_ERROR("Error! Missing map_range!");
     }
 
     if (!rh_.getParam("map_resolution", map_resolution_)) {
       ROS_ERROR("Error! Missing map_range!");
     }
-    double min_lat = map_range_[0]/map_resolution_; 
-    double min_lng = map_range_[1]/map_resolution_;
-    double max_lat = map_range_[2]/map_resolution_;
-    double max_lng = map_range_[3]/map_resolution_;
+    double min_lat = map_range_[0] / map_resolution_;
+    double min_lng = map_range_[1] / map_resolution_;
+    double max_lat = map_range_[2] / map_resolution_;
+    double max_lng = map_range_[3] / map_resolution_;
 
-    int lat_range = (int) (max_lat - min_lat + 1);
-    int lng_range = (int) (max_lng - min_lng + 1);
+    int lat_range = (int)(max_lat - min_lat + 1);
+    int lng_range = (int)(max_lng - min_lng + 1);
 
-    int rand_lat_int = rand()%lat_range + min_lat;
-    int rand_lng_int = rand()%lng_range + min_lng;
+    int rand_lat_int = rand() % lat_range + min_lat;
+    int rand_lng_int = rand() % lng_range + min_lng;
 
-    double rand_lat_d = ((double)rand_lat_int)*map_resolution_;
-    double rand_lng_d = ((double)rand_lng_int)*map_resolution_;
+    double rand_lat_d = ((double)rand_lat_int) * map_resolution_;
+    double rand_lng_d = ((double)rand_lng_int) * map_resolution_;
 
-    
-    while (!checkCollision(rand_lat_d, rand_lng_d))
-    {
-      rand_lat_int = rand()%lat_range + min_lat;
-      rand_lng_int = rand()%lng_range + min_lng;
-      rand_lat_d = ((double)rand_lat_int)*map_resolution_;
-      rand_lng_d = ((double)rand_lng_int)*map_resolution_;
+    while (!checkCollision(rand_lat_d, rand_lng_d)) {
+      rand_lat_int = rand() % lat_range + min_lat;
+      rand_lng_int = rand() % lng_range + min_lng;
+      rand_lat_d = ((double)rand_lat_int) * map_resolution_;
+      rand_lng_d = ((double)rand_lng_int) * map_resolution_;
     }
     current_latitude_ = rand_lat_d;
     current_longitude_ = rand_lng_d;
@@ -161,25 +159,24 @@ FakeAgentNode::FakeAgentNode(const ros::NodeHandle &nh,
   ROS_INFO_STREAM("Finish Fake Agent Loading!");
 }
 
-
-bool FakeAgentNode::checkCollision(double lat, double lng){
+bool FakeSamplingAgent::checkCollision(double lat, double lng) {
   double distance;
   for (int j = 0; j < obstacle_pos_.rows(); j++) {
-        distance = sqrt(pow((obstacle_pos_(j, 0) - lat), 2) +
-                        pow((obstacle_pos_(j, 1) - lng), 2));
-        if (distance <= collsion_radius_){
-          return false;
-        }
-      }
+    distance = sqrt(pow((obstacle_pos_(j, 0) - lat), 2) +
+                    pow((obstacle_pos_(j, 1) - lng), 2));
+    if (distance <= collsion_radius_) {
+      return false;
+    }
+  }
   return true;
 }
 
-bool FakeAgentNode::update_goal_from_gps() {
+bool FakeSamplingAgent::update_goal_from_gps() {
   // fake node
   return true;
 }
 
-bool FakeAgentNode::navigate() {
+bool FakeSamplingAgent::navigate() {
   robot_alive_duration_ = ros::Time::now() - robot_start_time_;
   if (robot_alive_duration_.toSec() <= battery_life_) {
     if (move_to_goal()) {
@@ -202,7 +199,7 @@ bool FakeAgentNode::navigate() {
   }
 }
 
-bool FakeAgentNode::move_to_goal() {
+bool FakeSamplingAgent::move_to_goal() {
   double dist_to_goal =
       sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
            pow((goal_rtk_longitude_ - current_longitude_), 2));
@@ -237,13 +234,13 @@ bool FakeAgentNode::move_to_goal() {
   return false;
 }
 
-bool FakeAgentNode::goal_reached() {
+bool FakeSamplingAgent::goal_reached() {
   return ((sqrt(pow((goal_rtk_latitude_ - current_latitude_), 2) +
                 pow((goal_rtk_longitude_ - current_longitude_), 2))) <
           fake_distance_threshold_s_);
 }
 
-std::vector<double> FakeAgentNode::get_best_vel() {
+std::vector<double> FakeSamplingAgent::get_best_vel() {
   double min_cost = FLT_MAX;
   double best_vx = 0;
   double best_vy = 0;
@@ -271,7 +268,7 @@ std::vector<double> FakeAgentNode::get_best_vel() {
   return best_vel;
 }
 
-Eigen::MatrixXd FakeAgentNode::get_trajectory(double v_x, double v_y) {
+Eigen::MatrixXd FakeSamplingAgent::get_trajectory(double v_x, double v_y) {
   double dt = (1.0 / (float)nagivate_loop_rate_int_);
   double x = current_latitude_;
   double y = current_longitude_;
@@ -285,7 +282,7 @@ Eigen::MatrixXd FakeAgentNode::get_trajectory(double v_x, double v_y) {
   return traj;
 }
 
-double FakeAgentNode::get_goal_cost(Eigen::MatrixXd traj) {
+double FakeSamplingAgent::get_goal_cost(Eigen::MatrixXd traj) {
   double cost;
   double end_lat = traj((traj.rows() - 1), 0);
   double end_lon = traj((traj.rows() - 1), 1);
@@ -294,7 +291,7 @@ double FakeAgentNode::get_goal_cost(Eigen::MatrixXd traj) {
   return cost;
 }
 
-double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
+double FakeSamplingAgent::get_obstacle_cost(Eigen::MatrixXd traj) {
   double cost;
   if (obstacle_avoidance_) {
     Eigen::MatrixXd distance_to_obs(traj.rows(), obstacle_pos_.rows());
@@ -318,7 +315,7 @@ double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
   return cost;
 }
 
-// bool FakeAgentNode::collect_temperature_sample() {
+// bool FakeSamplingAgent::collect_temperature_sample() {
 //   sampling_msgs::RequestGroundTruthTemperature srv;
 //   srv.request.latitude = current_latitude_;
 //   srv.request.longitude = current_longitude_;
@@ -337,19 +334,21 @@ double FakeAgentNode::get_obstacle_cost(Eigen::MatrixXd traj) {
 //   }
 // }
 
-bool FakeAgentNode::collect_temperature_sample() {
+bool FakeSamplingAgent::collect_temperature_sample() {
   temperature_measurement_ = getGroundTruth();
   // add noise:
   std::normal_distribution<float> dist(
       0, observation_noise_std_);  // mean followed by stdiv
   temperature_measurement_ += dist(generator);
-  if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]|| current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
-    temperature_measurement_+=2*dist(generator);
+  if (current_latitude_ > map_range_[2] || current_latitude_ < map_range_[0] ||
+      current_longitude_ > map_range_[3] ||
+      current_longitude_ < map_range_[1]) {
+    temperature_measurement_ += 2 * dist(generator);
   }
   return true;
 }
 
-double FakeAgentNode::getGroundTruth() {
+double FakeSamplingAgent::getGroundTruth() {
   Eigen::Vector2d location;
   location << current_latitude_, current_longitude_;
   double total_value = 0;
@@ -364,9 +363,9 @@ double FakeAgentNode::getGroundTruth() {
   return total_value;
 }
 
-double FakeAgentNode::getPdf(const Eigen::VectorXd &x,
-                             const Eigen::VectorXd &meanVec,
-                             const Eigen::MatrixXd &covMat) {
+double FakeSamplingAgent::getPdf(const Eigen::VectorXd &x,
+                                 const Eigen::VectorXd &meanVec,
+                                 const Eigen::MatrixXd &covMat) {
   // compile time:
   const double logSqrt2Pi = 0.5 * std::log(2 * M_PI);
   typedef Eigen::LLT<Eigen::MatrixXd> Chol;
@@ -378,7 +377,7 @@ double FakeAgentNode::getPdf(const Eigen::VectorXd &x,
   return std::exp(-x.rows() * logSqrt2Pi - 0.5 * quadform) / L.determinant();
 }
 
-double FakeAgentNode::getPoly(double x, double y) {
+double FakeSamplingAgent::getPoly(double x, double y) {
   double value;
   value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
           poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
