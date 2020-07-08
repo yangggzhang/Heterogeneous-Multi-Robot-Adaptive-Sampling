@@ -15,8 +15,9 @@ namespace agent {
 /// Workflow
 /// Request : Request next interest point from master computer
 /// Navigate : navigate to target location
-/// Report : measure temperature and report to master computer
-enum STATE { IDLE, REQUEST, NAVIGATE, MEASURE, REPORT, DIED };
+/// Measure: measure data
+/// Report : report sample to master computer
+enum SamplingState { IDLE, REQUEST, NAVIGATE, MEASURE, REPORT, DIED };
 
 class SamplingAgent {
  public:
@@ -42,7 +43,7 @@ class SamplingAgent {
 
   ros::Timer event_timer_;
 
-  STATE agent_state_;
+  SamplingState agent_state_;
 
   std::string agent_id_;
 
