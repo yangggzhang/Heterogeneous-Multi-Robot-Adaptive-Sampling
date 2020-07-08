@@ -45,6 +45,26 @@ void SamplingAgent::ReportLocationCallback(const ros::TimerEvent &) {
   }
 }
 
+bool SamplingAgent::RequestTarget() {
+  if (!current_position_.is_initialized()) {
+    ROS_ERROR_STREAM("Agent : " << agent_id_ << " is lost!");
+    return false;
+  }
+  sampling_msgs::SamplingGoal srv;
+  srv.request.agent_id = agent_id_;
+  srv.request.agent_position = current_position_.get();
+
+  if (sampling_service_.call(srv)) {
+    target_position_ = boost::make_optional(srv.response.target_position);
+    return true;
+  } else {
+    ROS_INFO_STREAM("Robot " << agent_id_
+                             << " failed to get target from master computer!");
+    return false;
+  }
+  return false;
+}
+
 void SamplingAgent::Run() {
   switch (agent_state_) {
     case IDLE: {
@@ -63,59 +83,24 @@ void SamplingAgent::Run() {
                                    << " succeeded in receiving "
                                       "target from master "
                                       "computer : ");
-        ROS_INFO_STREAM("Latitude : " << goal_rtk_latitude_
-                                      << " Longitude :
-                                         "
-                                      << goal_rtk_longitude_);
+        ROS_INFO_STREAM("Position : " << target_position_.get().x << " "
+                                      << target_position_.get().y);
         agent_state_ = NAVIGATE;
       }
       break;
     }
     case NAVIGATE: {
-      /// Update local goal
-      if (!update_goal_from_gps()) {
-        ROS_INFO_STREAM(
-            "Failed to update local goal from GPS target location !");
-        agent_state_ = REQUEST;
-        /// todo \yang keeps requesting?
-        break;
-      } else {
-        ROS_INFO_STREAM("Successfully updated local map goal");
-      }
       /// Infinite timing allowance rn
-      if (navigate()) {
-        if (initial_loop_) {
-          ROS_INFO_STREAM("Successfully navigated to waypoint : "
-                          << goal_rtk_latitude_ << " " << goal_rtk_longitude_);
-          agent_state_ = LOOP;
-          break;
-        } else {
-          ROS_INFO_STREAM("Hooray, robot " << agent_id_
+      if (Navigate()) {
+          ROS_INFO_STREAM("Hooray, agent " << agent_id_
                                            << " reached the target
                                            location!");
           ros::Duration(1.0).sleep();
-          agent_state_ = REPORT;
-          break;
-        }
       } else {
-        if (agent_state_ == DIED) {
-          break;
-        }
-        if (initial_loop_) {
-          ROS_INFO_STREAM("Faliled to navigate to waypoint : "
-                          << goal_rtk_latitude_ << " " << goal_rtk_longitude_);
-          loop_count_--;
-          agent_state_ = LOOP;
-          break;
-          ;
-        } else {
-          ROS_INFO_STREAM("Robot " << agent_id_
-                                   << " failed to reach the target location.
-                                   ");
-          agent_state_ = REPORT;
-          break;
-        }
+        ROS_INFO_STREAM("Agent failed to reach the target location!");
       }
+      agent_state_ = REPORT;
+      break;
     }
     case REPORT: {
       if (!collect_temperature_sample()) {
@@ -139,7 +124,7 @@ void SamplingAgent::Run() {
       break;
     }
   }
-}
+}  // namespace agent
 
 }  // namespace agent
 }  // namespace sampling
@@ -244,27 +229,6 @@ void SamplingAgent::Run() {
 //     res.latitude = current_latitude_;
 //     res.longitude = current_longitude_;
 //     return true;
-//   }
-// }
-
-// bool SamplingAgent::request_target_from_master() {
-//   sampling_msgs::SamplingGoal srv;
-//   srv.request.robot_id = agent_id_;
-//   srv.request.robot_latitude = current_latitude_;
-//   srv.request.robot_longitude = current_longitude_;
-//   ROS_INFO_STREAM("Robot " << agent_id_ << " current location : "
-//                            << current_latitude_ << " " <<
-//                            current_longitude_);
-
-//   if (sampling_service_.call(srv)) {
-//     goal_rtk_latitude_ = srv.response.latitude;
-//     goal_rtk_longitude_ = srv.response.longitude;
-//     return true;
-//   } else {
-//     ROS_INFO_STREAM("Robot "
-//                     << agent_id_
-//                     << " failed to request target from master computer!");
-//     return false;
 //   }
 // }
 

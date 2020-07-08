@@ -34,20 +34,12 @@ class SamplingAgent {
 
   // virtual bool update_goal_from_gps() = 0;
 
-  // virtual bool navigate() = 0;
-
   // virtual void update_GPS_location_callback(const sensor_msgs::NavSatFix
   // &msg);
-
-  // bool request_target_from_master();
 
   // virtual bool collect_temperature_sample();
 
   // void report_temperature_sample();
-
-  // bool collect_temperature_sample(
-  //     sampling_msgs::RequestTemperatureMeasurement::Request &req,
-  //     sampling_msgs::RequestTemperatureMeasurement::Response &res);
 
   // virtual bool ReportGPSService(sampling_msgs::RequestLocation::Request &req,
   //                               sampling_msgs::RequestLocation::Response
@@ -60,6 +52,14 @@ class SamplingAgent {
   SamplingAgent(ros::NodeHandle &nh);
 
   void ReportLocationCallback(const ros::TimerEvent &);
+
+  bool RequestTarget();
+
+  virtual bool Navigate() = 0;
+
+  bool CollectMeasurement(
+      sampling_msgs::RequestTemperatureMeasurement::Request &req,
+      sampling_msgs::RequestTemperatureMeasurement::Response &res);
 
   ros::Timer event_timer_;
 
@@ -76,6 +76,8 @@ class SamplingAgent {
   ros::Publisher agent_location_publisher_;
 
   boost::optional<geometry_msgs::Point> current_position_;
+
+  boost::optional<geometry_mgsg::Point> target_position_;
 };
 }  // namespace agent
 }  // namespace sampling

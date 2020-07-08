@@ -1,6 +1,4 @@
-int32 robot_id
-float64 robot_latitude
-float64 robot_longitude
+string agent_id
+geometry_msgs/Point agent_position
 ---
-float64 latitude
-float64 longitude
+geometry_msgs/Point target_position
