@@ -56,7 +56,7 @@ class FakeSamplingAgent : public SamplingAgent {
   double fake_distance_threshold_s_;
   double observation_noise_std_;
   double max_vel_;
-  double nagivate_loop_rate_int_;
+  double navigate_loop_rate_hz_;
   double speed_resolution_;
   double angle_resolution_;
   double prediction_time_;

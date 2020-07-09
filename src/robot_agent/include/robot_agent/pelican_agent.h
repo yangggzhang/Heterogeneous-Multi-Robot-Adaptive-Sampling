@@ -14,19 +14,24 @@
 namespace sampling {
 namespace agent {
 
-class PelicanNode : public SamplingAgent {
- public:
-  PelicanNode(){};
+const double KHoverTime_s = 5.0;
+const double KNavigationWaitTime_s = 5.0;
+const double KNavigationTimeout_s = 20.0;
+const double KHoverHeight_mm = 5000.0;
+const double KMeasureHeight_mm = 3500.0;
+const double KGPSConvergeThreshold_mm = 1500.0;
+const int KGPSBufferSize = 5;
+const int KNavigateLoopRate_hz = 10;
 
-  PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh);
+class PelicanAgent : public SamplingAgent {
+ public:
+  PelicanAgent() = delete;
 
   bool update_goal_from_gps();
 
   bool navigate();
 
   void update_GPS_location_callback(const sensor_msgs::NavSatFix &msg) override;
-
-  bool initialize_pelican();
 
   bool gps_is_converged(const double &last_latitude,
                         const double &last_longitude,
@@ -48,25 +53,37 @@ class PelicanNode : public SamplingAgent {
   double getGroundTruth();
 
  private:
-  ros::Publisher xb_command_pub_;
-  std::string xb_command_channel_;
+  PelicanAgent(const ros::NodeHandle &nh, const std::string &agent_id,
+               const ros::NodeHandle &rh);
+
+  ros::Publisher xb_command_publisher_;
+
+  bool InitializePelican();
+
+  double KHoverTime_s = 5.0;
+  double KNavigationWaitTime_s = 5.0;
+  double KNavigationTimeout_s = 20.0;
+  double KHoverHeight_mm = 5000.0;
+  double KMeasureHeight_mm = 3500.0;
+  double KGPSConvergeThreshold_mm = 1500.0;
+  int KGPSBufferSize = 5;
+  int KNavigateLoopRate_hz = 10;
 
   double cmd_latitude_;
   double cmd_longitude_;
   double last_cmd_latitude_;
   double last_cmd_longitude_;
-  double hover_height_;
-  double measure_height_;
-  double gps_converge_threshold_;
+  double hover_height_mm_;
+  double measure_height_mm_;
+  double gps_converge_threshold_mm_;
   int converge_count_;
-  int gps_converge_buffer_size_;
+  int gps_buffer_size_;
   bool gps_converg_flag_;  // flag to detect the converge of GPS sensor
-  int nagivate_loop_rate_int_;
+  int navigate_loop_rate_hz_;
 
-  double height_waiting_threshold_;
-  double
-      navigate_waiting_threshold_;  // waiting time before detecting convergence
-  double maximum_navigation_time_;
+  double hover_time_s_;
+  double navigate_wait_time_s_;  // waiting time before detecting convergence
+  double navigate_timeout_s_;
   double last_latitude_;
   double last_longitude_;
 

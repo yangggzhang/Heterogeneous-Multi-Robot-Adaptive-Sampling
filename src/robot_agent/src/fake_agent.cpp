@@ -27,7 +27,7 @@ FakeSamplingAgent::FakeSamplingAgent(const ros::NodeHandle &nh,
     ROS_ERROR("Error! Missing fake agent navigation time threshold!");
   }
 
-  if (!rh_.getParam("nagivate_loop_rate", nagivate_loop_rate_int_)) {
+  if (!rh_.getParam("nagivate_loop_rate", navigate_loop_rate_hz_)) {
     ROS_ERROR("Error! Missing loop rate during navigation!");
   }
 
@@ -44,7 +44,7 @@ FakeSamplingAgent::FakeSamplingAgent(const ros::NodeHandle &nh,
   }
   speed_resolution_ = (2 * max_vel_) / (double)num_speed_premitive_;
   fake_distance_threshold_s_ =
-      1.5 * (1.0 / (float)nagivate_loop_rate_int_) * max_vel_;
+      1.5 * (1.0 / (float)navigate_loop_rate_hz_) * max_vel_;
 
   if (!rh_.getParam("orientation_resolution", angle_resolution_)) {
     ROS_ERROR("Error! Missing orientation_resolution!");
@@ -210,7 +210,7 @@ bool FakeSamplingAgent::move_to_goal() {
   ros::Time previous = ros::Time::now();
   ros::Duration totalNavigationTime = ros::Time::now() - begin;
   ros::Duration dt = ros::Time::now() - previous;
-  ros::Rate navigate_loop_rate(nagivate_loop_rate_int_);
+  ros::Rate navigate_loop_rate(navigate_loop_rate_hz_);
   while (ros::ok() &&  // ros is still alive
          totalNavigationTime.toSec() <= fake_moving_duration_threshold_s_) {
     if (goal_reached()) {
@@ -269,7 +269,7 @@ std::vector<double> FakeSamplingAgent::get_best_vel() {
 }
 
 Eigen::MatrixXd FakeSamplingAgent::get_trajectory(double v_x, double v_y) {
-  double dt = (1.0 / (float)nagivate_loop_rate_int_);
+  double dt = (1.0 / (float)navigate_loop_rate_hz_);
   double x = current_latitude_;
   double y = current_longitude_;
   int traj_size = (int)prediction_time_ / dt;
