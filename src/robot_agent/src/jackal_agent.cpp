@@ -1,239 +1,156 @@
 #include "robot_agent/jackal_agent.h"
 
+#include <robot_localization/navsat_conversions.h>
+
 namespace sampling {
 namespace agent {
-JackalNode::JackalNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
-    : SamplingAgent(nh, rh) {
-  if (!rh_.getParam("jackal_movebase_channel", jackal_movebase_channel_)) {
-    ROS_ERROR("Error! Missing jackal movebase channel!");
-  }
 
-  if (!rh_.getParam("jackal_movebase_goal_frame_id",
-                    jackal_movebase_goal_frame_id_)) {
-    ROS_ERROR("Error! Missing jackal movebase goal frame id!");
-  }
+JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
+                         std::unique_ptr<JackalNavigator> jackal_navigator,
+                         const JackalNavigationMode &navigation_mode)
+    : SamplingAgent(nh, agent_id), navigation_mode_(navigation_mode) {
+  jackal_navigator_ = std::move(jackal_navigator);
 
-  if (!rh_.getParam("jackal_moving_duration_threshold_s",
-                    jackal_moving_duration_threshold_s_)) {
-    ROS_ERROR("Error! Missing jackal navigation time threshold!");
-  }
-  ROS_INFO_STREAM("Finish Jackal Loading!");
+  nh.param<double>("execute_timeout_s", execute_timeout_s_, 30.0);
+  nh.param<double>("preempt_timeout_s", preempt_timeout_s_, 15.0);
 
-  if (!rh_.getParam("facing_heatsource", facing_heatsource_)) {
-    ROS_ERROR("Error! Missing if jackal need to face heat source!");
+  switch (navigation_mode) {
+    case ODOM: {
+      odom_subscriber_ =
+          nh.subscribe(nh.getNamespace() + "/odom", 1,
+                       &JackalAgent::UpdatePositionFromOdom, this);
+      break;
+    }
+    case GPS: {
+      gps_subscriber_ = nh.subscribe(nh.getNamespace() + "/navsat/fix", 1,
+                                     &JackalAgent::UpdatePositionFromGPS, this);
+      break;
+    }
+    default:
+      break;
   }
-
-  if (!rh_.getParam("heat_source_lat", heat_source_lat_)) {
-    ROS_ERROR("Error! Missing heat_source_lat!");
-  }
-
-  if (!rh_.getParam("heat_source_lng", heat_source_lng_)) {
-    ROS_ERROR("Error! Missing heat_source_lng!");
-  }
-  if (!rh_.getParam("poly_coeff", poly_coeff_)) {
-    ROS_ERROR("Error! Missing poly_coeff");
-  }
-  assert(poly_coeff_.size() == 21);
-  if (!rh_.getParam("get_ground_truth", get_ground_truth_)) {
-    ROS_ERROR("Error! Missing get_ground_truth");
-  }
-  if (!rh_.getParam("observation_noise_std", observation_noise_std_)) {
-    ROS_ERROR("Error! Missing observation noise std!");
-  }
-  if (!rh_.getParam("lat_constant", lat_constant_)) {
-    ROS_ERROR("Error! Missing lat_constant!");
-  }
-  if (!rh_.getParam("lng_constant", lng_constant_)) {
-    ROS_ERROR("Error! Missing observation noise std!");
-  }
-
-  jackal_action_client_ =
-      new actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>(
-          jackal_movebase_channel_, true);
-  while (!jackal_action_client_->waitForServer(ros::Duration(5.0))) {
-    ROS_INFO_STREAM(
-        "Waiting for the move_base action server for jackal to come up");
-  }
-  // agent_state_ = REPORT;  // to test wifi,need to delete this !
-  ROS_INFO_STREAM("Jackal move base server came up! READY TO GO!!!");
 }
 
-bool JackalNode::update_goal_from_gps() {
-  /// to do \yang \yunfei
-  move_base_msgs::MoveBaseGoal empty_goal;
-  move_base_goal_ = empty_goal;
-  move_base_goal_.target_pose.header.frame_id = jackal_movebase_goal_frame_id_;
-  move_base_goal_.target_pose.header.stamp = ros::Time::now();
-
-  // current_latitude_ = (msg.latitude - lat_constant_) * pow(10, 5);
-  // current_longitude_ = (msg.longitude - lng_constant_) * pow(10, 5);
-  double transformed_gps_rtk_latitude_ =
-      goal_rtk_latitude_ / pow(10, 5) + lat_constant_;
-  double transformed_gps_rtk_lonitude_ =
-      goal_rtk_longitude_ / pow(10, 5) + lng_constant_;
-
-  // geometry_msgs::PointStamped utm_goal =
-  //     GPStoUTM(goal_rtk_latitude_, goal_rtk_longitude_);
-
-  geometry_msgs::PointStamped utm_goal =
-      GPStoUTM(transformed_gps_rtk_latitude_, transformed_gps_rtk_lonitude_);
-  geometry_msgs::PointStamped map_goal = UTMtoMapPoint(utm_goal);
-  /// to do Use utm to update gps to "map"
-  move_base_goal_.target_pose.pose.position = map_goal.point;
-  ROS_INFO_STREAM("Map goal : " << map_goal.point.x << " " << map_goal.point.y);
-  /// todo \yang calculate
-  if (facing_heatsource_) {
-    tf::Matrix3x3 rot_euler;
-    tf::Quaternion rot_quat;
-    geometry_msgs::PointStamped utm_heatsource =
-        GPStoUTM(heat_source_lat_, heat_source_lng_);
-    geometry_msgs::PointStamped map_heatsource = UTMtoMapPoint(utm_heatsource);
-    float delta_x = map_heatsource.point.x - map_goal.point.x;
-    float delta_y =
-        map_heatsource.point.y - map_goal.point.y;  // change in coords.
-    float yaw_curr = atan2(delta_y, delta_x);
-    float pitch_curr = 0;
-    float roll_curr = 0;
-
-    // Specify quaternions
-    rot_euler.setEulerYPR(yaw_curr, pitch_curr, roll_curr);
-    rot_euler.getRotation(rot_quat);
-    move_base_goal_.target_pose.pose.orientation.x = rot_quat.getX();
-    move_base_goal_.target_pose.pose.orientation.y = rot_quat.getY();
-    move_base_goal_.target_pose.pose.orientation.z = rot_quat.getZ();
-    move_base_goal_.target_pose.pose.orientation.w = rot_quat.getW();
+std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROS(
+    ros::NodeHandle &nh) {
+  std::string agent_id;
+  nh.param<std::string>("agent_id", agent_id, "jackal0");
+  std::unique_ptr<JackalNavigator> jackal_navigator =
+      std::unique_ptr<JackalNavigator>(
+          new JackalNavigator(nh.getNamespace() + "/move_base", true));
+  if (!jackal_navigator->waitForServer(ros::Duration(10.0))) {
+    ROS_INFO_STREAM("Missing move base action for Jackal!");
+    return nullptr;
+  }
+  std::string navigation_mode_str;
+  nh.param<std::string>("navigation_mode", navigation_mode_str, "ODOM");
+  JackalNavigationMode navigation_mode;
+  if (navigation_mode_str.compare("ODOM") == 0) {
+    navigation_mode = ODOM;
+  } else if (navigation_mode_str.compare("GPS") == 0) {
+    navigation_mode = GPS;
+    tf::TransformListener listener(nh);
+    if (!listener.waitForTransform(KWorldFrame, "utm", ros::Time::now(),
+                                   ros::Duration(10.0))) {
+      ROS_INFO_STREAM(
+          "Failed to get connect get utm information for GPS navigation!");
+      return nullptr;
+    }
   } else {
-    move_base_goal_.target_pose.pose.orientation.w = 1.0;
+    ROS_INFO_STREAM("Unknown navigation mode for Jackal!");
+    return nullptr;
   }
-  return true;
-};
 
-bool JackalNode::navigate() {
-  jackal_action_client_->sendGoal(move_base_goal_);
-  jackal_action_client_->waitForResult(
-      ros::Duration(jackal_moving_duration_threshold_s_));
-  if (jackal_action_client_->getState() ==
-      actionlib::SimpleClientGoalState::SUCCEEDED) {
-    return true;
-  } else {
-    ROS_INFO_STREAM("Robot "
-                    << agent_id_
-                    << " failed to reach the target location with state "
-                    << jackal_action_client_->getState().toString());
-    return false;
-  }
-}
-void JackalNode::update_GPS_location_callback(
-    const sensor_msgs::NavSatFix &msg) {
-  // current_latitude_ = (msg.latitude - lat_constant_) * pow(10, 5);
-  // current_longitude_ = (msg.longitude - lng_constant_) * pow(10, 5);
-  current_latitude_ = msg.latitude;
-  current_longitude_ = msg.longitude;
-}
+  return std::unique_ptr<JackalAgent>(new JackalAgent(
+      nh, agent_id, std::move(jackal_navigator), navigation_mode));
+}  // namespace agent
 
-bool JackalNode::ReportGPSService(
-    sampling_msgs::RequestLocation::Request &req,
-    sampling_msgs::RequestLocation::Response &res) {
-  if (agent_id_ != 0) {
-    return false;
-  } else {
-    // res.latitude = current_latitude_;
-    // res.longitude = current_longitude_;
-    res.latitude =
-        (current_latitude_ - lat_constant_) * pow(10, 5);  // GPS tansformed
-    res.longitude = (current_longitude_ - lng_constant_) * pow(10, 5);
-    return true;
-  }
-}
-
-geometry_msgs::PointStamped JackalNode::GPStoUTM(const double &latitude,
-                                                 const double &longitude) {
-  double utm_x = 0, utm_y = 0;
-  geometry_msgs::PointStamped UTM_point_output;
+bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
+                            geometry_msgs::PointStamped &odom_point) {
+  double utm_x, utm_y;
+  geometry_msgs::PointStamped UTM_point;
   std::string utm_zone;
 
   // convert lat/long to utm
   RobotLocalization::NavsatConversions::LLtoUTM(latitude, longitude, utm_y,
                                                 utm_x, utm_zone);
 
-  // Construct UTM_point and map_point geometry messages
-  UTM_point_output.header.frame_id = "utm";
-  UTM_point_output.header.stamp = ros::Time::now();
-  UTM_point_output.point.x = utm_x;
-  UTM_point_output.point.y = utm_y;
-  UTM_point_output.point.z = 0;
+  // Construct UTM_point and odom point geometry messages
+  UTM_point.header.frame_id = "utm";
+  UTM_point.header.stamp = ros::Time::now();
+  UTM_point.point.x = utm_x;
+  UTM_point.point.y = utm_y;
+  UTM_point.point.z = 0;
 
-  return UTM_point_output;
-}
-
-geometry_msgs::PointStamped JackalNode::UTMtoMapPoint(
-    const geometry_msgs::PointStamped &UTM_input) {
-  geometry_msgs::PointStamped map_point_output;
-  bool notDone = true;
-  tf::TransformListener
-      listener;  // create transformlistener object called listener
-  ros::Time time_now = ros::Time::now();
-  while (notDone) {
-    try {
-      map_point_output.header.stamp = ros::Time::now();
-      listener.waitForTransform(jackal_movebase_goal_frame_id_, "utm", time_now,
-                                ros::Duration(3.0));
-      listener.transformPoint(jackal_movebase_goal_frame_id_, UTM_input,
-                              map_point_output);
-      notDone = false;
-    } catch (tf::TransformException &ex) {
-      ROS_WARN("%s", ex.what());
-      ros::Duration(0.01).sleep();
-    }
+  try {
+    odom_point.header.stamp = ros::Time::now();
+    listener_.transformPoint(KWorldFrame, UTM_point, odom_point);
+  } catch (tf::TransformException &ex) {
+    ROS_WARN("%s", ex.what());
+    return false;
   }
-  ROS_INFO_STREAM("Goal frame : " << map_point_output.header.frame_id);
-  return map_point_output;
+  return true;
 }
 
-double JackalNode::getGroundTruth() {
-  double total_value = getPoly(current_latitude_, current_longitude_);
-  return total_value;
-}
+bool JackalAgent::Navigate() {
+  move_base_msgs::MoveBaseGoal navigation_goal;
+  navigation_goal.target_pose.header.frame_id = agent_id_ + "/odom";
+  navigation_goal.target_pose.header.stamp = ros::Time::now();
+  navigation_goal.target_pose.pose.orientation.w = 1.0;
 
-bool JackalNode::collect_temperature_sample() {
-  if (get_ground_truth_) {
-    temperature_measurement_ = getGroundTruth();
-    // add noise:
-    std::normal_distribution<float> dist(
-        0, observation_noise_std_);  // mean followed by stdiv
-    temperature_measurement_ += dist(generator);
-    return true;
-  } else {
-    sampling_msgs::RequestTemperatureMeasurement srv;
-    srv.request.robot_id = agent_id_;
-
-    if (temperature_measurement_client_.call(srv)) {
-      temperature_measurement_ = srv.response.temperature;
-      return true;
-    } else {
-      ROS_INFO_STREAM("Robot "
-                      << agent_id_
-                      << " failed to receive temperature measurement!");
+  switch (navigation_mode_) {
+    case ODOM: {
+      navigation_goal.target_pose.pose.position = target_position_.get();
+      break;
+    }
+    case GPS: {
+      geometry_msgs::PointStamped odom_target_point;
+      if (!GPStoOdom(target_position_.get().x, target_position_.get().y,
+                     odom_target_point)) {
+        ROS_INFO_STREAM(
+            "Failed to get local odometry target for jackal GPS navigation!");
+        return false;
+      }
+      navigation_goal.target_pose.pose.position = odom_target_point.point;
+      break;
+    }
+    default: {
+      ROS_INFO_STREAM("Unknown jackal navigation mode for jackal!");
       return false;
     }
   }
+
+  jackal_navigator_->sendGoalAndWait(navigation_goal,
+                                     ros::Duration(execute_timeout_s_),
+                                     ros::Duration(preempt_timeout_s_));
+  if (jackal_navigator_->getState() ==
+      actionlib::SimpleClientGoalState::SUCCEEDED) {
+    return true;
+  } else {
+    ROS_INFO_STREAM("Robot "
+                    << agent_id_
+                    << " failed to reach the target location with state "
+                    << jackal_navigator_->getState().toString());
+    return false;
+  }
 }
 
-double JackalNode::getPoly(double x, double y) {
-  double value;
-  value = poly_coeff_[0] + poly_coeff_[1] * x + poly_coeff_[2] * y +
-          poly_coeff_[3] * pow(x, 2) + poly_coeff_[4] * x * y +
-          poly_coeff_[5] * pow(y, 2) + poly_coeff_[6] * pow(x, 3) +
-          poly_coeff_[7] * pow(x, 2) * y + poly_coeff_[8] * x * pow(y, 2) +
-          poly_coeff_[9] * pow(y, 3) + poly_coeff_[10] * pow(x, 4) +
-          poly_coeff_[11] * pow(x, 3) * y +
-          poly_coeff_[12] * pow(x, 2) * pow(y, 2) +
-          poly_coeff_[13] * x * pow(y, 3) + poly_coeff_[14] * pow(y, 4) +
-          poly_coeff_[15] * pow(x, 5) + poly_coeff_[16] * pow(x, 4) * y +
-          poly_coeff_[17] * pow(x, 3) * pow(y, 2) +
-          poly_coeff_[18] * pow(x, 2) * pow(y, 3) +
-          poly_coeff_[19] * x * pow(y, 4) + poly_coeff_[20] * pow(y, 5);
-  return value;
+void JackalAgent::UpdatePositionFromOdom(const nav_msgs::Odometry &msg) {
+  geometry_msgs::PointStamped point_in, point_out;
+  point_in.header = msg.header;
+  point_in.point = msg.pose.pose.position;
+
+  listener_.transformPoint(KWorldFrame, point_in, point_out);
+
+  current_position_ = boost::make_optional(point_out.point);
+}
+
+void JackalAgent::UpdatePositionFromGPS(const sensor_msgs::NavSatFix &msg) {
+  current_position_ = boost::none;
+  geometry_msgs::PointStamped odom_point;
+  if (GPStoOdom(msg.latitude, msg.longitude, odom_point)) {
+    current_position_ = boost::make_optional(odom_point.point);
+  }
 }
 
 }  // namespace agent

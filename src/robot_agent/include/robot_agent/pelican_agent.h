@@ -1,8 +1,10 @@
 #pragma once
 
 #include <std_msgs/String.h>
+
 #include <Eigen/Dense>
 #include <random>
+
 #include "robot_agent/robot_agent.h"
 
 /// todo \Paul \Yunfei
@@ -12,7 +14,7 @@
 namespace sampling {
 namespace agent {
 
-class PelicanNode : public AgentNode {
+class PelicanNode : public SamplingAgent {
  public:
   PelicanNode(){};
 

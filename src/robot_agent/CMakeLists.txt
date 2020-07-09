@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   sampling_msgs
   sensor_msgs
   tf
+  tf2
+  tf2_ros
 )
 
 find_package(cmake_modules REQUIRED)
@@ -39,7 +41,7 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
-  # src/jackal_agent.cpp
+  src/jackal_agent.cpp
   # src/pelican_agent.cpp
   # src/fake_agent.cpp
 )

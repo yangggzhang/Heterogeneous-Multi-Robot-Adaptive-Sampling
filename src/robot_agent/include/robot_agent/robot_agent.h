@@ -23,16 +23,18 @@ class SamplingAgent {
  public:
   SamplingAgent() = delete;
 
+  static std::unique_ptr<SamplingAgent> MakeUniqueFromROS(ros::NodeHandle &nh);
+
   bool Run();
 
  protected:
-  SamplingAgent(ros::NodeHandle &nh);
+  SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id);
 
   bool RequestTarget();
 
   virtual void ReportLocationCallback(const ros::TimerEvent &);
 
-  virtual bool Navigate() = 0;
+  virtual bool Navigate();
 
   virtual bool CollectMeasurement();
 
@@ -46,6 +48,8 @@ class SamplingAgent {
   SamplingState agent_state_;
 
   std::string agent_id_;
+
+  std::string ros_ns_;
 
   ros::ServiceClient sampling_service_;
 

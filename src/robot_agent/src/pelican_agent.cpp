@@ -1,11 +1,13 @@
 #include "robot_agent/pelican_agent.h"
+
 #include <math.h>
+
 #include <vector>
 
 namespace sampling {
 namespace agent {
 PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
-    : AgentNode(nh, rh) {
+    : SamplingAgent(nh, rh) {
   /// todo \paul \yunfei
   /// load necessary parameters
 

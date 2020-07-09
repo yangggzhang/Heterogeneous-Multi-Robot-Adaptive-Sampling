@@ -9,9 +9,9 @@
 namespace sampling {
 namespace agent {
 
-SamplingAgent::SamplingAgent(ros::NodeHandle &nh) {
-  nh.param<std::string>("agent_id", agent_id_, "agent0");
-
+SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
+    : agent_id_(agent_id) {
+  ros_ns_ = nh.getNamespace();
   sampling_service_ =
       nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_target_channel");
 
@@ -30,6 +30,14 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh) {
       "stop_agent_channel", &SamplingAgent::StopAgentService, this);
 
   agent_state_ = IDLE;
+}
+
+std::unique_ptr<SamplingAgent> SamplingAgent::MakeUniqueFromROS(
+    ros::NodeHandle &nh) {
+  std::string agent_id;
+  nh.param<std::string>("agent_id", agent_id, "agent0");
+
+  return std::unique_ptr<SamplingAgent>(new SamplingAgent(nh, agent_id));
 }
 
 void SamplingAgent::ReportLocationCallback(const ros::TimerEvent &) {
@@ -72,6 +80,8 @@ bool SamplingAgent::StopAgentService(sampling_msgs::StopAgent::Request &req,
   }
   return true;
 }
+
+bool SamplingAgent::Navigate() { return false; }
 
 bool SamplingAgent::CollectMeasurement() {
   sampling_msgs::RequestMeasurement srv;
