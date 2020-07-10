@@ -84,13 +84,13 @@ PelicanNode::PelicanNode(const ros::NodeHandle &nh, const ros::NodeHandle &rh)
     ROS_ERROR("Error! Missing observation noise std!");
   }
 
-  if (!rh_.getParam("battery_life", battery_life_)) {
-    ROS_ERROR("Error! Missing battery_life_!");
-  }
+  // if (!rh_.getParam("battery_life", battery_life_)) {
+  //   ROS_ERROR("Error! Missing battery_life_!");
+  // }
 
-  if (!rh_.getParam("battery_died_mode", battery_died_mode_)) {
-    ROS_ERROR("Error! Missing battery_life_!");
-  }
+  // if (!rh_.getParam("battery_died_mode", battery_died_mode_)) {
+  //   ROS_ERROR("Error! Missing battery_life_!");
+  // }
 
   assert(GPS_transformation_vector.size() == 4);
 
@@ -188,30 +188,30 @@ bool PelicanNode::navigate() {
   /// solution when it fails
 
   // Battery DIED LOGIC
-  robot_alive_duration_ = ros::Time::now() - robot_start_time_;
-  if (robot_alive_duration_.toSec() > battery_life_ && battery_died_mode_) {          // BATTERY DIED
+  // robot_alive_duration_ = ros::Time::now() - robot_start_time_;
+  // if (robot_alive_duration_.toSec() > battery_life_ && battery_died_mode_) {          // BATTERY DIED
 
-    if (!waypoint_navigate(last_cmd_latitude_, last_cmd_longitude_, hover_height_,
-                           height_waiting_threshold_)) {
-      ROS_INFO_STREAM("Pelican failed to increase height");
-      return false;
-    }
+  //   if (!waypoint_navigate(last_cmd_latitude_, last_cmd_longitude_, hover_height_,
+  //                          height_waiting_threshold_)) {
+  //     ROS_INFO_STREAM("Pelican failed to increase height");
+  //     return false;
+  //   }
 
-    /// step 2. navigate to HOME
-    if (!waypoint_navigate(-1, -1, hover_height_,
-                           navigate_waiting_threshold_)) {
-      ROS_INFO_STREAM("Pelican failed to navigate to HOME");
-      return false;
-    }
+  //   /// step 2. navigate to HOME
+  //   if (!waypoint_navigate(-1, -1, hover_height_,
+  //                          navigate_waiting_threshold_)) {
+  //     ROS_INFO_STREAM("Pelican failed to navigate to HOME");
+  //     return false;
+  //   }
 
-    current_latitude_ = -1000;
-    current_longitude_ = -1000;
-    agent_state_ = DIED;
-    ROS_INFO_STREAM("Robot " << agent_id_ << " Battery used up!! Died... TAT ("
-                             << current_latitude_ << ", " << current_longitude_
-                             << ")");
-    return false;
-  }
+  //   current_latitude_ = -1000;
+  //   current_longitude_ = -1000;
+  //   agent_state_ = DIED;
+  //   ROS_INFO_STREAM("Robot " << agent_id_ << " Battery used up!! Died... TAT ("
+  //                            << current_latitude_ << ", " << current_longitude_
+  //                            << ")");
+  //   return false;
+  // }
 
   if (!waypoint_navigate(last_cmd_latitude_, last_cmd_longitude_, hover_height_,
                          height_waiting_threshold_)) {

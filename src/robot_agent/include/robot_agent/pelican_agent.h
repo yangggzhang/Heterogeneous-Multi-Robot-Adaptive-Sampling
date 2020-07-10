@@ -84,9 +84,10 @@ class PelicanNode : public AgentNode {
   Eigen::Matrix2f calibration_matrix_, inverse_calibration_matrix_;
 
   ros::Time robot_start_time_;
-  ros::Duration robot_alive_duration_;
-  double battery_life_;
+//   ros::Duration robot_alive_duration_;
+//   double battery_life_;
 
-  bool battery_died_mode_;
-}  // namespace agent
-}  // namespace sampling
+//   bool battery_died_mode_;
+};  // namespace agent
+} 
+} // namespace sampling
