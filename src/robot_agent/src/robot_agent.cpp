@@ -6,6 +6,10 @@
 #include <sampling_msgs/Sample.h>
 #include <sampling_msgs/SamplingGoal.h>
 
+#include "robot_agent/hector_agent.h"
+#include "robot_agent/jackal_agent.h"
+#include "robot_agent/pelican_agent.h"
+
 namespace sampling {
 namespace agent {
 
@@ -33,11 +37,15 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
 }
 
 std::unique_ptr<SamplingAgent> SamplingAgent::MakeUniqueFromROS(
-    ros::NodeHandle &nh) {
-  std::string agent_id;
-  nh.param<std::string>("agent_id", agent_id, "agent0");
-
-  return std::unique_ptr<SamplingAgent>(new SamplingAgent(nh, agent_id));
+    ros::NodeHandle &nh, const std::string &agent_type) {
+  if (agent_type.compare("JACKAL") == 0) {
+    return JackalAgent::MakeUniqueFromROS(nh);
+  } else if (agent_type.compare("PELICAN") == 0) {
+    return PelicanAgent::MakeUniqueFromROSParam(nh);
+  } else if (agent_type.compare("HECTOR") == 0) {
+    return HectorAgent::MakeUniqueFromROSParam(nh);
+  } else
+    return nullptr;
 }
 
 void SamplingAgent::ReportLocationCallback(const ros::TimerEvent &) {

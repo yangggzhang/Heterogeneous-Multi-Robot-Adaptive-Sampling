@@ -6,7 +6,7 @@ namespace agent {
 HectorAgentParam::HectorAgentParam() {}
 
 bool HectorAgentParam::LoadFromRosParams(ros::NodeHandle& ph) {
-  ph.param<double>("world_frame", world_frame, KWorldFrame);
+  ph.param<double>("navigation_frame", navigation_frame, KNavigationFrame);
 
   ph.param<double>("navigation_height_m", navigation_height_m,
                    KNavigationHeight_m);

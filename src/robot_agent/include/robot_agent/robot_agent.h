@@ -23,7 +23,8 @@ class SamplingAgent {
  public:
   SamplingAgent() = delete;
 
-  static std::unique_ptr<SamplingAgent> MakeUniqueFromROS(ros::NodeHandle &nh);
+  static std::unique_ptr<SamplingAgent> MakeUniqueFromROS(
+      ros::NodeHandle &nh, const std::string &agent_type);
 
   bool Run();
 
