@@ -42,7 +42,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/robot_agent.cpp
   src/jackal_agent.cpp
-  # src/pelican_agent.cpp
+  src/pelican_agent.cpp
   # src/fake_agent.cpp
 )
 
