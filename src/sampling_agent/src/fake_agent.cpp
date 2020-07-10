@@ -316,12 +316,12 @@ double FakeSamplingAgent::get_obstacle_cost(Eigen::MatrixXd traj) {
 //   sampling_msgs::RequestGroundTruthTemperature srv;
 //   srv.request.latitude = current_latitude_;
 //   srv.request.longitude = current_longitude_;
-//   if (temperature_measurement_client_.call(srv)) {
-//     temperature_measurement_ = srv.response.temperature;
+//   if (sampling_measurement_client_.call(srv)) {
+//     sampling_measurement_ = srv.response.temperature;
 //     // add noise:
 //     std::normal_distribution<float> dist(
 //         0, observation_noise_std_);  // mean followed by stdiv
-//     temperature_measurement_ += dist(generator);
+//     sampling_measurement_ += dist(generator);
 //     return true;
 //   } else {
 //     ROS_INFO_STREAM("Robot " << agent_id_
@@ -333,7 +333,7 @@ double FakeSamplingAgent::get_obstacle_cost(Eigen::MatrixXd traj) {
 
 bool FakeAgentNode::collect_temperature_sample() {
   // ROS_INFO_STREAM("????");
-  temperature_measurement_ = getGroundTruth();
+  sampling_measurement_ = getGroundTruth();
   // ROS_INFO_STREAM("!!!");
 
   // add noise:
@@ -341,14 +341,14 @@ bool FakeAgentNode::collect_temperature_sample() {
   //     0, observation_noise_std_);  // mean followed by stdiv
   //     // ROS_INFO_STREAM("!!!");
 
-  // temperature_measurement_ += dist(generator);
+  // sampling_measurement_ += dist(generator);
   //   // ROS_INFO_STREAM("!!!");
 
   //   std::cout<<map_range_.size()<<std::endl;
 
   // if (current_latitude_>map_range_[2] || current_latitude_<map_range_[0]||
   // current_longitude_>map_range_[3]||current_longitude_<map_range_[1]){
-  //   temperature_measurement_+=2*dist(generator);
+  //   sampling_measurement_+=2*dist(generator);
   // }
   // ROS_INFO_STREAM("!!!");
 

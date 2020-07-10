@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <sampling_msgs/RequestTemperatureMeasurement.h>
 #include <stdlib.h> /* srand, rand */
+
 #include <string>
 
 namespace sampling {
@@ -50,7 +51,7 @@ class TemperatureMeasurementSimulationNode {
 }  // namespace sampling
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "temperature_measurement_simulation");
+  ros::init(argc, argv, "sampling_measurement_simulation");
   ros::NodeHandle nh, rh("~");
   ros::Rate r(10);
   sampling::TemperatureMeasurementSimulationNode node(nh, rh);

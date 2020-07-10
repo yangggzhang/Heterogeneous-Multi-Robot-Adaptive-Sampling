@@ -3,7 +3,7 @@
 #include <message_filters/synchronizer.h>
 #include <ros/ros.h>
 #include <sampling_msgs/measurement.h>
-#include <sampling_msgs/temperature_measurement.h>
+#include <sampling_msgs/sampling_measurement.h>
 #include <sensor_msgs/NavSatFix.h>
 
 namespace sampling {
@@ -11,7 +11,7 @@ namespace report {
 
 using MEASUREMENT_SYNC = message_filters::Synchronizer<
     message_filters::sync_policies::ApproximateTime<
-        sensor_msgs::NavSatFix, sampling_msgs::temperature_measurement>>;
+        sensor_msgs::NavSatFix, sampling_msgs::sampling_measurement>>;
 
 class MeasurementReporterNode {
  public:
@@ -34,7 +34,7 @@ class MeasurementReporterNode {
         nh_, gps_channel, 1));
 
     temperature_sub_.reset(
-        new message_filters::Subscriber<sampling_msgs::temperature_measurement>(
+        new message_filters::Subscriber<sampling_msgs::sampling_measurement>(
             nh_, temperature_channel, 1));
 
     measurement_pub_ =
@@ -51,7 +51,7 @@ class MeasurementReporterNode {
 
   void MeasurementSynchronizerCallback(
       const sensor_msgs::NavSatFixConstPtr &gps_msg,
-      const sampling_msgs::temperature_measurementConstPtr &temperature_msg) {
+      const sampling_msgs::sampling_measurementConstPtr &temperature_msg) {
     sampling_msgs::measurement msg;
     msg.robot_id = 0;
     msg.valid = true;
@@ -68,7 +68,7 @@ class MeasurementReporterNode {
   std::unique_ptr<message_filters::Subscriber<sensor_msgs::NavSatFix>> gps_sub_;
 
   std::unique_ptr<
-      message_filters::Subscriber<sampling_msgs::temperature_measurement>>
+      message_filters::Subscriber<sampling_msgs::sampling_measurement>>
       temperature_sub_;
 
   std::unique_ptr<MEASUREMENT_SYNC> measurement_synchronizer_;

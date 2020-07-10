@@ -2,7 +2,7 @@
 ros_queue_size: 1
 agent_id: 0
 request_target_channel: "interest_point"
-temperature_measurement_channel: "jackal_temperature_measurement"
+sampling_measurement_channel: "jackal_sampling_measurement"
 temperature_update_channel: "temperature_update_channel"
 gps_location_channel: "fix"
 jackal_movebase_channel: "move_base"

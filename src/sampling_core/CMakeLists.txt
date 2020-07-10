@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_runtime
-  temperature_measurement
+  sampling_measurement
   sampling_msgs
   roslib
   cv_bridge

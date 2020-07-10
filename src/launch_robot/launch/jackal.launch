@@ -1,5 +1,5 @@
 <launch>  
-    <include file = "$(find temperature_measurement)/launch/temperature_server.launch"/>
+    <include file = "$(find sampling_measurement)/launch/temperature_server.launch"/>
     <include file = "$(find jackal_navigation)/launch/gps_navigation.launch"/>
     <include file = "$(find sampling_agent)/launch/jackal_node.launch"/>
 </launch>

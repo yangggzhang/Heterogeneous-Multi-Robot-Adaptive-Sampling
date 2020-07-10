@@ -19,7 +19,7 @@
   <depend>visualization_msgs</depend>
   <depend>actionlib</depend>
   <depend>actionlib_msgs</depend>
-  <depend>temperature_measurement</depend>
+  <depend>sampling_measurement</depend>
   <depend>sampling_msgs</depend>
   <depend>roslib</depend>
   <depend>cv_bridge</depend>
