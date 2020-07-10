@@ -9,7 +9,7 @@ import random
 from scipy.stats import multivariate_normal
 
 rospack = rospkg.RosPack()
-paramlist = rosparam.load_file(rospack.get_path('robot_agent')+"/config/fake_agent_config.yaml")
+paramlist = rosparam.load_file(rospack.get_path('sampling_agent')+"/config/fake_agent_config.yaml")
 for params, ns in paramlist:
     rosparam.upload_params(ns, params)
 ground_truth_mu = rospy.get_param('ground_truth_mu')

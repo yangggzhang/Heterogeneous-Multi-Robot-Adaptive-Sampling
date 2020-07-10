@@ -1,0 +1,6 @@
+<launch>   
+	<node pkg="sampling_agent" type="pelican_node" name="pelican" output="screen" >
+	    <rosparam command="load" file="$(find sampling_agent)/config/sampling_agent_config.yaml" />
+        <rosparam command="load" file="$(find sampling_agent)/config/pelican_config.yaml" />
+	</node>
+</launch>

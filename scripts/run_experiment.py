@@ -11,7 +11,7 @@ rospack = rospkg.RosPack()
 # bag_name = "./homo/"
 bag_name = "./hetero/"
 obstacle_id = "obs_1_"
-# obstacle_yaml = rospack.get_path('robot_agent')+"/config/fake_agent_config.yaml"
+# obstacle_yaml = rospack.get_path('sampling_agent')+"/config/fake_agent_config.yaml"
 
 
 def terminate_process_and_children(p):
@@ -45,7 +45,7 @@ for i in range(15):
 	launch2.start()
 
 
-	launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/yunfei/heterogeneous-sampling/src/robot_agent/launch/multi_fake_agent.launch"])
+	launch = roslaunch.parent.ROSLaunchParent(uuid, ["/home/yunfei/heterogeneous-sampling/src/sampling_agent/launch/multi_fake_agent.launch"])
 	launch.start()
 
 	rospy.loginfo("started")
