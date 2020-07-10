@@ -8,9 +8,9 @@ namespace agent {
 JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
                          std::unique_ptr<JackalNavigator> jackal_navigator,
                          const JackalNavigationMode &navigation_mode)
-    : SamplingAgent(nh, agent_id), navigation_mode_(navigation_mode) {
-  jackal_navigator_ = std::move(jackal_navigator);
-
+    : SamplingAgent(nh, agent_id),
+      navigation_mode_(navigation_mode),
+      jackal_navigator_(std::move(jackal_navigator)) {
   nh.param<double>("execute_timeout_s", execute_timeout_s_, 30.0);
   nh.param<double>("preempt_timeout_s", preempt_timeout_s_, 15.0);
 

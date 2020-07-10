@@ -21,6 +21,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf2
   tf2_ros
+  hector_navigation
+  hector_navigation_msgs
+  hector_uav_msgs
 )
 
 find_package(cmake_modules REQUIRED)
@@ -43,6 +46,7 @@ add_library(${PROJECT_NAME}
   src/robot_agent.cpp
   src/jackal_agent.cpp
   src/pelican_agent.cpp
+  src/hector_agent.cpp
   # src/fake_agent.cpp
 )
 
