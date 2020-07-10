@@ -18,7 +18,7 @@ class HectorAgentParam {
 
   bool LoadFromRosParams(ros::NodeHandle &ph);
 
-  std::string world_frame;
+  std::string navigation_frame;
 
   double navigation_height_m;
 

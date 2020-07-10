@@ -20,10 +20,7 @@ class HectorAgent : public SamplingAgent {
 
  private:
   HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
-              const HectorAgentParam &params,
-              std::unique_ptr<Hector> hector_agent);
-
-  std::unique_ptr<Hector> hector_agent_;
+              const HectorAgentParam &params);
 
   HectorAgentParam params_;
 

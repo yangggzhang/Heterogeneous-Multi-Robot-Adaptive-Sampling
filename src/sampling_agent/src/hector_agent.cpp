@@ -7,12 +7,8 @@ namespace sampling {
 namespace agent {
 
 HectorAgent::HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
-                         const HectorAgentParam &params,
-                         std::unique_ptr<Hector> hector_agent)
-    : SamplingAgent(nh, agent_id),
-      params_(params),
-      hector_agent_(std::move(hector_agent)),
-      taken_off_(false) {
+                         const HectorAgentParam &params)
+    : SamplingAgent(nh, agent_id), params_(params), taken_off_(false) {
   odom_subscriber_ = nh.subscribe(nh.getNamespace() + "/ground_truth/state", 1,
                                   &HectorAgent::UpdatePositionFromOdom, this);
 
@@ -37,13 +33,7 @@ std::unique_ptr<HectorAgent> HectorAgent::MakeUniqueFromROSParam(
     return nullptr;
   }
 
-  std::unique_ptr<Hector> hector_agent = Hector::MakeUniqueFromRosParam(nh, ph);
-  if (hector_agent == nullptr) {
-    ROS_ERROR("Failed to launch hector quadrotor!");
-    return nullptr;
-  }
-  return std::unique_ptr<HectorAgent>(
-      new HectorAgent(nh, agent_id, params, std::move(hector_agent)));
+  return std::unique_ptr<HectorAgent>(new HectorAgent(nh, agent_id, params));
 }
 
 bool HectorAgent::Navigate() {

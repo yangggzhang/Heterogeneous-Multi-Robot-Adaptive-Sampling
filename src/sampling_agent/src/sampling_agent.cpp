@@ -1,3 +1,5 @@
+#include "sampling_agent/sampling_agent.h"
+
 #include <sampling_msgs/AgentLocation.h>
 #include <sampling_msgs/MeasurementService.h>
 #include <sampling_msgs/RequestMeasurement.h>
@@ -7,7 +9,6 @@
 #include "sampling_agent/hector_agent.h"
 #include "sampling_agent/jackal_agent.h"
 #include "sampling_agent/pelican_agent.h"
-#include "sampling_agent/sampling_agent.h"
 
 namespace sampling {
 namespace agent {

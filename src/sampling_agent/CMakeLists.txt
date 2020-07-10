@@ -31,8 +31,8 @@ find_package(Eigen REQUIRED)
 
 catkin_package(
    INCLUDE_DIRS include
-   DEPENDS eigen
-   CATKIN_DEPENDS message_runtime
+   DEPENDS eigen 
+   CATKIN_DEPENDS message_runtime 
 )
 
 include_directories(
@@ -46,12 +46,14 @@ add_library(${PROJECT_NAME}
   src/sampling_agent.cpp
   src/jackal_agent.cpp
   src/pelican_agent.cpp
+  src/pelican_agent_params.cpp
   src/hector_agent.cpp
+  src/hector_agent_params.cpp
   # src/fake_agent.cpp
 )
 
-# add_executable(jackal_node node/jackal_node.cpp)
-# target_link_libraries(jackal_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+add_executable(sampling_agent_node node/sampling_agent_node.cpp)
+target_link_libraries(sampling_agent_node ${PROJECT_NAME} ${catkin_LIBRARIES} )
 
 # add_executable(pelican_node node/pelican_node.cpp)
 # target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
@@ -62,3 +64,15 @@ add_library(${PROJECT_NAME}
 # add_executable(report_measurement_node node/report_measurement_node.cpp)
 # target_link_libraries(report_measurement_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+## Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)

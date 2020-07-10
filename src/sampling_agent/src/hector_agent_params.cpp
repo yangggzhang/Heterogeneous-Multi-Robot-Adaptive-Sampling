@@ -6,7 +6,7 @@ namespace agent {
 HectorAgentParam::HectorAgentParam() {}
 
 bool HectorAgentParam::LoadFromRosParams(ros::NodeHandle& ph) {
-  ph.param<double>("navigation_frame", navigation_frame, KNavigationFrame);
+  ph.param<std::string>("navigation_frame", navigation_frame, KNavigationFrame);
 
   ph.param<double>("navigation_height_m", navigation_height_m,
                    KNavigationHeight_m);
@@ -14,8 +14,8 @@ bool HectorAgentParam::LoadFromRosParams(ros::NodeHandle& ph) {
   ph.param<double>("navigation_speed_ms", navigation_speed_ms,
                    KNavigationSpeed_ms);
 
-  ph.param<double>("takeoff_distance_m", takeoff_distance_m;
-                   , KTakeoffDistance_m);
+  ph.param<double>("takeoff_distance_m", takeoff_distance_m,
+                   KTakeoffDistance_m);
   return true;
 }
 
