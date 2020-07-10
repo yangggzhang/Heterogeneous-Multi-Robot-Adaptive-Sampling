@@ -25,7 +25,7 @@ catkin_package(
 #  LIBRARIES temperature_measurement
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
-   CATKIN_DEPENDS rospy message_runtime
+   CATKIN_DEPENDS rospy sampling_msgs message_runtime
 )
 
 ###########

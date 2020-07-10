@@ -1,10 +1,10 @@
-#include <ros/ros.h>
-
 #include "sampling_core/sampling_core_simulation.h"
+
+#include <ros/ros.h>
+#include <visualization_msgs/MarkerArray.h>
+
 #include "sampling_core/utils.h"
 #include "sampling_msgs/RequestLocation.h"
-
-#include <visualization_msgs/MarkerArray.h>
 
 namespace sampling {
 namespace core {
@@ -121,8 +121,8 @@ Eigen::MatrixXd SamplingCoreSimulation::CoordinateInverseTransform(double latitu
 }
 
 bool SamplingCoreSimulation::AssignInterestPoint(
-    sampling_msgs::RequestGoal::Request &req,
-    sampling_msgs::RequestGoal::Response &res) {
+    sampling_msgs::SamplingGoal::Request &req,
+    sampling_msgs::SamplingGoal::Response &res) {
   ROS_INFO_STREAM(
       "Master Computer received request from robot : " << req.robot_id);
   // Update Voronoi map

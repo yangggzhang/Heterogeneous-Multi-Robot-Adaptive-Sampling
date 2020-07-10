@@ -20,19 +20,22 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 
 catkin_package(
-#  INCLUDE_DIRS include
+#  INCLUDE_DIRS
 #  LIBRARIES calibration
-#  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs
+ DEPENDS Eigen3
+ CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${Eigen3_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
 )
 
+
 add_executable(GPS_calibration_node node/GPS_calibration.cpp)
-target_link_libraries(GPS_calibration_node ${catkin_LIBRARIES} )
+
+target_link_libraries(GPS_calibration_node ${catkin_LIBRARIES}  ${Eigen_LIBRARIES})
 
 add_executable(GPS_recording_node node/GPS_recording.cpp)
 target_link_libraries(GPS_recording_node ${catkin_LIBRARIES} )

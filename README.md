@@ -1,8 +1,5 @@
 # Introduction
-This is ROS workspace for CMU MRSD 2018 Team G's capstone project - Hetegeneous Multi-Robot Sampling. <br />
-The detailed descriptions for this project can be found via https://mrsdprojects.ri.cmu.edu/2018teamg/
-
-The work is implemented based on [Adaptive Sampling and Online Learning in Multi-Robot Sensor Coverage with Mixture of Gaussian Processes](http://www.contrib.andrew.cmu.edu/~wenhaol/publications/ICRA18_AdaSam_Coverage.pdf)
+Multi-robot   systems   are   widely   used   in   envi-ronmental  exploration  and  modeling,  especially  in  hazardousenvironments. However, different types of robots are limited bydifferent mobility, battery life, sensor type, etc. Heterogeneousrobot   systems   are   able   to   utilize   various   types   of   robotsand  provide  solutions  where  robots  are  able  to  compensateeach  other  with  their  different  capabilities.  In  this  paper,  weconsider the problem of sampling and modeling environmentalcharacteristics  with  a  heterogeneous  team  of  robots.  To  utilizeheterogeneity  of  the  system  while  remaining  computationallytractable,  we  propose  an  environmental  partitioning  approachthat leverages various robot capabilities by forming a uniformlydefined heterogeneity cost space. We combine with the mixtureof Gaussian Processes model-learning framework to adaptivelysample and model the environment in an efficient and scalablemanner.  We  demonstrate  our  algorithm  in  field  experimentswith  ground  and  aerial  vehicles.
 
 # Installation
 First install **Full-Desktop** ROS Kinetic by following the instructions : http://wiki.ros.org/kinetic/Installation/Ubuntu. <br />

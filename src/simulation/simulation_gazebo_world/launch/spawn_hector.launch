@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="ns" default="hector0"/>			<!-- Must be unique for each robot. -->
+    <arg name="x" default="0.0" />
+    <arg name="y" default="0.0" />
+    <arg name="z" default="0.0" />
+
+    <group ns="$(arg ns)">
+
+        <remap from="/forward_camera/depth/points" to="/camera/depth/points"/>
+        <remap from="/downward_camera/depth/points" to="/camera/depth/points"/>
+
+        <include file="$(find hector_navigation_simulation)/launch/spawn_quadrotor_with_two_cams.launch">    
+            <arg name="x" value="$(arg x)" />
+            <arg name="y" value="$(arg y)" />
+            <arg name="z" value="$(arg z)" />
+        </include>
+
+        <!-- The name of the parameter under which the URDF is loaded -->
+        <arg name="robot_description" default="robot_description"/>
+
+        <!-- We do not have a robot connected, so publish fake joint states -->
+
+        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ns="$(arg ns)" >
+            <param name="use_gui" value="false"/>
+            <param name="publish_frequency" type="double" value="50.0" />
+            <rosparam param="source_list">[/move_group/fake_controller_joint_states]</rosparam>
+        </node>
+
+        <include file="$(find hector_moveit_config)/launch/move_group.launch">
+            <arg name="allow_trajectory_execution" value="true"/>
+            <arg name="fake_execution" value="true"/>
+            <arg name="info" value="false"/>
+            <arg name="debug" value="false"/>
+        </include>
+
+        <arg name="use_ground_truth_for_control" default="true"/>
+
+        <!-- Controllers for waypoint navigation -->
+        <remap from="pose" to="ground_truth_to_tf/pose"  if="$(arg use_ground_truth_for_control)" />
+
+        <!-- waypoint controllers -->
+        <include file="$(find hector_navigation_controllers)/launch/waypoint_controller.launch"/>
+
+        <!-- waypoint and trajectory actions -->
+        <include file="$(find hector_navigation_controllers)/launch/actions.launch" />
+
+        <node pkg="hector_navigation" type="hector_navigation_node" name="navigation_node" output="screen"> 
+            <rosparam command="load" file="$(find hector_navigation)/config/hector_navigation.yaml" />
+        </node>
+    </group>
+
+</launch>

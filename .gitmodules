@@ -1,13 +1,9 @@
-
-[submodule "src/simulation/jackal"]
-	path = src/simulation/jackal
-	url = https://github.com/jackal/jackal.git
-[submodule "src/simulation/jackal_desktop"]
-	path = src/simulation/jackal_desktop
-	url = https://github.com/jackal/jackal_desktop.git
-[submodule "src/simulation/jackal_simulator"]
-	path = src/simulation/jackal_simulator
-	url = https://github.com/jackal/jackal_simulator.git
 [submodule "src/sampling_core/libgp"]
 	path = src/sampling_core/libgp
 	url = https://github.com/mblum/libgp.git
+[submodule "src/simulation/hector_quadrotor_navigation"]
+	path = src/simulation/hector_quadrotor_navigation
+	url = https://github.com/yangggzhang/hector_quadrotor_navigation.git
+[submodule "src/simulation/multi_jackal"]
+	path = src/simulation/multi_jackal
+	url = https://github.com/NicksSimulationsROS/multi_jackal.git
