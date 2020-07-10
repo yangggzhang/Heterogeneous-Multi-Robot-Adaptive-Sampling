@@ -92,8 +92,13 @@ bool SamplingAgent::StopAgentService(sampling_msgs::StopAgent::Request &req,
 bool SamplingAgent::Navigate() { return false; }
 
 bool SamplingAgent::CollectMeasurement() {
+  if (!current_position_.is_initialized()) {
+    ROS_INFO_STREAM("Agent " << agent_id_ << " is lost!");
+    return false;
+  }
   sampling_msgs::RequestMeasurement srv;
   srv.request.agent_id = agent_id_;
+  srv.request.position = current_position_.get();
 
   if (measurement_service_.call(srv)) {
     measurement_ = boost::make_optional(srv.response.data);
