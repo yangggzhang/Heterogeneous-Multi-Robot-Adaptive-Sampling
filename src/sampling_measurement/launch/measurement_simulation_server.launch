@@ -1,0 +1,8 @@
+<launch>
+<!-- <env name="PYTHONPATH" value="$(env PYTHONPATH)"/> -->
+<node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
+    <param name="measurement_trial" value="wifi_2_routers"/>
+    <param name="poly_order" value="7"/>
+    <param name="noise_stdev" value="0.3"/>
+</node>
+</launch>
