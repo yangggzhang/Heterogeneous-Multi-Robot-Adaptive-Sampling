@@ -1,0 +1,97 @@
+#!/usr/bin/env python
+import numpy as np
+import rospkg
+import rospy
+from numpy.linalg import inv
+from numpy.linalg import cholesky, det, lstsq
+from scipy.optimize import minimize
+
+class RBF_kernel:
+    def __init__(self, l=0.5, sigma_f=0.5):
+        self.l = l
+        self.sigma_f = sigma_f
+    
+    def compute(self, X1, X2):
+        sqdist = np.sum(X1**2, 1).reshape(-1, 1) + np.sum(X2**2, 1) - 2 * np.dot(X1, X2.T)
+        return self.sigma_f ** 2 * np.exp(-0.5 / self.l ** 2 * sqdist)
+    
+    def update_kernel(self, l, sigma_f):
+        self.l = l
+        self.sigma_f = sigma_f
+
+    def compute_kernel(self, X1, X2, l, sigma_f):
+        sqdist = np.sum(X1**2, 1).reshape(-1, 1) + np.sum(X2**2, 1) - 2 * np.dot(X1, X2.T)
+        return sigma_f ** 2 * np.exp(-0.5 / l ** 2 * sqdist)
+    
+    def get_hyperparam(self):
+        return self.l, self.sigma_f
+
+class GP:
+    def __init__(self, kernel=RBF_kernel(), sigma_y=0.1):
+        self.kernel = kernel
+        self.sigma_y = sigma_y
+    
+    def posterior_predictive(self, X_s, X_train, Y_train):
+        '''  
+        Computes the suffifient statistics of the GP posterior predictive distribution 
+        from m training data X_train and Y_train and n new inputs X_s.
+        
+        Args:
+            X_s: New input locations (n x d).
+            X_train: Training locations (m x d).
+            Y_train: Training targets (m x 1).
+            l: Kernel length parameter.
+            sigma_f: Kernel vertical variation parameter.
+            sigma_y: Noise parameter.
+        
+        Returns:
+            Posterior mean vector (n x d) and covariance matrix (n x n).
+        '''
+        K = self.kernel.compute(X_train, X_train) + self.sigma_y**2 * np.eye(len(X_train))
+        K_s = self.kernel.compute(X_train, X_s)
+        K_ss = self.kernel.compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
+        K_inv = inv(K)
+        
+        mu_s = K_s.T.dot(K_inv).dot(Y_train)
+
+        cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)
+        
+        return mu_s, cov_s
+    
+    def optimize_kernel(self, X_train, Y_train, noise):
+        '''
+        Returns a function that computes the negative log marginal
+        likelihood for training data X_train and Y_train and given 
+        noise level.
+        
+        Args:
+            X_train: training locations (m x d).
+            Y_train: training targets (m x 1).
+            noise: known noise level of Y_train. 
+        '''
+        def nnl_stable(theta):
+            K = self.kernel.compute_kernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) + \
+            noise**2 * np.eye(len(X_train))
+            L = cholesky(K)
+            return np.sum(np.log(np.diagonal(L))) + \
+                0.5 * Y_train.T.dot(lstsq(L.T, lstsq(L, Y_train)[0])[0]) + \
+                0.5 * len(X_train) * np.log(2 * np.pi)
+
+        l_init, sigma_f_init = self.kernel.get_hyperparam()
+        res = minimize(nnl_stable(X_train, Y_train, noise), [l_init, sigma_f_init], method='L-BFGS-B')
+        self.kernel.update_kernel(res[0], res[1])    
+            
+from gaussian_processes_util import plot_gp
+
+# Finite number of points
+X = np.arange(-5, 5, 0.2).reshape(-1, 1)
+
+test_gp = GP(kernel=RBF_kernel(l=1.0, sigma_f=1.0), sigma_y=3)
+noise = 0.4
+
+# Noisy training data
+X_train = np.arange(-3, 4, 1).reshape(-1, 1)
+Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
+mu_s, cov_s = test_gp.posterior_predictive(X, X_train, Y_train)
+samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, 3)
+plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)
