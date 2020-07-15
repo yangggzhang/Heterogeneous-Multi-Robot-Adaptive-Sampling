@@ -31,7 +31,7 @@ class GP:
         self.kernel = kernel
         self.sigma_y = sigma_y
     
-    def posterior_predictive(self, X_s, X_train, Y_train):
+    def posterior_predictive(self, X_s, X_train, Y_train, P=-1):
         '''  
         Computes the suffifient statistics of the GP posterior predictive distribution 
         from m training data X_train and Y_train and n new inputs X_s.
@@ -50,6 +50,8 @@ class GP:
         K = self.kernel.compute(X_train, X_train) + self.sigma_y**2 * np.eye(len(X_train))
         K_s = self.kernel.compute(X_train, X_s)
         K_ss = self.kernel.compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
+        if P != -1:
+            K_ss += self.sigma_y**2 * np.diag(1/P)
         K_inv = inv(K)
         
         mu_s = K_s.T.dot(K_inv).dot(Y_train)
@@ -58,7 +60,7 @@ class GP:
         
         return mu_s, cov_s
     
-    def optimize_kernel(self, X_train, Y_train, noise):
+    def optimize_kernel(self, X_train, Y_train, noise, p = -1):
         '''
         Returns a function that computes the negative log marginal
         likelihood for training data X_train and Y_train and given 
@@ -78,6 +80,8 @@ class GP:
                 0.5 * len(X_train) * np.log(2 * np.pi)
 
         l_init, sigma_f_init = self.kernel.get_hyperparam()
+        if p != -1:
+            Y_train = Y_train * p
         res = minimize(nnl_stable(X_train, Y_train, noise), [l_init, sigma_f_init], method='L-BFGS-B')
         self.kernel.update_kernel(res[0], res[1])    
             
