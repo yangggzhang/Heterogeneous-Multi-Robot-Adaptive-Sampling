@@ -35,8 +35,14 @@ class GP:
     def __init__(self, kernel=RBF_kernel(), sigma_y=0.1):
         self.kernel = kernel
         self.sigma_y = sigma_y
+        self.X_train = None
+        self.Y_train = None
     
-    def posterior_predictive(self, X_s, X_train, Y_train, P= None):
+    def UpdateData(self, X_train, Y_train):
+        self.X_train = X_train
+        self.Y_train = Y_train
+    
+    def posterior_predictive(self, X_s, X_train=None, Y_train=None, P= None):
         '''  
         Computes the suffifient statistics of the GP posterior predictive distribution 
         from m training data X_train and Y_train and n new inputs X_s.
@@ -52,20 +58,23 @@ class GP:
         Returns:
             Posterior mean vector (n x d) and covariance matrix (n x n).
         '''
-        K = self.kernel.compute(X_train, X_train) + self.sigma_y**2 * np.eye(len(X_train))
-        K_s = self.kernel.compute(X_train, X_s)
+        if X_train is not None:
+            self.UpdateData(X_train, Y_train)
+
+        K = self.kernel.compute(self.X_train, self.X_train) + self.sigma_y**2 * np.eye(len(self.X_train))
+        K_s = self.kernel.compute(self.X_train, X_s)
         K_ss = self.kernel.compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
         if P is not None:
             K_ss += self.sigma_y**2 * np.diag(1/P)
         K_inv = inv(K)
         
-        mu_s = K_s.T.dot(K_inv).dot(Y_train)
+        mu_s = K_s.T.dot(K_inv).dot(self.Y_train)
 
         cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)
         
         return mu_s, np.diag(cov_s)
     
-    def optimize_kernel(self, X_train, Y_train, noise, p = None):
+    def optimize_kernel(self, noise, X_train=None, Y_train=None, p = None):
         '''
         Returns a function that computes the negative log marginal
         likelihood for training data X_train and Y_train and given 
@@ -76,6 +85,8 @@ class GP:
             Y_train: training targets (m x 1).
             noise: known noise level of Y_train. 
         '''
+        if X_train is not None:
+            self.UpdateData(X_train, Y_train)
         def nnl_stable(theta):
             K = self.kernel.compute_kernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  noise**2 * np.eye(len(Y_train))
             L = cholesky(K)

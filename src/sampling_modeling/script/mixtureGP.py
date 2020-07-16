@@ -36,7 +36,7 @@ class MixtureGP:
 
     def optimizate(self, X_train, Y_train, noise, P):
         for i in range(self.num_gp):
-            self.gps[i].optimize_kernel(X_train=X_train, Y_train=Y_train, noise=noise, p=P[:,[i]])
+            self.gps[i].optimize_kernel(noise=noise, X_train=X_train, Y_train=Y_train, p=P[:,[i]])
     
     def EM_optimize(self):
         for i in range(self.max_iter):
@@ -66,8 +66,15 @@ class MixtureGP:
     
     def FitGatingFunction(self, X_train, P):
         for i in range(self.num_gp):
-            self.gating_gp[i].optimize_kernel(X_train=X_train, Y_train=P[:, [i]], noise=0.0)
+            self.gating_gp[i].optimize_kernel(noise=0.0, X_train=X_train, Y_train=P[:, [i]])
     
+    def PredictGatingFunction(self, X_test):
+        P = np.zeros((X_test.shape[0], self.num_gp))
+        for i in range(self.num_gp):
+            p, _ = self.gating_gp[i].posterior_predictive(X_test)
+            P[:, [i]] = p
+        return P
+
 from gaussian_processes_util import plot_gp
 
 # Finite number of points
@@ -82,3 +89,4 @@ Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
 test_gp.AddSample(X_train, Y_train)
 mu_s, var_s, P = test_gp.EM_optimize()
 test_gp.FitGatingFunction(X_train, P)
+pred_P = test_gp.PredictGatingFunction(X_train)
