@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+
+# reference: http://krasserm.github.io/2018/03/19/gaussian-processes/
+
+
 import numpy as np
 import rospkg
 import rospy
 from numpy.linalg import inv
 from numpy.linalg import cholesky, det, lstsq
 from scipy.optimize import minimize
+import operator
 
 class RBF_kernel:
     def __init__(self, l=0.5, sigma_f=0.5):
@@ -31,7 +36,7 @@ class GP:
         self.kernel = kernel
         self.sigma_y = sigma_y
     
-    def posterior_predictive(self, X_s, X_train, Y_train, P=-1):
+    def posterior_predictive(self, X_s, X_train, Y_train, P= None):
         '''  
         Computes the suffifient statistics of the GP posterior predictive distribution 
         from m training data X_train and Y_train and n new inputs X_s.
@@ -50,7 +55,7 @@ class GP:
         K = self.kernel.compute(X_train, X_train) + self.sigma_y**2 * np.eye(len(X_train))
         K_s = self.kernel.compute(X_train, X_s)
         K_ss = self.kernel.compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
-        if P != -1:
+        if P is not None:
             K_ss += self.sigma_y**2 * np.diag(1/P)
         K_inv = inv(K)
         
@@ -58,9 +63,9 @@ class GP:
 
         cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)
         
-        return mu_s, cov_s
+        return mu_s, np.diag(cov_s)
     
-    def optimize_kernel(self, X_train, Y_train, noise, p = -1):
+    def optimize_kernel(self, X_train, Y_train, noise, p = None):
         '''
         Returns a function that computes the negative log marginal
         likelihood for training data X_train and Y_train and given 
@@ -72,30 +77,37 @@ class GP:
             noise: known noise level of Y_train. 
         '''
         def nnl_stable(theta):
-            K = self.kernel.compute_kernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) + \
-            noise**2 * np.eye(len(X_train))
+            K = self.kernel.compute_kernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  noise**2 * np.eye(len(Y_train))
             L = cholesky(K)
             return np.sum(np.log(np.diagonal(L))) + \
-                0.5 * Y_train.T.dot(lstsq(L.T, lstsq(L, Y_train)[0])[0]) + \
-                0.5 * len(X_train) * np.log(2 * np.pi)
-
+                0.5 * Y_train.T.dot(lstsq(L.T, lstsq(L, Y_train,rcond=None)[0],rcond=None)[0]) + \
+                0.5 * len(X_train) * np.log(2*np.pi)
         l_init, sigma_f_init = self.kernel.get_hyperparam()
-        if p != -1:
-            Y_train = Y_train * p
-        res = minimize(nnl_stable(X_train, Y_train, noise), [l_init, sigma_f_init], method='L-BFGS-B')
-        self.kernel.update_kernel(res[0], res[1])    
-            
-from gaussian_processes_util import plot_gp
 
-# Finite number of points
-X = np.arange(-5, 5, 0.2).reshape(-1, 1)
+        res = minimize(nnl_stable, [l_init, sigma_f_init], method='L-BFGS-B')
+        updated_l, updated_sigma_f = res.x
+        self.kernel.update_kernel(updated_l, updated_sigma_f)    
 
-test_gp = GP(kernel=RBF_kernel(l=1.0, sigma_f=1.0), sigma_y=3)
-noise = 0.4
+# from gaussian_processes_util import plot_gp
 
-# Noisy training data
-X_train = np.arange(-3, 4, 1).reshape(-1, 1)
-Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
-mu_s, cov_s = test_gp.posterior_predictive(X, X_train, Y_train)
-samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, 3)
-plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)
+# # Finite number of points
+# X = np.arange(-5, 5, 0.2).reshape(-1, 1)
+
+# test_gp = GP(kernel=RBF_kernel(l=1.0, sigma_f=1.0), sigma_y=3)
+# noise = 0.4
+
+# # Noisy training data
+# X_train = np.arange(-3, 4, 1).reshape(-1, 1)
+# Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
+
+
+
+# test_gp.optimize_kernel(X_train, Y_train, noise)
+
+# res = minimize(nll_fn(X_train, Y_train, noise), [1, 1], 
+#                bounds=((1e-5, None), (1e-5, None)),
+#                method='L-BFGS-B')
+
+# mu_s, cov_s = test_gp.posterior_predictive(X, X_train, Y_train)
+# samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, 3)
+# plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)

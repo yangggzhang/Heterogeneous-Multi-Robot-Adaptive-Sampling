@@ -1,38 +1,84 @@
 #!/usr/bin/env python
+
+# reference: http://krasserm.github.io/2018/03/19/gaussian-processes/
+
 import numpy as np
 from scipy.stats import norm
 from gp import RBF_kernel, GP
 
 class MixtureGP:
-    def __init__(self, num_gp=3, noise=0.1):
+    def __init__(self, num_gp=3, noise=0.1, epsilon=0.05, max_iter=100):
         self.num_gp = num_gp
         self.noise = noise
         self.gps = [GP() for i in range(num_gp)]
+        self.gating_gp = [GP() for i in range(num_gp)]
+        self.X_train = None
+        self.Y_train = None
+        self.P = None
+        self.epsilon= epsilon
+        self.max_iter=max_iter
     
     def expectation(self, pred_mean, pred_var, Y_train, P):
-        R = np.zeros(pred_mean.shape[1], self.num_gp))
+        R = np.zeros((len(Y_train), self.num_gp))
         for i in range(self.num_gp):
-            R[:, i] = norm(loc=pred_mean[:, i], scale=pred_var[:, i]).pdf(Y_train)
+            R[:, i] = norm(loc=pred_mean[:, i], scale=pred_var[:, i]).pdf(Y_train[:,0])
         P = P * R
-        P = P / P.sum(axis=1, dtype='float')
+        P = P / P.sum(axis=1, dtype='float')[:,None]
+        P = P + 1e-6
         return P
     
     def maximization(self, X_train, Y_train, P):
         pred_mean = np.zeros((len(Y_train), self.num_gp))
         pred_var = np.zeros((len(Y_train), self.num_gp))
         for i in range(self.num_gp):
-            pred_mean[:, i], pred_var[:, i] = self.gps[i].posterior_predictive(X_s=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
+            pred_mean[:, [i]], pred_var[:, i] = self.gps[i].posterior_predictive(X_s=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
         return pred_mean, pred_var
 
     def optimizate(self, X_train, Y_train, noise, P):
         for i in range(self.num_gp):
-            self.gps[i].optimize_kernel(X_train=X_train, Y_train=Y_train, noise=noise, p=P[i,:])
+            self.gps[i].optimize_kernel(X_train=X_train, Y_train=Y_train, noise=noise, p=P[:,[i]])
     
-    def EM_optimize(self, X_train, Y_train):
-        P = np.random.random((len(Y_train), self.num_gp))
-        while 1:
-            pred_mean, pred_var = self.maximization(X_train, Y_train, P)
-            P = self.expectation(pred_mean, pred_var, Y_train, P)
-            self.optimizate(X_train, Y_train, self.noise, P)
-        return pred_mean, pred_var
+    def EM_optimize(self):
+        for i in range(self.max_iter):
+            prev_P = self.P
+            pred_mean, pred_var = self.maximization(self.X_train, self.Y_train, self.P)
+            self.P = self.expectation(pred_mean, pred_var, self.Y_train, self.P)
+            self.optimizate(self.X_train, self.Y_train, self.noise, self.P)
+            diff_P = np.abs(self.P - prev_P)
+            if (diff_P.max() <= self.epsilon):
+                break
+        pred_mean = pred_mean * self.P
+        pred_var = pred_var * self.P
+        return pred_mean.sum(axis=1), pred_var.sum(axis=1), self.P
 
+    def AddSample(self, X_train, Y_train):
+        if self.X_train is None:
+            self.X_train = X_train
+            self.Y_train = Y_train
+            self.P = np.random.random((len(Y_train), self.num_gp))
+            self.P = self.P / self.P.sum(axis=1, dtype='float')[:,None]
+        else:
+            self.X_train = np.v_stack((self.X_train, X_train))
+            self.Y_train = np.v_stack((self.Y_train, Y_train))
+            new_P = np.random.random((len(Y_train), self.num_gp))
+            new_P = new_P / new_P.sum(axis=1, dtype='float')[:,None]
+            self.P = np.v_stack((self.P, new_P))
+    
+    def FitGatingFunction(self, X_train, P):
+        for i in range(self.num_gp):
+            self.gating_gp[i].optimize_kernel(X_train=X_train, Y_train=P[:, [i]], noise=0.0)
+    
+from gaussian_processes_util import plot_gp
+
+# Finite number of points
+X = np.arange(-5, 5, 0.2).reshape(-1, 1)
+
+test_gp = MixtureGP()
+noise = 0.4
+
+# Noisy training data
+X_train = np.arange(-3, 4, 1).reshape(-1, 1)
+Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
+test_gp.AddSample(X_train, Y_train)
+mu_s, var_s, P = test_gp.EM_optimize()
+test_gp.FitGatingFunction(X_train, P)
