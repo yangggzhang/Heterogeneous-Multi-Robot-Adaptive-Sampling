@@ -9,7 +9,9 @@ project(sampling_partition)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  geometry_msgs
   sampling_msgs
+  sampling_utils
 )
 
 ## System dependencies are found with CMake's conventions

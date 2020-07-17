@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "sampling_utils/utils.h"
+
 namespace sampling {
 namespace partition {
 
