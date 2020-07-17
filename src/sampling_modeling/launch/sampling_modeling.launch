@@ -1,0 +1,9 @@
+<launch>
+<!-- <env name="PYTHONPATH" value="$(env PYTHONPATH)"/> -->
+<node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
+    <param name="num_gp" value="3"/>
+    <param name="noise_stdev" value="0.1"/>
+    <param name="EM_epsilon" value="0.05"/>
+    <param name="EM_max_iteration" value="100"/>
+</node>
+</launch>

@@ -56,9 +56,5 @@ class MeasurementSimulator(object):
         simulated_measurement += np.random.normal(0, self.noise_stdev)
         return RequestMeasurementResponse(simulated_measurement)
 
-    def main(self):
-
-        return 0
-
 if __name__ == "__main__":
     measurement_simulation_server = MeasurementSimulator()

@@ -1,0 +1,4 @@
+geometry_msgs/Point[] positions
+float64[] measurements
+---
+bool success

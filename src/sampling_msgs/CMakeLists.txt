@@ -24,6 +24,9 @@ add_service_files(
   ReportSampleService.srv
   StopAgent.srv
   RequestMeasurement.srv
+  AddSampleToModel.srv
+  AddTestPositionToModel.srv
+  ModelPredict.srv
 )
 
 generate_messages(

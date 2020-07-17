@@ -3,4 +3,5 @@
 /bags
 .vscode/
 .catkin_tools/
+*.pyc
 logs/
