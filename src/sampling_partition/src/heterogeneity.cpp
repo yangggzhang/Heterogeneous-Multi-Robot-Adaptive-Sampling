@@ -5,8 +5,8 @@
 namespace sampling {
 namespace partition {
 
-std::unique_ptr<SamplingAgent> Heterogeneity::MakeUniqueFromROS(
-    ros::NodeHandle &nh, const std::string &heterogeneity_type) {
+std::unique_ptr<Heterogeneity> Heterogeneity::MakeUniqueFromParam(
+    const HeterogeneityParams &params) {
   return nullptr;
 }
 
@@ -16,15 +16,14 @@ double Heterogeneity::CalculateCost(const geometry_msgs::Point &agent_position,
 }
 
 inline double Heterogeneity::CalculateEuclideanDistance(
-    const geometry_msgs::Point &agent_position,
-    const geometry_msgs::Point &cell_position) {
-  const double dx = agent_position.x - cell_position.x;
-  const double dy = agent_position.y - cell_position.y;
+    const geometry_msgs::Point &point1, const geometry_msgs::Point &point2) {
+  const double dx = point1.x - point2.x;
+  const double dy = point1.y - point2.y;
   return sqrt(dx * dx + dy * dy);
 }
 
 Heterogeneity::Heterogeneity(const HeterogeneityParams &params)
-    : params_(param) {}
+    : params_(params) {}
 
 }  // namespace partition
 }  // namespace sampling

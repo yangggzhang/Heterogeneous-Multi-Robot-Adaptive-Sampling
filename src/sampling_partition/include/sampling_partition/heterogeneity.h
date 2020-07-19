@@ -2,7 +2,7 @@
 
 #include <geometry_msgs/Point.h>
 
-#include "heterogeneity_params.h"
+#include "sampling_partition/heterogeneity_params.h"
 
 namespace sampling {
 namespace partition {
@@ -22,9 +22,8 @@ class Heterogeneity {
 
   HeterogeneityParams params_;
 
-  inline double CalculateEuclideanDistance(
-      const geometry_msgs::Point &agent_position,
-      const geometry_msgs::Point &cell_position);
+  inline double CalculateEuclideanDistance(const geometry_msgs::Point &point1,
+                                           const geometry_msgs::Point &point2);
 
   std::string heterogeneity_type_;
 };
