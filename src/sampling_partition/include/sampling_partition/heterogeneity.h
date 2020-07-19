@@ -1,7 +1,8 @@
 #pragma once
 
 #include <geometry_msgs/Point.h>
-#include <ros/ros.h>
+
+#include "heterogeneity_params.h"
 
 namespace sampling {
 namespace partition {
@@ -10,17 +11,20 @@ class Heterogeneity {
  public:
   Heterogeneity() = delete;
 
-  static std::unique_ptr<SamplingAgent> MakeUniqueFromROS(
-      ros::NodeHandle &nh, const std::string &heterogeneity_type);
+  static std::unique_ptr<Heterogeneity> MakeUniqueFromParam(
+      const HeterogeneityParams &params);
 
   virtual double CalculateCost(const geometry_msgs::Point &agent_position,
                                const geometry_msgs::Point &cell_position);
 
  protected:
-  Heterogeneity(ros::NodeHandle &nh, const std::string &heterogeneity_type);
+  Heterogeneity(const HeterogeneityParams &params);
 
-  double CalculateEuclideanDistance(const geometry_msgs::Point &agent_position,
-                                    const geometry_msgs::Point &cell_position);
+  HeterogeneityParams params_;
+
+  inline double CalculateEuclideanDistance(
+      const geometry_msgs::Point &agent_position,
+      const geometry_msgs::Point &cell_position);
 
   std::string heterogeneity_type_;
 };

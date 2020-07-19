@@ -8,15 +8,15 @@
 namespace sampling {
 namespace partition {
 
-class HeterogeneityDistanceDepedent : public Heterogeneity {
+class HeterogeneityTopographyDepedent : public Heterogeneity {
  public:
-  HeterogeneityDistanceDepedent() = delete;
+  HeterogeneityTopographyDepedent() = delete;
 
   double CalculateCost(const geometry_msgs::Point &agent_position,
                        const geometry_msgs::Point &cell_position) override;
 
  protected:
-  HeterogeneityDistanceDepedent(const HeterogeneityParams &params);
+  HeterogeneityTopographyDepedent(const HeterogeneityParams &params);
 };
 }  // namespace partition
 }  // namespace sampling
