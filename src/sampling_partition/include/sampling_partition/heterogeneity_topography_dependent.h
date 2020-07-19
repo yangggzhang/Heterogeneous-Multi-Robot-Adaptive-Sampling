@@ -12,11 +12,10 @@ class HeterogeneityTopographyDepedent : public Heterogeneity {
  public:
   HeterogeneityTopographyDepedent() = delete;
 
+  HeterogeneityTopographyDepedent(const HeterogeneityParams &params);
+
   double CalculateCost(const geometry_msgs::Point &agent_position,
                        const geometry_msgs::Point &cell_position) override;
-
- protected:
-  HeterogeneityTopographyDepedent(const HeterogeneityParams &params);
 };
 }  // namespace partition
 }  // namespace sampling

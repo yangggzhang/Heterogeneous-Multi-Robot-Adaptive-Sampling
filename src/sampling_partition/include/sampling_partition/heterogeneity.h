@@ -7,6 +7,10 @@
 namespace sampling {
 namespace partition {
 
+const std::string KHeterogeneitySpeed = "SPEED";
+const std::string KHeterogeneityBatteryLife = "BATTERY_LIFE";
+const std::string KHeterogeneityTraversability = "TRAVERSABILITY";
+
 class Heterogeneity {
  public:
   Heterogeneity() = delete;

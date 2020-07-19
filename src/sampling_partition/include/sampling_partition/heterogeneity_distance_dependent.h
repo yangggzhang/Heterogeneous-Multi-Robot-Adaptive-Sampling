@@ -12,11 +12,10 @@ class HeterogeneityDistanceDepedent : public Heterogeneity {
  public:
   HeterogeneityDistanceDepedent() = delete;
 
+  HeterogeneityDistanceDepedent(const HeterogeneityParams &params);
+
   double CalculateCost(const geometry_msgs::Point &agent_position,
                        const geometry_msgs::Point &cell_position) override;
-
- protected:
-  HeterogeneityDistanceDepedent(const HeterogeneityParams &params);
 };
 }  // namespace partition
 }  // namespace sampling

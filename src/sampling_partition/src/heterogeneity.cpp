@@ -2,12 +2,25 @@
 
 #include <math.h> /* sqrt */
 
+#include "sampling_partition/heterogeneity_distance_dependent.h"
+#include "sampling_partition/heterogeneity_topography_dependent.h"
+
 namespace sampling {
 namespace partition {
 
 std::unique_ptr<Heterogeneity> Heterogeneity::MakeUniqueFromParam(
     const HeterogeneityParams &params) {
-  return nullptr;
+  if (KHeterogeneitySpeed.compare(params.heterogeneity_type) == 0)
+    return std::unique_ptr<Heterogeneity>(
+        new HeterogeneityDistanceDepedent(params));
+  else if (KHeterogeneityBatteryLife.compare(params.heterogeneity_type) == 0)
+    return std::unique_ptr<Heterogeneity>(
+        new HeterogeneityDistanceDepedent(params));
+  else if (KHeterogeneityTraversability.compare(params.heterogeneity_type) == 0)
+    return std::unique_ptr<Heterogeneity>(
+        new HeterogeneityTopographyDepedent(params));
+  else
+    return nullptr;
 }
 
 double Heterogeneity::CalculateCost(const geometry_msgs::Point &agent_position,

@@ -11,7 +11,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "weight_voronoi_partion_params.h"
+#include "sampling/weight_voronoi_partion_params.h"
 
 namespace sampling {
 namespace partition {
