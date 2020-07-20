@@ -8,12 +8,12 @@
 namespace sampling {
 namespace partition {
 
-class HeterogeneityDistanceDepedent : public Heterogeneity {
+class HeterogeneityDistance : public Heterogeneity {
  public:
-  HeterogeneityDistanceDepedent() = delete;
+  HeterogeneityDistance() = delete;
 
-  HeterogeneityDistanceDepedent(const HeterogeneityParams &params,
-                                const Eigen::MatrixXd &map);
+  HeterogeneityDistance(const HeterogeneityParams &params,
+                        const Eigen::MatrixXd &map);
 
   Eigen::VectorXd CalculateCost(const geometry_msgs::Point &agent_position,
                                 const Eigen::VectorXd &distance) override;

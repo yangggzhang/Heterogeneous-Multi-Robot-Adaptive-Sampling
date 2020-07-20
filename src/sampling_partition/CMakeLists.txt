@@ -126,9 +126,10 @@ include_directories(
 ## Declare a C++ library
 add_library(${PROJECT_NAME}
   src/heterogeneity.cpp
+  src/heterogeneity_distance.cpp
   src/heterogeneity_distance_dependent.cpp
   src/heterogeneity_topography_dependent.cpp
-
+  src/weighted_voronoi_partion_params.cpp
 )
 
 ## Add cmake target dependencies of the library

@@ -9,6 +9,9 @@
 namespace sampling {
 namespace partition {
 
+const std::string KHomogeneityDistance = "DISTANCE";
+const double KDistancePrimitive = 1.0;
+
 const std::string KHeterogeneitySpeed = "SPEED";
 const std::string KHeterogeneityBatteryLife = "BATTERY_LIFE";
 const std::string KHeterogeneityTraversability = "TRAVERSABILITY";

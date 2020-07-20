@@ -4,8 +4,8 @@ namespace sampling {
 namespace utils {
 
 template <typename T>
-bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
-              T &data) {
+bool GetParam(const XmlRpc::XmlRpcValue &YamlNode,
+              const std::string &param_name, T &data) {
   if (!YamlNode.hasMember(param_name)) {
     ROS_INFO_STREAM("Missing parameter : " << param_name);
     return false;
@@ -16,8 +16,8 @@ bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
 }
 
 template <typename T>
-bool GetParam(XmlRpc::XmlRpcValue &YamlNode, const std::string &param_name,
-              std::vector<T> &data) {
+bool GetParam(const XmlRpc::XmlRpcValue &YamlNode,
+              const std::string &param_name, std::vector<T> &data) {
   if (!YamlNode.hasMember(param_name)) {
     ROS_INFO_STREAM("Missing parameter : " << param_name);
     return false;

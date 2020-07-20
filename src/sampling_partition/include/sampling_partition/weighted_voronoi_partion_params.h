@@ -3,27 +3,22 @@
 #include <ros/ros.h>
 
 #include <string>
-
-#include "sampling_utils/utils.h"
+#include <unordered_set>
 
 namespace sampling {
 namespace partition {
-
-enum Heterogenity { DISTANCE, SPEED, BATTERYLIFE, TRAVERSABILITY };
 
 class WeightedVoronoiPartitionParam {
  public:
   WeightedVoronoiPartitionParam();
 
-  bool LoadFromRosParams(ros::NodeHandle &ph);
+  bool LoadFromXML(const XmlRpc::XmlRpcValue& param);
 
-  //   std::string navigation_frame;
+  std::unordered_set<std::string> agent_ids;
 
-  //   double navigation_height_m;
+  std::vector<std::string> heterogenities;
 
-  //   double navigation_speed_ms;
-
-  //   double takeoff_distance_m;
+  std::vector<double> weight_factor;
 };
 }  // namespace partition
 }  // namespace sampling
