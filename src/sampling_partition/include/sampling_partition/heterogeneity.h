@@ -2,6 +2,8 @@
 
 #include <geometry_msgs/Point.h>
 
+#include <Eigen/Dense>
+
 #include "sampling_partition/heterogeneity_params.h"
 
 namespace sampling {
@@ -16,20 +18,18 @@ class Heterogeneity {
   Heterogeneity() = delete;
 
   static std::unique_ptr<Heterogeneity> MakeUniqueFromParam(
-      const HeterogeneityParams &params);
+      const HeterogeneityParams &params, const Eigen::MatrixXd &map);
 
-  virtual double CalculateCost(const geometry_msgs::Point &agent_position,
-                               const geometry_msgs::Point &cell_position);
+  virtual Eigen::VectorXd CalculateCost(
+      const geometry_msgs::Point &agent_position,
+      const Eigen::VectorXd &distance);
 
  protected:
-  Heterogeneity(const HeterogeneityParams &params);
+  Heterogeneity(const HeterogeneityParams &params, const Eigen::MatrixXd &map);
 
   HeterogeneityParams params_;
 
-  inline double CalculateEuclideanDistance(const geometry_msgs::Point &point1,
-                                           const geometry_msgs::Point &point2);
-
-  std::string heterogeneity_type_;
+  Eigen::MatrixXd map_;
 };
 }  // namespace partition
 }  // namespace sampling

@@ -1,27 +1,25 @@
-#include <math.h>
-
 #include "sampling_partition/heterogeneity_distance_dependent.h"
+
+#include <math.h>
 
 namespace sampling {
 namespace partition {
 
-double HeterogeneityDistanceDepedent::CalculateCost(
+Eigen::VectorXd HeterogeneityDistanceDepedent::CalculateCost(
     const geometry_msgs::Point &agent_position,
-    const geometry_msgs::Point &cell_position) override {
-  const double distance =
-      CalculateEuclideanDistance(agent_position, cell_position);
-  double cost =
-      params_.weight_factor * tanh(distance * params_.heterogeneity_primitive);
+    const Eigen::VectorXd &distance) {
+  Eigen::VectorXd cost = distance.array() * params_.heterogeneity_primitive;
+  cost = cost.array().tanh();
   if (params_.heterogeneity_primitive >= 0) {
     return cost;
   } else {
-    return cost + 1;
+    return cost.array() + 1.0;
   }
 }
 
 HeterogeneityDistanceDepedent::HeterogeneityDistanceDepedent(
-    const HeterogeneityParams &params)
-    : Heterogeneity(param) {}
+    const HeterogeneityParams &params, const Eigen::MatrixXd &map)
+    : Heterogeneity(params, map) {}
 
 }  // namespace partition
 }  // namespace sampling

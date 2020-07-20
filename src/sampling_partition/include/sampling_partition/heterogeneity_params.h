@@ -14,8 +14,6 @@ class HeterogeneityParams {
 
   std::string heterogeneity_type;
 
-  double weight_factor;
-
   double heterogeneity_primitive;
 
   std::vector<geometry_msgs::Point> control_area_center;

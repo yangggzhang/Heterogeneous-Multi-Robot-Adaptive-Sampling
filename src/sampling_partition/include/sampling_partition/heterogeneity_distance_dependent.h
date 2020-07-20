@@ -12,10 +12,11 @@ class HeterogeneityDistanceDepedent : public Heterogeneity {
  public:
   HeterogeneityDistanceDepedent() = delete;
 
-  HeterogeneityDistanceDepedent(const HeterogeneityParams &params);
+  HeterogeneityDistanceDepedent(const HeterogeneityParams &params,
+                                const Eigen::MatrixXd &map);
 
-  double CalculateCost(const geometry_msgs::Point &agent_position,
-                       const geometry_msgs::Point &cell_position) override;
+  Eigen::VectorXd CalculateCost(const geometry_msgs::Point &agent_position,
+                                const Eigen::VectorXd &distance) override;
 };
 }  // namespace partition
 }  // namespace sampling

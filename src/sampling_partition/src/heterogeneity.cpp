@@ -9,34 +9,29 @@ namespace sampling {
 namespace partition {
 
 std::unique_ptr<Heterogeneity> Heterogeneity::MakeUniqueFromParam(
-    const HeterogeneityParams &params) {
+    const HeterogeneityParams &params, const Eigen::MatrixXd &map) {
   if (KHeterogeneitySpeed.compare(params.heterogeneity_type) == 0)
     return std::unique_ptr<Heterogeneity>(
-        new HeterogeneityDistanceDepedent(params));
+        new HeterogeneityDistanceDepedent(params, map));
   else if (KHeterogeneityBatteryLife.compare(params.heterogeneity_type) == 0)
     return std::unique_ptr<Heterogeneity>(
-        new HeterogeneityDistanceDepedent(params));
+        new HeterogeneityDistanceDepedent(params, map));
   else if (KHeterogeneityTraversability.compare(params.heterogeneity_type) == 0)
     return std::unique_ptr<Heterogeneity>(
-        new HeterogeneityTopographyDepedent(params));
+        new HeterogeneityTopographyDepedent(params, map));
   else
     return nullptr;
 }
 
-double Heterogeneity::CalculateCost(const geometry_msgs::Point &agent_position,
-                                    const geometry_msgs::Point &cell_position) {
-  return 0;  // for compilation
+Eigen::VectorXd Heterogeneity::CalculateCost(
+    const geometry_msgs::Point &agent_position,
+    const Eigen::VectorXd &distance) {
+  return Eigen::VectorXd::Zero(distance.size());
 }
 
-inline double Heterogeneity::CalculateEuclideanDistance(
-    const geometry_msgs::Point &point1, const geometry_msgs::Point &point2) {
-  const double dx = point1.x - point2.x;
-  const double dy = point1.y - point2.y;
-  return sqrt(dx * dx + dy * dy);
-}
-
-Heterogeneity::Heterogeneity(const HeterogeneityParams &params)
-    : params_(params) {}
+Heterogeneity::Heterogeneity(const HeterogeneityParams &params,
+                             const Eigen::MatrixXd &map)
+    : params_(params), map_(map) {}
 
 }  // namespace partition
 }  // namespace sampling
