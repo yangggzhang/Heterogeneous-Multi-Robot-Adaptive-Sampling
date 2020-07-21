@@ -129,7 +129,8 @@ add_library(${PROJECT_NAME}
   src/heterogeneity_distance.cpp
   src/heterogeneity_distance_dependent.cpp
   src/heterogeneity_topography_dependent.cpp
-  src/weighted_voronoi_partion_params.cpp
+  src/weighted_voronoi_partition.cpp
+  src/weighted_voronoi_partition_params.cpp
 )
 
 ## Add cmake target dependencies of the library

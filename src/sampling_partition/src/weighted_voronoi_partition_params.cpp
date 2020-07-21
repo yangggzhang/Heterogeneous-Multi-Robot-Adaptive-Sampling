@@ -1,4 +1,4 @@
-#include "sampling_partition/weighted_voronoi_partion_params.h"
+#include "sampling_partition/weighted_voronoi_partition_params.h"
 
 #include <ros/ros.h>
 
@@ -12,7 +12,7 @@ WeightedVoronoiPartitionParam::WeightedVoronoiPartitionParam() {}
 
 bool WeightedVoronoiPartitionParam::LoadFromXML(
     const XmlRpc::XmlRpcValue& param) {
-    if (!utils::GetParam(param, "heterogenities", heterogenities)) {
+  if (!utils::GetParam(param, "heterogenities", heterogenities)) {
     ROS_ERROR_STREAM(
         "Error loading heterogeneities for heterogeneous property!");
     return false;

@@ -12,8 +12,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "sampling/weighted_voronoi_partion_params.h"
 #include "sampling_partition/heterogeneity.h"
+#include "sampling_partition/weighted_voronoi_partition_params.h"
 #include "sampling_utils/utils.h"
 
 namespace sampling {

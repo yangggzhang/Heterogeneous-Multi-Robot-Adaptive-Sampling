@@ -1,4 +1,4 @@
-#include "sampling_partition/weighted_voronoi_partion.h"
+#include "sampling_partition/weighted_voronoi_partition.h"
 
 #include "sampling_utils/utils.h"
 
@@ -16,7 +16,7 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
   }
 
   XmlRpc::XmlRpcValue heterogeneous_param_yaml_node =
-      heterogeneity_param_list.front();
+      heterogeneity_param_list[0];
   WeightedVoronoiPartitionParam partiton_params;
   if (!partiton_params.LoadFromXML(heterogeneous_param_yaml_node)) {
     ROS_ERROR("Error loading partition params!");
@@ -110,13 +110,54 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
       new WeightedVoronoiPartition(partiton_params, heterogeneity_map, map));
 }
 
+bool WeightedVoronoiPartition::ComputePartition(
+    const std::vector<AgentLocation> &location,
+    std::unordered_map<std::string, std::vector<int>> &partition_index) {
+  partition_index.clear();
+  Eigen::MatrixXd cost_map =
+      Eigen::MatrixXd::Zero(map_.rows(), location.size());
+  for (int i = 0; i < location.size(); ++i) {
+    AgentLocation agent_info = location.at(i);
+    if (!heterogeneity_map_.count(agent_info.agent_id)) {
+      ROS_ERROR_STREAM(
+          "Failed to do partition for unknown agent : " << agent_info.agent_id);
+      return false;
+    }
+    const Eigen::VectorXd distance =
+        CalculateEuclideanDistance(agent_info.position, map_);
+    for (int j = 0; j < heterogeneity_map_[agent_info.agent_id].size(); ++j) {
+      Eigen::VectorXd heterogeneity_cost =
+          params_.weight_factor[j] *
+          heterogeneity_map_[agent_info.agent_id][j]->CalculateCost(
+              agent_info.position, distance);
+      cost_map.col(i).array() =
+          cost_map.col(i).array() + heterogeneity_cost.array();
+    }
+  }
+  for (int i = 0; i < map_.rows(); ++i) {
+    Eigen::MatrixXd::Index index;
+    cost_map.row(i).minCoeff(&index);
+    partition_index[location[index].agent_id].push_back(i);
+  }
+  return true;
+}
+
 WeightedVoronoiPartition::WeightedVoronoiPartition(
     const WeightedVoronoiPartitionParam &params,
     const std::unordered_map<std::string,
                              std::vector<std::unique_ptr<Heterogeneity>>>
         &heterogeneity_map,
     const Eigen::MatrixXd &map)
-    : params_(params), heterogeneity_map_(heterogeneity_map), map_(map) {}
+    : params_(params), map_(map) {
+  heterogeneity_map_.clear();
+  for (auto it = heterogeneity_map.begin(); it != heterogeneity_map.end();
+       ++it) {
+    heterogeneity_map_[it->first].reserve(it->second.size());
+    for (const auto &ptr : it->second)
+      heterogeneity_map_[it->first].push_back(
+          std::make_unique<Heterogeneity>(*ptr));
+  }
+}
 
 Eigen::VectorXd WeightedVoronoiPartition::CalculateEuclideanDistance(
     const geometry_msgs::Point &point, const Eigen::MatrixXd &map) {
