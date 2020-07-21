@@ -34,7 +34,8 @@ class WeightedVoronoiPartition {
 
   bool ComputePartition(
       const std::vector<AgentLocation> &location,
-      std::unordered_map<std::string, std::vector<int>> &partition_index);
+      std::unordered_map<std::string, std::vector<int>> &partition_index,
+      std::vector<int> &index_for_map);
 
  private:
   WeightedVoronoiPartition(
