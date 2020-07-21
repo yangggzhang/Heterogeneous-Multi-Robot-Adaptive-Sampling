@@ -2,8 +2,10 @@
 #include <ros/ros.h>
 #include <sampling_core/voronoi.h>
 #include <visualization_msgs/Marker.h>
+
 #include <Eigen/Dense>
 #include <vector>
+
 #include "sampling_core/sampling_visualization.h"
 
 namespace sampling {

@@ -1,4 +1,5 @@
 #include "sampling_core/sampling_visualization.h"
+
 #include "sampling_core/voronoi_visualization.h"
 #include "sampling_msgs/RequestLocation.h"
 
