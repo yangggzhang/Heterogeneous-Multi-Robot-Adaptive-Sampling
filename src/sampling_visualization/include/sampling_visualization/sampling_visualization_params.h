@@ -10,6 +10,7 @@ namespace visualization {
 
 const std::string KVisualizationType_Grid = "GRID";
 const std::string KVisualizationType_Location = "LOCATION";
+const std::string KVisualizationType_Partition = "PARTITION";
 
 const std::string KVisualizationNamespace = "/visualization/";
 
@@ -34,6 +35,8 @@ class SamplingVisualizationParams {
   bool LoadFromXML(const XmlRpc::XmlRpcValue& param);
 
   std::string name;
+
+  std::string visualization_type;
 
   std::vector<double> offset;
 

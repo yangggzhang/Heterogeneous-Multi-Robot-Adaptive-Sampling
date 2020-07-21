@@ -14,6 +14,16 @@ bool SamplingVisualizationParams::LoadFromXML(
     return false;
   }
 
+  if (!utils::GetParam(param, "visualization_type", visualization_type)) {
+    ROS_ERROR_STREAM(
+        "Error loading visualization type for sampling visualization!");
+    return false;
+  } else if (KVisualizationType_Grid.compare(visualization_type) != 0 &&
+             KVisualizationType_Location.compare(visualization_type) != 0 &&
+             KVisualizationType_Partition.compare(visualization_type) != 0) {
+    ROS_ERROR_STREAM("Unknow visualization type!");
+    return false;
+  }
   if (!utils::GetParam(param, "offset", offset) ||
       offset.size() != KVisualizationDimension) {
     ROS_ERROR_STREAM("Error loading offset for sampling visualization!");

@@ -9,7 +9,7 @@ GridVisualizationHandler::MakeUniqueFromXML(ros::NodeHandle &nh,
   return nullptr;
 }
 
-GridVisualizationHandler ::GridVisualizationHandler(
+GridVisualizationHandler::GridVisualizationHandler(
     ros::NodeHandle &nh, const visualization_msgs::Marker &marker,
     const SamplingVisualizationParams &params)
     : marker_(marker), params_(params) {
@@ -19,6 +19,24 @@ GridVisualizationHandler ::GridVisualizationHandler(
   event_timer_ = nh.createTimer(
       ros::Duration(1.0 / KVisualizationUpdateRate_hz),
       &GridVisualizationHandler::UpdateVisualizationCallback, this);
+}
+
+bool GridVisualizationHandler::UpdateMarker(
+    const std::vector<double> &marker_value) {
+  if (KVisualizationType_Grid.compare(params_.type) != 0) {
+    ROS_ERROR_STREAM("Wrong data type for visualization update!");
+    return false;
+  }
+  return true;
+}
+
+bool GridVisualizationHandler::UpdateMarker(
+    const std::vector<int> &marker_value) {
+  if (KVisualizationType_Partition.compare(params_.type) != 0) {
+    ROS_ERROR_STREAM("Wrong data type for visualization update!");
+    return false;
+  }
+  return true;
 }
 
 void GridVisualizationHandler::UpdateVisualizationCallback(
