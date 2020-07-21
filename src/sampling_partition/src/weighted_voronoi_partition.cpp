@@ -112,8 +112,10 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
 
 bool WeightedVoronoiPartition::ComputePartition(
     const std::vector<AgentLocation> &location,
-    std::unordered_map<std::string, std::vector<int>> &partition_index) {
+    std::unordered_map<std::string, std::vector<int>> &partition_index,
+    std::vector<int> &index_for_map) {
   partition_index.clear();
+  index_for_map.clear();
   Eigen::MatrixXd cost_map =
       Eigen::MatrixXd::Zero(map_.rows(), location.size());
   for (int i = 0; i < location.size(); ++i) {
@@ -134,10 +136,12 @@ bool WeightedVoronoiPartition::ComputePartition(
           cost_map.col(i).array() + heterogeneity_cost.array();
     }
   }
+  index_for_map.resize(map_.rows());
   for (int i = 0; i < map_.rows(); ++i) {
     Eigen::MatrixXd::Index index;
     cost_map.row(i).minCoeff(&index);
     partition_index[location[index].agent_id].push_back(i);
+    index_for_map[i] = (int)index;
   }
   return true;
 }
