@@ -8,13 +8,13 @@ namespace visualization {
 SamplingVisualizationParams::SamplingVisualizationParams() {}
 
 bool SamplingVisualizationParams::LoadFromXML(
-    const XmlRpc::XmlRpcValue& param) {
-  if (!utils::GetParam(param, "name", name)) {
+    const XmlRpc::XmlRpcValue& yaml_node) {
+  if (!utils::GetParam(yaml_node, "name", name)) {
     ROS_ERROR_STREAM("Error loading name for sampling visualization!");
     return false;
   }
 
-  if (!utils::GetParam(param, "visualization_type", visualization_type)) {
+  if (!utils::GetParam(yaml_node, "visualization_type", visualization_type)) {
     ROS_ERROR_STREAM(
         "Error loading visualization type for sampling visualization!");
     return false;
@@ -24,19 +24,19 @@ bool SamplingVisualizationParams::LoadFromXML(
     ROS_ERROR_STREAM("Unknow visualization type!");
     return false;
   }
-  if (!utils::GetParam(param, "offset", offset) ||
+  if (!utils::GetParam(yaml_node, "offset", offset) ||
       offset.size() != KVisualizationDimension) {
     ROS_ERROR_STREAM("Error loading offset for sampling visualization!");
     return false;
   }
 
-  if (!utils::GetParam(param, "scale", scale) ||
+  if (!utils::GetParam(yaml_node, "scale", scale) ||
       scale.size() != KVisualizationDimension) {
     ROS_ERROR_STREAM("Error loading scale for sampling visualization!");
     return false;
   }
 
-  if (!utils::GetParam(param, "bounds", bounds) ||
+  if (!utils::GetParam(yaml_node, "bounds", bounds) ||
       bounds.size() != KVisualizationDimension) {
     ROS_WARN_STREAM("Error loading scale for sampling visualization!");
     bounds =

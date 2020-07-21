@@ -1,4 +1,5 @@
 #include "sampling_core/voronoi_visualization.h"
+
 #include <unordered_set>
 
 namespace sampling {

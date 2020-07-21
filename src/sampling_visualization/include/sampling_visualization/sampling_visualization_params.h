@@ -12,7 +12,7 @@ const std::string KVisualizationType_Grid = "GRID";
 const std::string KVisualizationType_Location = "LOCATION";
 const std::string KVisualizationType_Partition = "PARTITION";
 
-const std::string KVisualizationNamespace = "/visualization/";
+const std::string KVisualizationNamespace = "/sampling_visualization/";
 
 const double KVisualizationUpdateRate_hz = 1.0;
 
@@ -22,17 +22,22 @@ const double KVisualizationUpperBound = 5.0;
 const double KVisualizationLowerBound = -5.0;
 const double KRGBRed[3] = {255.0 / KPixelScale, 0.0 / KPixelScale,
                            0.0 / KPixelScale};
-const double KRGBGreen[3] = {0.0 / 255.0, 255 / 255.0, 0 / 255.0};
-const double KRGBBlue[3] = {0.0 / 255.0, 0 / 255.0, 255 / 255.0};
-const double KRGBYellow[3] = {255.0 / 255.0, 255.0 / 255.0, 0.0 / 255.0};
-const double KRGBGray[3] = {128.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0};
-const double KRGBPink[3] = {255.0 / 255.0, 102.0 / 255.0, 255.0 / 255.0};
+const double KRGBGreen[3] = {0.0 / KPixelScale, 255 / KPixelScale,
+                             0 / KPixelScale};
+const double KRGBBlue[3] = {0.0 / KPixelScale, 0 / KPixelScale,
+                            255 / KPixelScale};
+const double KRGBYellow[3] = {255.0 / KPixelScale, 255.0 / KPixelScale,
+                              0.0 / KPixelScale};
+const double KRGBGray[3] = {128.0 / KPixelScale, 128.0 / KPixelScale,
+                            128.0 / KPixelScale};
+const double KRGBPink[3] = {255.0 / KPixelScale, 102.0 / KPixelScale,
+                            255.0 / KPixelScale};
 
 class SamplingVisualizationParams {
  public:
   SamplingVisualizationParams();
 
-  bool LoadFromXML(const XmlRpc::XmlRpcValue& param);
+  bool LoadFromXML(const XmlRpc::XmlRpcValue& yaml_node);
 
   std::string name;
 
