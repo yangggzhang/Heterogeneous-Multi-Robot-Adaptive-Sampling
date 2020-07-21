@@ -108,7 +108,7 @@ catkin_package(
  INCLUDE_DIRS include
  LIBRARIES sampling_partition
 #  CATKIN_DEPENDS roscpp sampling_msgs
- DEPENDS Eigen3
+ DEPENDS EIGEN3
 )
 
 ###########
