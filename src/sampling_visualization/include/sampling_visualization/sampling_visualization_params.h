@@ -17,16 +17,8 @@ const std::string KVisualizationNamespace = "/visualization/";
 const double KVisualizationUpdateRate_hz = 1.0;
 
 const size_t KVisualizationDimension = 2;
-const double KPixelScale = 255.0;
 const double KVisualizationUpperBound = 5.0;
 const double KVisualizationLowerBound = -5.0;
-const double KRGBRed[3] = {255.0 / KPixelScale, 0.0 / KPixelScale,
-                           0.0 / KPixelScale};
-const double KRGBGreen[3] = {0.0 / 255.0, 255 / 255.0, 0 / 255.0};
-const double KRGBBlue[3] = {0.0 / 255.0, 0 / 255.0, 255 / 255.0};
-const double KRGBYellow[3] = {255.0 / 255.0, 255.0 / 255.0, 0.0 / 255.0};
-const double KRGBGray[3] = {128.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0};
-const double KRGBPink[3] = {255.0 / 255.0, 102.0 / 255.0, 255.0 / 255.0};
 
 class SamplingVisualizationParams {
  public:

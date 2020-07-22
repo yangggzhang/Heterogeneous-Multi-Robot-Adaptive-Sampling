@@ -23,4 +23,4 @@ bool GetParam(const XmlRpc::XmlRpcValue &YamlNode,
 
 }  // namespace utils
 }  // namespace sampling
-#include "utils_impl.h"
+#include "sampling_utils/utils_impl.h"

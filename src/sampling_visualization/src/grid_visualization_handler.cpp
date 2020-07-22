@@ -1,5 +1,7 @@
 #include "sampling_visualization/grid_visualization_handler.h"
 
+#include "sampling_visualization/sampling_visualization_utils.h"
+
 namespace sampling {
 namespace visualization {
 
@@ -23,7 +25,7 @@ GridVisualizationHandler::GridVisualizationHandler(
 
 bool GridVisualizationHandler::UpdateMarker(
     const std::vector<double> &marker_value) {
-  if (KVisualizationType_Grid.compare(params_.type) != 0) {
+  if (KVisualizationType_Grid.compare(params_.visualization_type) != 0) {
     ROS_ERROR_STREAM("Wrong data type for visualization update!");
     return false;
   }
@@ -32,7 +34,7 @@ bool GridVisualizationHandler::UpdateMarker(
 
 bool GridVisualizationHandler::UpdateMarker(
     const std::vector<int> &marker_value) {
-  if (KVisualizationType_Partition.compare(params_.type) != 0) {
+  if (KVisualizationType_Partition.compare(params_.visualization_type) != 0) {
     ROS_ERROR_STREAM("Wrong data type for visualization update!");
     return false;
   }
