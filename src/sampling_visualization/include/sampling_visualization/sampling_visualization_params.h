@@ -12,7 +12,7 @@ const std::string KVisualizationType_Grid = "GRID";
 const std::string KVisualizationType_Location = "LOCATION";
 const std::string KVisualizationType_Partition = "PARTITION";
 
-const std::string KVisualizationNamespace = "/visualization/";
+const std::string KVisualizationNamespace = "/sampling_visualization/";
 
 const double KVisualizationUpdateRate_hz = 1.0;
 
@@ -24,7 +24,7 @@ class SamplingVisualizationParams {
  public:
   SamplingVisualizationParams();
 
-  bool LoadFromXML(const XmlRpc::XmlRpcValue& param);
+  bool LoadFromXML(const XmlRpc::XmlRpcValue& yaml_node);
 
   std::string name;
 

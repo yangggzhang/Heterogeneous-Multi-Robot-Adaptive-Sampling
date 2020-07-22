@@ -15,7 +15,8 @@ class GridVisualizationHandler {
   GridVisualizationHandler() = delete;
 
   static std::unique_ptr<GridVisualizationHandler> MakeUniqueFromXML(
-      ros::NodeHandle &nh, const XmlRpc::XmlRpcValue &param);
+      ros::NodeHandle &nh, const XmlRpc::XmlRpcValue &yaml_node,
+      const Eigen::MatrixXd &map);
 
   bool UpdateMarker(const std::vector<double> &marker_value);
 
@@ -27,8 +28,6 @@ class GridVisualizationHandler {
                            const SamplingVisualizationParams &params);
 
   SamplingVisualizationParams params_;
-
-  Eigen::MatrixXd map_;
 
   ros::Timer event_timer_;
 
