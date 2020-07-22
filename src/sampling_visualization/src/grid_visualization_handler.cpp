@@ -67,6 +67,15 @@ bool GridVisualizationHandler::UpdateMarker(
   if (KVisualizationType_Grid.compare(params_.visualization_type) != 0) {
     ROS_ERROR_STREAM("Wrong data type for visualization update!");
     return false;
+  } else if (marker_value.size() != marker_.points.size()) {
+    ROS_ERROR_STREAM("Visualization data size does not match!");
+    return false;
+  }
+  for (int i = 0; i < marker_.points.size(); ++i) {
+    if (!UpdateColor(marker_value[i], marker_.colors[i])) {
+      ROS_ERROR_STREAM("Invalid visualization data point!");
+      return false;
+    }
   }
   return true;
 }
@@ -76,6 +85,15 @@ bool GridVisualizationHandler::UpdateMarker(
   if (KVisualizationType_Partition.compare(params_.visualization_type) != 0) {
     ROS_ERROR_STREAM("Wrong data type for visualization update!");
     return false;
+  } else if (marker_value.size() != marker_.points.size()) {
+    ROS_ERROR_STREAM("Visualization data size does not match!");
+    return false;
+  }
+  for (int i = 0; i < marker_.points.size(); ++i) {
+    if (!UpdateColor(marker_value[i], marker_.colors[i])) {
+      ROS_ERROR_STREAM("Invalid visualization data point!");
+      return false;
+    }
   }
   return true;
 }

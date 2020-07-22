@@ -49,7 +49,7 @@ void HSVtoRGB(const double &H, const double &S, const double &V, double &R,
   B += M;
 }
 
-bool GetColor(const double &norm, std_msgs::ColorRGBA &color) {
+bool UpdateColor(const double &norm, std_msgs::ColorRGBA &color) {
   if (norm < 0 || norm > 1) return false;
   double r, g, b;
   HSVtoRGB((1 - norm) * KHSVRange, 1.0, 1.0, r, g, b);
@@ -60,7 +60,7 @@ bool GetColor(const double &norm, std_msgs::ColorRGBA &color) {
   return true;
 }
 
-bool GetColor(const int &agent_id, std_msgs::ColorRGBA &color) {
+bool UpdateColor(const int &agent_id, std_msgs::ColorRGBA &color) {
   if (agent_id < 0)
     return false;
   else if (!KColorMap.count(agent_id)) {
