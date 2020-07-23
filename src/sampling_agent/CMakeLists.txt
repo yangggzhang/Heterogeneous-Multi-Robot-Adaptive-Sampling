@@ -64,7 +64,7 @@ target_link_libraries(sampling_agent_node ${PROJECT_NAME} ${catkin_LIBRARIES} )
 # add_executable(report_measurement_node node/report_measurement_node.cpp)
 # target_link_libraries(report_measurement_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} sampling_agent_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}

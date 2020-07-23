@@ -17,12 +17,12 @@ JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
   switch (navigation_mode) {
     case ODOM: {
       odom_subscriber_ =
-          nh.subscribe(nh.getNamespace() + "/odom", 1,
+          nh.subscribe(agent_id + "/odometry/local_filtered", 1,
                        &JackalAgent::UpdatePositionFromOdom, this);
       break;
     }
     case GPS: {
-      gps_subscriber_ = nh.subscribe(nh.getNamespace() + "/navsat/fix", 1,
+      gps_subscriber_ = nh.subscribe(agent_id + "/navsat/fix", 1,
                                      &JackalAgent::UpdatePositionFromGPS, this);
       break;
     }
@@ -37,7 +37,7 @@ std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROS(
   nh.param<std::string>("agent_id", agent_id, "jackal0");
   std::unique_ptr<JackalNavigator> jackal_navigator =
       std::unique_ptr<JackalNavigator>(
-          new JackalNavigator(nh.getNamespace() + "/move_base", true));
+          new JackalNavigator(agent_id + "/move_base", true));
   if (!jackal_navigator->waitForServer(ros::Duration(10.0))) {
     ROS_INFO_STREAM("Missing move base action for Jackal!");
     return nullptr;
@@ -140,7 +140,15 @@ void JackalAgent::UpdatePositionFromOdom(const nav_msgs::Odometry &msg) {
   point_in.header = msg.header;
   point_in.point = msg.pose.pose.position;
 
-  listener_.transformPoint(KWorldFrame, point_in, point_out);
+  try {
+    // geometry_msgs::PointStamped base_point;
+    listener_.transformPoint(KWorldFrame, point_in, point_out);
+
+  } catch (tf::TransformException &ex) {
+    ROS_ERROR_STREAM("Received an exception trying to transform a point from "
+                     << point_in.header.frame_id << "to " << KWorldFrame << " "
+                     << ex.what());
+  }
 
   current_position_ = boost::make_optional(point_out.point);
 }
