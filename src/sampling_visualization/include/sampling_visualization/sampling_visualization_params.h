@@ -1,8 +1,10 @@
 #pragma once
 
 #include <ros/ros.h>
+#include <std_msgs/ColorRGBA.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace sampling {
@@ -19,12 +21,11 @@ const double KVisualizationUpdateRate_hz = 1.0;
 const size_t KVisualizationDimension = 2;
 const double KVisualizationUpperBound = 5.0;
 const double KVisualizationLowerBound = -5.0;
-
 class SamplingVisualizationParams {
  public:
   SamplingVisualizationParams();
 
-  bool LoadFromXML(const XmlRpc::XmlRpcValue& yaml_node);
+  bool LoadFromXML(const XmlRpc::XmlRpcValue &yaml_node);
 
   std::string name;
 

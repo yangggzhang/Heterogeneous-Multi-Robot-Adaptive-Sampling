@@ -36,17 +36,20 @@ const int KRGBPinkId = 5;
 const std::vector<double> KRGBPink{255.0 / KPixelScale, 102.0 / KPixelScale,
                                    255.0 / KPixelScale};
 
-std::unordered_map<int, std::vector<double>> KColorMap{
-    {KRGBRedId, KRGBRed},   {KRGBGreenId, KRGBGreen},
-    {KRGBBlueId, KRGBBlue}, {KRGBYellowId, KRGBYellow},
-    {KRGBGreyId, KRGBGrey}, {KRGBPinkId, KRGBPink}};
+class SamplingVisualizationUtils {
+ public:
+  SamplingVisualizationUtils();
 
-void HSVtoRGB(const double &H, const double &S, const double &V, double &R,
-              double &G, double &B);
+  void HSVtoRGB(const double &H, const double &S, const double &V, double &R,
+                double &G, double &B);
 
-bool UpdateColor(const double &norm, std_msgs::ColorRGBA &color);
+  bool UpdateColor(const double &norm, std_msgs::ColorRGBA &color);
 
-bool UpdateColor(const int &agent_id, std_msgs::ColorRGBA &color);
+  bool UpdateColor(const int &agent_id, std_msgs::ColorRGBA &color);
+
+ private:
+  std::unordered_map<int, std::vector<double>> color_map_;
+};
+
 }  // namespace visualization
 }  // namespace sampling
-#include "sampling_visualization/sampling_visualization_utils_impl.h"

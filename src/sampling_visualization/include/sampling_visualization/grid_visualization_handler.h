@@ -6,6 +6,7 @@
 #include <Eigen/Dense>
 
 #include "sampling_visualization/sampling_visualization_params.h"
+#include "sampling_visualization/sampling_visualization_utils.h"
 
 namespace sampling {
 namespace visualization {
@@ -28,6 +29,8 @@ class GridVisualizationHandler {
                            const SamplingVisualizationParams &params);
 
   SamplingVisualizationParams params_;
+
+  SamplingVisualizationUtils utils_;
 
   ros::Timer event_timer_;
 

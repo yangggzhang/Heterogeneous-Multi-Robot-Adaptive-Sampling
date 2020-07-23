@@ -1,15 +1,22 @@
-#pragma once
+#include "sampling_visualization/sampling_visualization_utils.h"
+
 #include <math.h> /* Mod */
 #include <ros/ros.h>
 #include <stdlib.h>
 
-#include "sampling_visualization/sampling_visualization_utils.h"
-
 namespace sampling {
 namespace visualization {
 
-void HSVtoRGB(const double &H, const double &S, const double &V, double &R,
-              double &G, double &B) {
+SamplingVisualizationUtils::SamplingVisualizationUtils() {
+  color_map_ = std::unordered_map<int, std::vector<double>>{
+      {KRGBRedId, KRGBRed},   {KRGBGreenId, KRGBGreen},
+      {KRGBBlueId, KRGBBlue}, {KRGBYellowId, KRGBYellow},
+      {KRGBGreyId, KRGBGrey}, {KRGBPinkId, KRGBPink}};
+}
+
+void SamplingVisualizationUtils::HSVtoRGB(const double &H, const double &S,
+                                          const double &V, double &R, double &G,
+                                          double &B) {
   float C = V * S;  // Chroma
   float HPrime = fmod(H / 60.0, 6);
   float X = C * (1 - fabs(fmod(HPrime, 2) - 1));
@@ -49,7 +56,8 @@ void HSVtoRGB(const double &H, const double &S, const double &V, double &R,
   B += M;
 }
 
-bool UpdateColor(const double &norm, std_msgs::ColorRGBA &color) {
+bool SamplingVisualizationUtils::UpdateColor(const double &norm,
+                                             std_msgs::ColorRGBA &color) {
   if (norm < 0 || norm > 1) return false;
   double r, g, b;
   HSVtoRGB((1 - norm) * KHSVRange, 1.0, 1.0, r, g, b);
@@ -60,19 +68,20 @@ bool UpdateColor(const double &norm, std_msgs::ColorRGBA &color) {
   return true;
 }
 
-bool UpdateColor(const int &agent_id, std_msgs::ColorRGBA &color) {
+bool SamplingVisualizationUtils::UpdateColor(const int &agent_id,
+                                             std_msgs::ColorRGBA &color) {
   if (agent_id < 0)
     return false;
-  else if (!KColorMap.count(agent_id)) {
+  else if (!color_map_.count(agent_id)) {
     srand(agent_id);
     double r = fmod((double)rand(), KPixelScale);
     double g = fmod((double)rand(), KPixelScale);
     double b = fmod((double)rand(), KPixelScale);
-    KColorMap[agent_id] = std::vector<double>{r, g, b};
+    color_map_[agent_id] = std::vector<double>{r, g, b};
   }
-  color.r = KColorMap[agent_id][0];
-  color.g = KColorMap[agent_id][1];
-  color.b = KColorMap[agent_id][2];
+  color.r = color_map_[agent_id][0];
+  color.g = color_map_[agent_id][1];
+  color.b = color_map_[agent_id][2];
   color.a = 1.0;
   return true;
 }
