@@ -8,7 +8,7 @@ namespace visualization {
 SamplingVisualizationParams::SamplingVisualizationParams() {}
 
 bool SamplingVisualizationParams::LoadFromXML(
-    const XmlRpc::XmlRpcValue& yaml_node) {
+    const XmlRpc::XmlRpcValue &yaml_node) {
   if (!utils::GetParam(yaml_node, "name", name)) {
     ROS_ERROR_STREAM("Error loading name for sampling visualization!");
     return false;
