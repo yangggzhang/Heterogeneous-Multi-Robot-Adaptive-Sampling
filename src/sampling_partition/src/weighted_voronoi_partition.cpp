@@ -7,8 +7,8 @@ namespace partition {
 
 std::unique_ptr<WeightedVoronoiPartition>
 WeightedVoronoiPartition::MakeUniqueFromRosParam(
-    const std::unordered_set<std::string> &agent_ids,
-    const Eigen::MatrixXd &map, ros::NodeHandle &ph) {
+    const std::vector<std::string> &agent_ids, const Eigen::MatrixXd &map,
+    ros::NodeHandle &ph) {
   XmlRpc::XmlRpcValue heterogeneity_param_list;
   if (!ph.getParam("HeterogeneousProperty", heterogeneity_param_list)) {
     ROS_ERROR("Missing heterogeneous properties!");
@@ -23,7 +23,8 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
     return nullptr;
   }
 
-  partiton_params.agent_ids = agent_ids;
+  partiton_params.agent_ids =
+      std::unordered_set<std::string>(agent_ids.begin(), agent_ids.end());
 
   std::unordered_map<std::string, std::vector<std::unique_ptr<Heterogeneity>>>
       heterogeneity_map;
@@ -36,7 +37,7 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
       ROS_ERROR_STREAM("Missing agent id for heterogeneous property");
       return nullptr;
     }
-    if (!agent_ids.count(agent_id)) {
+    if (!partiton_params.agent_ids.count(agent_id)) {
       ROS_ERROR_STREAM("Agent id does NOT match the agents launched!");
       return nullptr;
     }

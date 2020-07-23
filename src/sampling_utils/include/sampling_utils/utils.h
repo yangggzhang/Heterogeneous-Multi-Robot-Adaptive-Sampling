@@ -8,6 +8,7 @@
 
 #include <ros/ros.h>
 
+#include <Eigen/Dense>
 #include <string>
 
 namespace sampling {

@@ -33,6 +33,9 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
   stop_agent_server_ = nh.advertiseService(
       "stop_agent_channel", &SamplingAgent::StopAgentService, this);
 
+  check_server_ =
+      nh.advertiseService("check", &SamplingAgent::CheckService, this);
+
   agent_state_ = IDLE;
 }
 
@@ -86,6 +89,13 @@ bool SamplingAgent::StopAgentService(sampling_msgs::StopAgent::Request &req,
   } else {
     res.success = false;
   }
+  return true;
+}
+
+bool SamplingAgent::CheckService(std_srvs::Trigger::Request &req,
+                                 std_srvs::Trigger::Response &res) {
+  res.success = true;
+  res.message = "Agent : " + agent_id_ + "is ready!";
   return true;
 }
 

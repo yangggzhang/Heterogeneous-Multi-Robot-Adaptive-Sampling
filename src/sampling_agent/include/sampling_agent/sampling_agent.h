@@ -3,6 +3,7 @@
 #include <geometry_msgs/Point.h>
 #include <ros/ros.h>
 #include <sampling_msgs/StopAgent.h>
+#include <std_srvs/Trigger.h>
 
 #include <boost/optional.hpp>
 #include <string>
@@ -44,6 +45,9 @@ class SamplingAgent {
   bool StopAgentService(sampling_msgs::StopAgent::Request &req,
                         sampling_msgs::StopAgent::Response &res);
 
+  bool CheckService(std_srvs::Trigger::Request &req,
+                    std_srvs::Trigger::Response &res);
+
   ros::Timer event_timer_;
 
   SamplingState agent_state_;
@@ -57,6 +61,8 @@ class SamplingAgent {
   ros::ServiceClient measurement_service_;
 
   ros::ServiceServer stop_agent_server_;
+
+  ros::ServiceServer check_server_;
 
   ros::Publisher agent_location_publisher_;
 

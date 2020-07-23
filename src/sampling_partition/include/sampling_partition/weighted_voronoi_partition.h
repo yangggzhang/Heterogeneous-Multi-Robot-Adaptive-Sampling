@@ -14,7 +14,6 @@
 
 #include "sampling_partition/heterogeneity.h"
 #include "sampling_partition/weighted_voronoi_partition_params.h"
-#include "sampling_utils/utils.h"
 
 namespace sampling {
 namespace partition {
@@ -29,8 +28,8 @@ class WeightedVoronoiPartition {
   WeightedVoronoiPartition() = delete;
 
   static std::unique_ptr<WeightedVoronoiPartition> MakeUniqueFromRosParam(
-      const std::unordered_set<std::string> &agent_ids,
-      const Eigen::MatrixXd &map, ros::NodeHandle &ph);
+      const std::vector<std::string> &agent_ids, const Eigen::MatrixXd &map,
+      ros::NodeHandle &ph);
 
   bool ComputePartition(
       const std::vector<AgentLocation> &location,

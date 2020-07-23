@@ -22,5 +22,9 @@
   <depend>sampling_measurement</depend>
   <depend>sampling_msgs</depend>
   <depend>roslib</depend>
-  <depend>cv_bridge</depend>
+  <depend>sampling_partition</depend>
+  <depend>sampling_online_learning</depend>
+  <depend>sampling_visualization</depend>
+  <depend>sampling_utils</depend>
+  <depend>std_srvs</depend>
 </package>

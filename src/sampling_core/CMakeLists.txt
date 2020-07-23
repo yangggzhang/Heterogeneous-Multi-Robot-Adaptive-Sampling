@@ -16,15 +16,18 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   message_runtime
   sampling_measurement
+  sampling_utils
   sampling_msgs
+  sampling_partition
+  sampling_online_learning
+  sampling_visualization
   roslib
-  cv_bridge
+  std_srvs
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
-find_package(OpenCV)
 
 catkin_package(
    INCLUDE_DIRS include
@@ -37,22 +40,14 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   include
-  libgp/include
 )
 
 # Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/gpmm.cpp
-  src/gmm.cpp
-  src/gmm.cpp
-  src/voronoi.cpp
-  src/sampling_core_simulation.cpp
-  src/sampling_visualization.cpp
-  src/voronoi_visualization.cpp
-  src/informative_point_selection.cpp
+  src/sampling_core_params.cpp
+  src/sampling_core.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -60,12 +55,12 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 # add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
 # target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
-add_executable(gmm_test_node node/gmm_test_node.cpp)
-target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+# add_executable(gmm_test_node node/gmm_test_node.cpp)
+# target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
-add_executable(voronoi_test_node node/voronoi_test_node.cpp)
-target_link_libraries(voronoi_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+# add_executable(voronoi_test_node node/voronoi_test_node.cpp)
+# target_link_libraries(voronoi_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
-add_executable(sampling_simulation_node node/sampling_simulation_node.cpp)
-target_link_libraries(sampling_simulation_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+# add_executable(sampling_simulation_node node/sampling_simulation_node.cpp)
+# target_link_libraries(sampling_simulation_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
 
