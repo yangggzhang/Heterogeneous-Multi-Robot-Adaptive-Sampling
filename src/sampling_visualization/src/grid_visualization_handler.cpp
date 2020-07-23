@@ -1,7 +1,5 @@
 #include "sampling_visualization/grid_visualization_handler.h"
 
-#include "sampling_visualization/sampling_visualization_utils.h"
-
 namespace sampling {
 namespace visualization {
 
@@ -72,7 +70,7 @@ bool GridVisualizationHandler::UpdateMarker(
     return false;
   }
   for (int i = 0; i < marker_.points.size(); ++i) {
-    if (!UpdateColor(marker_value[i], marker_.colors[i])) {
+    if (!utils_.UpdateColor(marker_value[i], marker_.colors[i])) {
       ROS_ERROR_STREAM("Invalid visualization data point!");
       return false;
     }
@@ -90,7 +88,7 @@ bool GridVisualizationHandler::UpdateMarker(
     return false;
   }
   for (int i = 0; i < marker_.points.size(); ++i) {
-    if (!UpdateColor(marker_value[i], marker_.colors[i])) {
+    if (!utils_.UpdateColor(marker_value[i], marker_.colors[i])) {
       ROS_ERROR_STREAM("Invalid visualization data point!");
       return false;
     }
