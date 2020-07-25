@@ -14,9 +14,9 @@ bool ExtractVec(const T &full, const std::vector<int> &ind, T &target) {
   return true;
 }
 
-template <typename T2>
-bool ExtractCols(const T2 &full, const std::vector<int> &ind, T2 &target) {
-  target = T2(full.rows(), ind.size());
+template <typename T>
+bool ExtractCols(const T &full, const std::vector<int> &ind, T &target) {
+  target = T(full.rows(), ind.size());
   for (int i = 0; i < ind.size(); ++i) {
     if (ind[i] >= full.cols()) return false;
     target.col(i) = full.col(ind[i]);
@@ -24,9 +24,9 @@ bool ExtractCols(const T2 &full, const std::vector<int> &ind, T2 &target) {
   return true;
 }
 
-template <typename T2>
-bool ExtractRows(const T2 &full, const std::vector<int> &ind, T2 &target) {
-  target = T2(ind.size(), full.cols());
+template <typename T>
+bool ExtractRows(const T &full, const std::vector<int> &ind, T &target) {
+  target = T(ind.size(), full.cols());
   for (int i = 0; i < ind.size(); ++i) {
     if (ind[i] >= full.rows()) return false;
     target.row(i) = full.row(ind[i]);
