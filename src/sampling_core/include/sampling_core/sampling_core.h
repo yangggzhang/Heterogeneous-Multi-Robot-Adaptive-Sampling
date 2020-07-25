@@ -2,7 +2,14 @@
 
 #include <ros/ros.h>
 
+#include <boost/optional.hpp>
+#include <unordered_map>
+
 #include "sampling_core/sampling_core_params.h"
+#include "sampling_msgs/AddSampleToModel.h"
+#include "sampling_msgs/AgentLocation.h"
+#include "sampling_msgs/Sample.h"
+#include "sampling_msgs/SamplingGoal.h"
 #include "sampling_online_learning/online_learning_handler.h"
 #include "sampling_partition/weighted_voronoi_partition.h"
 
@@ -20,6 +27,8 @@ class SamplingCore {
   static std::unique_ptr<SamplingCore> MakeUniqueFromRos(ros::NodeHandle &nh,
                                                          ros::NodeHandle &ph);
 
+  bool Loop();
+
  private:
   SamplingCore(
       ros::NodeHandle &nh,
@@ -34,11 +43,16 @@ class SamplingCore {
 
   ros::Subscriber sample_subscriber_;
 
+  std::unordered_map<std::string, sampling_msgs::AgentLocation>
+      agents_locations_;
+
   ros::ServiceClient modeling_add_sample_client_;
 
   ros::ServiceClient modeling_update_model_client_;
 
   ros::ServiceClient modeling_predict_client_;
+
+  ros::ServiceServer sampling_goal_server_;
 
   // Partition
   std::unique_ptr<partition::WeightedVoronoiPartition> partition_handler_;
@@ -47,6 +61,30 @@ class SamplingCore {
   std::unique_ptr<learning::OnlineLearningHandler> learning_handler_;
 
   // Visualization
+  void AgentLocationUpdateCallback(
+      const sampling_msgs::AgentLocationConstPtr &msg);
+
+  std::vector<sampling_msgs::Sample> sample_buffer_;
+
+  int new_sample_buffer_count_;
+
+  bool SampleToSrv(const std::vector<sampling_msgs::Sample> &samples,
+                   sampling_msgs::AddSampleToModel &srv);
+
+  void SampleUpdateCallback(const sampling_msgs::SampleConstPtr &msg);
+
+  bool InitializeModelAndPrediction();
+
+  bool UpdateModel();
+
+  bool UpdatePrediction();
+
+  bool AssignSamplingGoal(sampling_msgs::SamplingGoal::Request &req,
+                          sampling_msgs::SamplingGoal::Response &res);
+
+  boost::optional<std::vector<double>> updated_mean_prediction_;
+
+  boost::optional<std::vector<double>> updated_var_prediction_;
 };
 }  // namespace core
 }  // namespace sampling

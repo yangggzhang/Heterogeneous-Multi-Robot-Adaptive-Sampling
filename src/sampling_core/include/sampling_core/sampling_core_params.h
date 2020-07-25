@@ -11,6 +11,9 @@ namespace sampling {
 namespace core {
 
 const std::string KDataPackage = "sampling_data";
+const int KModelUpdateFrequencyCount = 1;
+const int KInitSampleSize = 20;
+const double KInitSampleRatio = 0.15;
 
 class SamplingCoreParams {
  public:
@@ -40,6 +43,8 @@ class SamplingCoreParams {
 
   void MatrixToMsg(const Eigen::MatrixXd &data,
                    std::vector<geometry_msgs::Point> &msg);
+
+  int model_update_frequency_count;
 
 };  // namespace scene
 }  // namespace core

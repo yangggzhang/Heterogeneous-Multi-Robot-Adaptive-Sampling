@@ -15,8 +15,8 @@ namespace agent {
 
 SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
     : agent_id_(agent_id) {
-  sampling_service_ =
-      nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_target_channel");
+  sampling_goal_service_ =
+      nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_goal_channel");
 
   measurement_service_ = nh.serviceClient<sampling_msgs::MeasurementService>(
       "measurement_channel");
@@ -66,10 +66,10 @@ bool SamplingAgent::RequestTarget() {
     return false;
   }
   sampling_msgs::SamplingGoal srv;
-  srv.request.agent_id = agent_id_;
-  srv.request.agent_position = current_position_.get();
+  srv.request.agent_location.agent_id = agent_id_;
+  srv.request.agent_location.position = current_position_.get();
 
-  if (sampling_service_.call(srv)) {
+  if (sampling_goal_service_.call(srv)) {
     target_position_ = boost::make_optional(srv.response.target_position);
     return true;
   } else {

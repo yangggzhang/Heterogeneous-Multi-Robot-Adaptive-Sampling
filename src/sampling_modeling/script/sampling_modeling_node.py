@@ -47,7 +47,7 @@ class SamplingModeling(object):
         if self.X_test is None:
             return ModelPredictResponse(success=False)
         pred_mean, pred_var = self.model.Predict(self.X_test)
-        return ModelPredictResponse(means=pred_mean, vars=pred_var, success=True)
+        return ModelPredictResponse(mean=pred_mean, var=pred_var, success=True)
 
 if __name__ == "__main__":
     sampling_modeling_server = SamplingModeling()

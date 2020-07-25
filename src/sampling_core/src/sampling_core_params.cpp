@@ -4,11 +4,15 @@
 #include <ros/ros.h>
 
 #include <Eigen/Dense>
+#include <algorithm>  // std::random_shuffle
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "sampling_msgs/Sample.h"
+#include "sampling_utils/utils.h"
 
 namespace sampling {
 namespace core {
@@ -67,8 +71,50 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
       return false;
     }
     MatrixToMsg(initial_locations, initial_locations_msg);
+
+    if (initial_measurements.rows() != initial_measurements.size()) {
+      ROS_ERROR_STREAM("Initial locations and measurements do NOT match!");
+      return false;
+    }
+  } else {
+    int initial_sample_size =
+        std::max(KInitSampleSize,
+                 int(KInitSampleRatio * ground_truth_measurements.size()));
+    std::vector<int> index_vec;
+    for (int i = 0; i < ground_truth_measurements.size(); ++i)
+      index_vec.push_back(i);
+    // using built-in random generator:
+    std::random_shuffle(index_vec.begin(), index_vec.end());
+
+    std::vector<int> random_initial_index;
+    random_initial_index.reserve(initial_sample_size);
+    for (int i = 0; i < initial_sample_size; ++i) {
+      random_initial_index.push_back(index_vec[i]);
+    }
+
+    if (!utils::ExtractRows(test_locations, random_initial_index,
+                            initial_locations)) {
+      ROS_ERROR_STREAM("Failed to generate initial locations for sampling!");
+      return false;
+    }
+    MatrixToMsg(initial_locations, initial_locations_msg);
+
+    if (!utils::ExtractVec(ground_truth_measurements, random_initial_index,
+                           initial_measurements)) {
+      ROS_ERROR_STREAM("Failed to generate initial measurements for sampling!");
+      return false;
+    }
   }
+
   have_groundtruth_measurement = true;
+
+  if (!ph.getParam("model_update_frequency_count",
+                   model_update_frequency_count)) {
+    ROS_WARN_STREAM("Using default model update frequency (count) : "
+                    << KModelUpdateFrequencyCount);
+    model_update_frequency_count = KModelUpdateFrequencyCount;
+    return false;
+  }
 
   return true;
 }

@@ -12,16 +12,12 @@
 #include <unordered_set>
 #include <vector>
 
+#include "sampling_msgs/AgentLocation.h"
 #include "sampling_partition/heterogeneity.h"
 #include "sampling_partition/weighted_voronoi_partition_params.h"
 
 namespace sampling {
 namespace partition {
-
-struct AgentLocation {
-  std::string agent_id;
-  geometry_msgs::Point position;
-};
 
 class WeightedVoronoiPartition {
  public:
@@ -32,9 +28,9 @@ class WeightedVoronoiPartition {
       ros::NodeHandle &ph);
 
   bool ComputePartition(
-      const std::vector<AgentLocation> &location,
-      std::unordered_map<std::string, std::vector<int>> &partition_index,
-      std::vector<int> &index_for_map);
+      const std::string &agent_id,
+      const std::vector<sampling_msgs::AgentLocation> &location,
+      std::vector<int> &partition_index, std::vector<int> &index_for_map);
 
  private:
   WeightedVoronoiPartition(

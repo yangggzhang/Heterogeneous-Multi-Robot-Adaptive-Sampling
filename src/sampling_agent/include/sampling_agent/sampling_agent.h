@@ -54,7 +54,7 @@ class SamplingAgent {
 
   std::string agent_id_;
 
-  ros::ServiceClient sampling_service_;
+  ros::ServiceClient sampling_goal_service_;
 
   ros::ServiceClient measurement_service_;
 

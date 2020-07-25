@@ -1,4 +1,3 @@
-string agent_id
-geometry_msgs/Point agent_position
+AgentLocation agent_location
 ---
 geometry_msgs/Point target_position
