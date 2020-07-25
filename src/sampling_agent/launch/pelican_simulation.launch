@@ -1,0 +1,5 @@
+<launch>   
+   <node pkg="sampling_agent" type="sampling_agent_node" name="jackal" output="screen" >
+      <param name="agent_type" value="PELICAN" />
+   </node>
+</launch>

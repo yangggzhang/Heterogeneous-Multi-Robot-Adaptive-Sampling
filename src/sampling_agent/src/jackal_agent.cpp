@@ -143,14 +143,14 @@ void JackalAgent::UpdatePositionFromOdom(const nav_msgs::Odometry &msg) {
   try {
     // geometry_msgs::PointStamped base_point;
     listener_.transformPoint(KWorldFrame, point_in, point_out);
+    point_out.header.frame_id = KWorldFrame;
+    current_position_ = boost::make_optional(point_out.point);
 
   } catch (tf::TransformException &ex) {
     ROS_ERROR_STREAM("Received an exception trying to transform a point from "
                      << point_in.header.frame_id << "to " << KWorldFrame << " "
                      << ex.what());
   }
-
-  current_position_ = boost::make_optional(point_out.point);
 }
 
 void JackalAgent::UpdatePositionFromGPS(const sensor_msgs::NavSatFix &msg) {

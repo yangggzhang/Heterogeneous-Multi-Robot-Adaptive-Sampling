@@ -9,15 +9,15 @@ namespace agent {
 HectorAgent::HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
                          const HectorAgentParam &params)
     : SamplingAgent(nh, agent_id), params_(params), taken_off_(false) {
-  odom_subscriber_ = nh.subscribe(nh.getNamespace() + "/ground_truth/state", 1,
+  odom_subscriber_ = nh.subscribe(agent_id + "/ground_truth/state", 1,
                                   &HectorAgent::UpdatePositionFromOdom, this);
 
   hector_takeoff_client_ = nh.serviceClient<hector_navigation_msgs::Takeoff>(
-      nh.getNamespace() + "/hector_takeoff");
+      agent_id + "/hector_takeoff");
 
   hector_navigate_client_ =
       nh.serviceClient<hector_navigation_msgs::Navigation>(
-          nh.getNamespace() + "/hector_navigation");
+          agent_id + "/hector_navigation");
 }
 
 std::unique_ptr<HectorAgent> HectorAgent::MakeUniqueFromROSParam(

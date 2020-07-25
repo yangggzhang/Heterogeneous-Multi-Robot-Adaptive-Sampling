@@ -1,6 +1,3 @@
-[submodule "src/sampling_core/libgp"]
-	path = src/sampling_core/libgp
-	url = https://github.com/mblum/libgp.git
 [submodule "src/simulation/hector_quadrotor_navigation"]
 	path = src/simulation/hector_quadrotor_navigation
 	url = https://github.com/yangggzhang/hector_quadrotor_navigation.git

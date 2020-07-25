@@ -15,7 +15,6 @@ namespace agent {
 
 SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
     : agent_id_(agent_id) {
-  ros_ns_ = nh.getNamespace();
   sampling_service_ =
       nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_target_channel");
 
@@ -27,7 +26,7 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
 
   sample_publisher_ = nh.advertise<sampling_msgs::Sample>("sample_channel", 1);
 
-  event_timer_ = nh.createTimer(ros::Duration(1),
+  event_timer_ = nh.createTimer(ros::Duration(0.1),
                                 &SamplingAgent::ReportLocationCallback, this);
 
   stop_agent_server_ = nh.advertiseService(
