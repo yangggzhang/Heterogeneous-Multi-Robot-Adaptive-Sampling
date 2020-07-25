@@ -100,5 +100,8 @@ void GridVisualizationHandler::UpdateVisualizationCallback(
     const ros::TimerEvent &) {
   grid_publisher_.publish(marker_);
 }
+
+std::string GridVisualizationHandler::GetName() { return params_.name; }
+
 }  // namespace visualization
 }  // namespace sampling

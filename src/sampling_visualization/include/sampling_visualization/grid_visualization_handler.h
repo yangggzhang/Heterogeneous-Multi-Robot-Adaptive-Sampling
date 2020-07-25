@@ -23,6 +23,8 @@ class GridVisualizationHandler {
 
   bool UpdateMarker(const std::vector<int> &marker_value);
 
+  std::string GetName();
+
  private:
   GridVisualizationHandler(ros::NodeHandle &nh,
                            const visualization_msgs::Marker &marker,

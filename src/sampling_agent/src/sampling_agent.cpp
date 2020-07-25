@@ -129,7 +129,6 @@ bool SamplingAgent::ReportSample() {
     return false;
   }
   sampling_msgs::Sample msg;
-  msg.valid = true;
   msg.agent_id = agent_id_;
   msg.position = current_position_.get();
   msg.data = measurement_.get();

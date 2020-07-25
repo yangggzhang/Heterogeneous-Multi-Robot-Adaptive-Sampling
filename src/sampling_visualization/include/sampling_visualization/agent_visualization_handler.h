@@ -25,6 +25,8 @@ class AgentVisualizationHandler {
 
   bool UpdateMarker(const std::vector<geometry_msgs::Point> &agent_locations);
 
+  std::string GetName();
+
  private:
   AgentVisualizationHandler(ros::NodeHandle &nh,
                             const visualization_msgs::Marker &marker,

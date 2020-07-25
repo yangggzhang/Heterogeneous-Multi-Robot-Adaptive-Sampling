@@ -89,5 +89,7 @@ void AgentVisualizationHandler::UpdateVisualizationCallback(
     const ros::TimerEvent &) {
   Agent_publisher_.publish(marker_);
 }
+
+std::string AgentVisualizationHandler::GetName() { return params_.name; }
 }  // namespace visualization
 }  // namespace sampling

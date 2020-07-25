@@ -54,19 +54,72 @@ std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
     return nullptr;
   }
 
+  // visualization
+
+  std::unique_ptr<visualization::AgentVisualizationHandler>
+      agent_visualization_handler = nullptr;
+
+  std::vector<std::unique_ptr<visualization::GridVisualizationHandler>>
+      grid_visualization_handlers;
+
+  XmlRpc::XmlRpcValue visualization_param_list;
+  if (!ph.getParam("visualization_param_list", visualization_param_list) ||
+      visualization_param_list.size() == 0) {
+    ROS_ERROR_STREAM("No visualization setting is provided!");
+    return nullptr;
+  } else {
+    for (int i = 0; i < visualization_param_list.size(); ++i) {
+      XmlRpc::XmlRpcValue yaml_node = visualization_param_list[i];
+      std::string visualization_type;
+      if (!utils::GetParam(yaml_node, "visualization_type",
+                           visualization_type)) {
+        return nullptr;
+      } else {
+        if (visualization::KVisualizationType_Location.compare(
+                visualization_type) == 0) {
+          agent_visualization_handler =
+              visualization::AgentVisualizationHandler::MakeUniqueFromXML(
+                  nh, yaml_node, int(params.agent_ids.size()),
+                  params.test_locations);
+        } else if (visualization::KVisualizationType_Grid.compare(
+                       visualization_type) == 0 ||
+                   visualization::KVisualizationType_Partition.compare(
+                       visualization_type) == 0) {
+          grid_visualization_handlers.push_back(
+              visualization::GridVisualizationHandler::MakeUniqueFromXML(
+                  nh, yaml_node, params.test_locations));
+          if (grid_visualization_handlers.back() == nullptr) return nullptr;
+        } else {
+          ROS_ERROR_STREAM("Unkown visualization type");
+          return nullptr;
+        }
+      }
+    }
+  }
+  if (agent_visualization_handler == nullptr) return nullptr;
+
   return std::unique_ptr<SamplingCore>(new SamplingCore(
-      nh, std::move(partition_ptr), std::move(learning_ptr), params));
+      nh, params, std::move(partition_ptr), std::move(learning_ptr),
+      std::move(agent_visualization_handler), grid_visualization_handlers));
 }
 
 SamplingCore::SamplingCore(
-    ros::NodeHandle &nh,
+    ros::NodeHandle &nh, const SamplingCoreParams &params,
     std::unique_ptr<partition::WeightedVoronoiPartition> partition_handler,
     std::unique_ptr<learning::OnlineLearningHandler> learning_handler,
-    const SamplingCoreParams &params)
-    : partition_handler_(std::move(partition_handler)),
+    std::unique_ptr<visualization::AgentVisualizationHandler>
+        agent_visualization_handler,
+    std::vector<std::unique_ptr<visualization::GridVisualizationHandler>>
+        &grid_visualization_handlers)
+    : params_(params),
+      partition_handler_(std::move(partition_handler)),
       learning_handler_(std::move(learning_handler)),
-      params_(params),
+      agent_visualization_handler_(std::move(agent_visualization_handler)),
       new_sample_buffer_count_(0) {
+  for (int i = 0; i < grid_visualization_handlers.size(); ++i) {
+    grid_visualization_handlers_[grid_visualization_handlers[i]->GetName()] =
+        std::move(grid_visualization_handlers[i]);
+  }
   agent_location_subscriber_ =
       nh.subscribe("agent_location_channel", 1,
                    &SamplingCore::AgentLocationUpdateCallback, this);
@@ -86,7 +139,14 @@ SamplingCore::SamplingCore(
 }
 
 bool SamplingCore::Loop() {
-  if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
+  if (!updated_mean_prediction_.is_initialized() ||
+      !updated_var_prediction_.is_initialized()) {
+    if (!InitializeModelAndPrediction()) {
+      ROS_WARN_STREAM("Failed to initialize model and prediction!");
+      ROS_WARN_STREAM("Retry --- --- ---");
+      return false;
+    }
+  } else if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
@@ -129,7 +189,50 @@ bool SamplingCore::SampleToSrv(
   return true;
 }
 
-bool InitializeModelAndPrediction() { return false; }
+bool SamplingCore::InitializeModelAndPrediction() {
+  sampling_msgs::AddSampleToModel add_sample_srv;
+  add_sample_srv.request.positions.reserve(params_.initial_measurements.size());
+  add_sample_srv.request.measurements.reserve(
+      params_.initial_measurements.size());
+  for (int i = 0; i < params_.initial_measurements.size(); ++i) {
+    add_sample_srv.request.measurements.push_back(
+        params_.initial_measurements(i));
+    geometry_msgs::Point position;
+    position.x = params_.initial_locations(i, 0);
+    position.y = params_.initial_locations(i, 1);
+    add_sample_srv.request.positions.push_back(position);
+  }
+
+  if (modeling_add_sample_client_.call(add_sample_srv) &&
+      add_sample_srv.response.success) {
+    new_sample_buffer_count_ += sample_buffer_.size();
+    sample_buffer_.clear();
+  } else {
+    ROS_ERROR_STREAM("Model add initial samples failed!");
+    return false;
+  }
+
+  std_srvs::Trigger update_model_srv;
+  if (modeling_update_model_client_.call(update_model_srv) &&
+      update_model_srv.response.success) {
+    return true;
+  } else {
+    ROS_ERROR_STREAM("Model initial update failed!");
+    return false;
+  }
+
+  sampling_msgs::ModelPredict srv;
+  if (modeling_predict_client_.call(srv) && srv.response.success) {
+    updated_mean_prediction_ = boost::make_optional(srv.response.mean);
+    updated_var_prediction_ = boost::make_optional(srv.response.var);
+    return true;
+  } else {
+    ROS_ERROR_STREAM("Model initial prediction failed!");
+    return false;
+  }
+
+  return false;
+}
 
 bool SamplingCore::UpdateModel() {
   if (new_sample_buffer_count_ < params_.model_update_frequency_count)

@@ -12,6 +12,8 @@
 #include "sampling_msgs/SamplingGoal.h"
 #include "sampling_online_learning/online_learning_handler.h"
 #include "sampling_partition/weighted_voronoi_partition.h"
+#include "sampling_visualization/agent_visualization_handler.h"
+#include "sampling_visualization/grid_visualization_handler.h"
 
 namespace sampling {
 namespace core {
@@ -31,10 +33,13 @@ class SamplingCore {
 
  private:
   SamplingCore(
-      ros::NodeHandle &nh,
+      ros::NodeHandle &nh, const SamplingCoreParams &params,
       std::unique_ptr<partition::WeightedVoronoiPartition> partition_handler,
       std::unique_ptr<learning::OnlineLearningHandler> learning_handler,
-      const SamplingCoreParams &params);
+      std::unique_ptr<visualization::AgentVisualizationHandler>
+          agent_visualization_handler,
+      std::vector<std::unique_ptr<visualization::GridVisualizationHandler>>
+          &grid_visualization_handlers);
 
   SamplingCoreParams params_;
 
@@ -61,6 +66,13 @@ class SamplingCore {
   std::unique_ptr<learning::OnlineLearningHandler> learning_handler_;
 
   // Visualization
+  std::unique_ptr<visualization::AgentVisualizationHandler>
+      agent_visualization_handler_;
+
+  std::unordered_map<std::string,
+                     std::unique_ptr<visualization::GridVisualizationHandler>>
+      grid_visualization_handlers_;
+
   void AgentLocationUpdateCallback(
       const sampling_msgs::AgentLocationConstPtr &msg);
 
