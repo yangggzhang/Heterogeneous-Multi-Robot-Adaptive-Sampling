@@ -29,7 +29,7 @@ class SamplingCoreParams {
 
   Eigen::VectorXd ground_truth_measurements;
 
-  bool have_groundtruth_measurement;
+  bool has_groundtruth_measurement;
 
   Eigen::MatrixXd initial_locations;
 

@@ -1,0 +1,101 @@
+#Configuation for heterogeneous adaptive sampling
+
+#agents
+agent_ids: ["jackal0", "jackal1"]
+
+# data
+random_initialization: true
+test_location_file: "wifi_2_routers.txt"
+groundtruth_measurement_file: "wifi_2_routers.txt"
+
+# Model Update
+model_update_frequency_count: 1
+
+
+# learning parameter
+learning_parameters:
+  - convergence_threshold: 0.1
+    max_iteration: 100
+    model_update_rate: 1
+
+# Gaussian Process Mixture Model parameter:
+model_parameters:
+  - is_gt: 0
+    num_gaussian: 3
+    param0: [ 0.5, 0.5, 0.1]
+    param1: [ 0.5, 0.5, 0.1]
+    param2: [ 0.5, 0.5, 0.1]
+    max_iteration: 100
+    eps: 0.1
+    map_scale : 1000000.0
+  - is_gt: 1
+    num_gaussian: 3
+    param0: [ 0.5, 0.5, 0.1]
+    param1: [ 0.5, 0.5, 0.1]
+    param2: [ 0.5, 0.5, 0.1]
+    max_iteration: 100
+    eps: 0.1
+    gp_params:
+      - param: [ 0.5, 0.5, 0.1]
+      - param: [ 0.5, 0.5, 0.1]
+      - param: [ 0.5, 0.5, 0.1]
+    map_scale : 1000000.0  
+
+# sampling parameter
+sampling_parameters:
+  - heuristic_mode : 0
+    Jackal_id: "Jackal"
+    Pelican_id: "Pelican"
+    scale_factor: [1.0, 0.5]
+    variable_coeff: 0.5
+
+# visualization
+visualization_parameters:
+  - map_frame: "gt" 
+    map_id: 0
+    x_scale: 0.5
+    y_scale: 1.0
+    x_offset: 0.0
+    y_offset: 0.0
+    lower_bound: -2.5
+    upper_bound: 15.0
+  - map_frame: "mean"
+    map_id: 1
+    x_scale: 1.0
+    y_scale: 1.0
+    x_offset: 0.0
+    y_offset: 0.0
+    lower_bound: -1.0
+    upper_bound: 17.5
+  - map_frame: "variance"
+    map_id: 2
+    x_scale: 1.0
+    y_scale: 1.0
+    x_offset: 75.0
+    y_offset: 0.0
+    lower_bound: 0.0
+    upper_bound: 0.5
+  # - map_frame: "raw"
+  #   map_id: 3
+  #   x_scale: 2.5
+  #   y_scale: 5.0
+  #   x_offset: -75.0
+  #   y_offset: 0.0
+  #   lower_bound: -2.5
+  #   upper_bound: 15.0
+  - map_frame: "Jackal" 
+    map_id: 4
+    x_scale: 2.5
+    y_scale: 2.5
+    x_offset: 0.0
+    y_offset: 0.0
+    lower_bound: -2.5
+    upper_bound: 15.0
+  - map_frame: "Pelican" 
+    map_id: 5
+    x_scale: 2.5
+    y_scale: 2.5
+    x_offset: 0.0
+    y_offset: 0.0
+    lower_bound: -2.5
+    upper_bound: 15.0

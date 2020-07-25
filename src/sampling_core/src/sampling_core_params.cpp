@@ -20,6 +20,11 @@ namespace core {
 SamplingCoreParams::SamplingCoreParams() {}
 
 bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
+  if (!ph.getParam("agent_ids", agent_ids)) {
+    ROS_ERROR_STREAM("Please provide agent ids for sampling task!");
+    return false;
+  }
+
   std::string test_location_file;
   if (!ph.getParam("test_location_file", test_location_file)) {
     ROS_ERROR_STREAM("Please provide test locations for sampling task!");
@@ -35,18 +40,20 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
 
   MatrixToMsg(test_locations, test_locations_msg);
 
-  if (!ph.getParam("agent_ids", agent_ids)) {
-    ROS_ERROR_STREAM("Please provide agent ids for sampling task!");
-    return false;
-  }
-
   std::string groundtruth_measurement_file;
   if (!ph.getParam("groundtruth_measurement_file",
                    groundtruth_measurement_file)) {
     ROS_WARN_STREAM(
         "Ground truth meansurement file is NOT provided! Please provide "
         "samples for model initialization!");
-    have_groundtruth_measurement = false;
+    has_groundtruth_measurement = false;
+  }
+  has_groundtruth_measurement = true;
+
+  bool random_initialization;
+  ph.param<bool>("random_initialization", random_initialization, true);
+
+  if (!has_groundtruth_measurement || !random_initialization) {
     std::string initial_measurement_file;
     if (!ph.getParam("initial_measurement_file", initial_measurement_file)) {
       ROS_ERROR_STREAM(
@@ -76,6 +83,10 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
       ROS_ERROR_STREAM("Initial locations and measurements do NOT match!");
       return false;
     }
+  } else if (!has_groundtruth_measurement && random_initialization) {
+    ROS_ERROR_STREAM(
+        "Please provide ground truth data for random initialization!");
+    return false;
   } else {
     int initial_sample_size =
         std::max(KInitSampleSize,
@@ -91,7 +102,6 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
     for (int i = 0; i < initial_sample_size; ++i) {
       random_initial_index.push_back(index_vec[i]);
     }
-
     if (!utils::ExtractRows(test_locations, random_initial_index,
                             initial_locations)) {
       ROS_ERROR_STREAM("Failed to generate initial locations for sampling!");
@@ -106,8 +116,6 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
     }
   }
 
-  have_groundtruth_measurement = true;
-
   if (!ph.getParam("model_update_frequency_count",
                    model_update_frequency_count)) {
     ROS_WARN_STREAM("Using default model update frequency (count) : "
@@ -117,7 +125,7 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
   }
 
   return true;
-}
+}  // namespace core
 
 bool SamplingCoreParams::LoadMactrix(const std::string &path,
                                      Eigen::MatrixXd &data) {

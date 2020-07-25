@@ -30,7 +30,7 @@ find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 catkin_package(
-   INCLUDE_DIRS include
+   INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
 #  LIBRARIES cmu_swarm
 #  CATKIN_DEPENDS roscpp rospy
 #  DEPENDS system_lib
@@ -52,8 +52,8 @@ add_library(${PROJECT_NAME}
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# add_executable(centralized_sampling_node node/centralized_sampling_node.cpp)
-# target_link_libraries(centralized_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)
+add_executable(heterogeneous_adaptive_sampling_node node/heterogeneous_adaptive_sampling_node.cpp)
+target_link_libraries(heterogeneous_adaptive_sampling_node ${PROJECT_NAME} ${catkin_LIBRARIES} )
 
 # add_executable(gmm_test_node node/gmm_test_node.cpp)
 # target_link_libraries(gmm_test_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${CMAKE_CURRENT_SOURCE_DIR}/libgp/build/libgp.a)

@@ -129,6 +129,7 @@ add_library(${PROJECT_NAME}
   src/sampling_visualization_params.cpp
   src/grid_visualization_handler.cpp
   src/agent_visualization_handler
+  src/sampling_visualization_utils.cpp
 )
 
 ## Add cmake target dependencies of the library
