@@ -63,7 +63,7 @@ std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
       grid_visualization_handlers;
 
   XmlRpc::XmlRpcValue visualization_param_list;
-  if (!ph.getParam("visualization_param_list", visualization_param_list) ||
+  if (!ph.getParam("VisualizationProperty", visualization_param_list) ||
       visualization_param_list.size() == 0) {
     ROS_ERROR_STREAM("No visualization setting is provided!");
     return nullptr;

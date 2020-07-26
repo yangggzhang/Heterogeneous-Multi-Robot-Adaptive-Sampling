@@ -11,6 +11,56 @@ groundtruth_measurement_file: "wifi_2_routers.txt"
 # Model Update
 model_update_frequency_count: 1
 
+# partition parameters
+HeterogeneousProperty:
+  - heterogenities: ["DISTANCE", "SPEED", "BATTERY_LIFE", "TRAVERSABILITY"]
+    weight_factor: [0.25, 0.25, 0.25, 0.25]
+  - agent_id: "jackal0"
+    heterogeneity_primitive: [1.0, 1.0, 1.0, 1.0]
+    number_control_area: 3
+    control_area_center_0: [0.0, 0.0]
+    control_area_radius_0: 0.5
+    control_area_center_1: [0.0, 0.0]
+    control_area_radius_1: 0.5
+    control_area_center_2: [0.0, 0.0]
+    control_area_radius_2: 0.5
+  - agent_id: "jackal1"
+    heterogeneity_primitive: [1.0, 1.0, 1.0, 1.0]
+    number_control_area: 3
+    control_area_center_0: [0.0, 0.0]
+    control_area_radius_0: 0.5
+    control_area_center_1: [0.0, 0.0]
+    control_area_radius_1: 0.5
+    control_area_center_2: [0.0, 0.0]
+    control_area_radius_2: 0.5
+
+#Online Learning Handler
+learning_type: "GREEDY"
+learning_beta: 0.5
+
+#Visualization
+VisualizationProperty:
+  - visualization_type: "LOCATION"
+    name: "AgentLocation"
+    offset: [0.0, 0.0]
+    scale: [1.0, 1.0]
+  - visualization_type: ""PARTITION""
+    name: "Partition"
+    offset: [50.0, 0.0]
+    scale: [1.0, 1.0]
+  - visualization_type: ""GRID""
+    name: "PredictionMean"
+    offset: [0.0, 50.0]
+    scale: [1.0, 1.0]
+    bounds: [-1.0, 10.0]
+  - visualization_type: ""GRID""
+    name: "PredictionVariance"
+    offset: [50.0, 50.0]
+    scale: [1.0, 1.0]   
+    bounds: [0.0, 5.0]
+
+
+
 
 # learning parameter
 learning_parameters:

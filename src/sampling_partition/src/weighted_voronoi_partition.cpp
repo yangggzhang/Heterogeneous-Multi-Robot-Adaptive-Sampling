@@ -70,9 +70,9 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
       std::vector<double> point;
       double radius;
       const std::string point_param_name =
-          "control_center_" + std::to_string(j);
+          "control_area_center_" + std::to_string(j);
       const std::string radius_param_name =
-          "control_radius_" + std::to_string(j);
+          "control_area_radius_" + std::to_string(j);
 
       if (!utils::GetParam(agent_heterogeneity_yaml_node, point_param_name,
                            point) ||
