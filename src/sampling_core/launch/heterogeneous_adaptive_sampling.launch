@@ -22,4 +22,6 @@
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
         <rosparam command="load" file="$(find sampling_core)/config/heterogeneous_adaptive_sampling_config.yaml" />
     </node>
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
 </launch>

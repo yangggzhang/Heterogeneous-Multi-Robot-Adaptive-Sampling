@@ -12,8 +12,8 @@
 namespace sampling {
 namespace visualization {
 
-const double KAgentVisualizationScale = 2.5;
-const double KAgentVisualizationHeight = 0.5;
+const double KAgentVisualizationScale = 1.0;
+const double KAgentVisualizationHeight = 1.25;
 const double KVisualizationAgentUpdateRate_hz = 10;
 
 class AgentVisualizationHandler {
