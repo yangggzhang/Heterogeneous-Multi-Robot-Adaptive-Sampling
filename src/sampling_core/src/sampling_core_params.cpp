@@ -30,6 +30,7 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
     ROS_ERROR_STREAM("Please provide test locations for sampling task!");
     return false;
   }
+
   std::string pack_path = ros::package::getPath(KDataPackage);
   std::string test_location_dir = pack_path + "/location/" + test_location_file;
 
@@ -47,8 +48,17 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
         "Ground truth meansurement file is NOT provided! Please provide "
         "samples for model initialization!");
     has_groundtruth_measurement = false;
+  } else {
+    std::string groundtruth_measurement_dir =
+        pack_path + "/measurement/" + test_location_file;
+
+    if (!LoadVector(groundtruth_measurement_dir, ground_truth_measurements)) {
+      ROS_ERROR_STREAM(
+          "Failed to load ground truth measurements for sampling!");
+      return false;
+    }
+    has_groundtruth_measurement = true;
   }
-  has_groundtruth_measurement = true;
 
   bool random_initialization;
   ph.param<bool>("random_initialization", random_initialization, true);
@@ -96,17 +106,18 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
       index_vec.push_back(i);
     // using built-in random generator:
     std::random_shuffle(index_vec.begin(), index_vec.end());
-
     std::vector<int> random_initial_index;
     random_initial_index.reserve(initial_sample_size);
     for (int i = 0; i < initial_sample_size; ++i) {
       random_initial_index.push_back(index_vec[i]);
     }
+
     if (!utils::ExtractRows(test_locations, random_initial_index,
                             initial_locations)) {
       ROS_ERROR_STREAM("Failed to generate initial locations for sampling!");
       return false;
     }
+
     MatrixToMsg(initial_locations, initial_locations_msg);
 
     if (!utils::ExtractVec(ground_truth_measurements, random_initial_index,
@@ -132,7 +143,7 @@ bool SamplingCoreParams::LoadMactrix(const std::string &path,
   std::ifstream file(path.c_str(), std::ifstream::in);
 
   if (!file.is_open()) {
-    ROS_INFO_STREAM("Error opening file" << path);
+    ROS_INFO_STREAM("Error opening file " << path);
     return false;
   }
 
