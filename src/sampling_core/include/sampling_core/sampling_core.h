@@ -102,9 +102,9 @@ class SamplingCore {
   bool AssignSamplingGoal(sampling_msgs::SamplingGoal::Request &req,
                           sampling_msgs::SamplingGoal::Response &res);
 
-  boost::optional<std::vector<double>> updated_mean_prediction_;
+  std::vector<double> updated_mean_prediction_;
 
-  boost::optional<std::vector<double>> updated_var_prediction_;
+  std::vector<double> updated_var_prediction_;
 
   bool is_initialized_;
 };

@@ -20,6 +20,7 @@ const std::string KPredictionMeanMapName = "PredictionMean";
 const std::string KPredictionVarianceMapName = "PredictionVariance";
 
 const std::string KVisualizationNamespace = "/sampling_visualization/";
+const std::string KVisualizationFrame = "sampling_visualization";
 
 const double KVisualizationUpdateRate_hz = 1.0;
 

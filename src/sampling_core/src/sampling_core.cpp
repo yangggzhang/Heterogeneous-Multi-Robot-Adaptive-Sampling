@@ -134,12 +134,20 @@ SamplingCore::SamplingCore(
 }
 
 bool SamplingCore::Loop() {
-  if (!is_initialized_ && !Initialize()) {
-    ROS_WARN_STREAM("Failed to initialize sampling core!");
-    ROS_WARN_STREAM("Retry --- --- ---");
-    return false;
+  if (!is_initialized_) {
+    ROS_INFO_STREAM("Sampling core is starting up!");
+    if (!Initialize()) {
+      ROS_WARN_STREAM("Failed to initialize sampling core!");
+      ROS_WARN_STREAM("Retry --- --- ---");
+      return false;
+    } else {
+      ROS_INFO_STREAM("Sampling core is initialized!");
+      is_initialized_ = true;
+      return true;
+    }
   }
   if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
+    ROS_INFO_STREAM("Loop" << 1 << " ??????????");
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
@@ -196,10 +204,7 @@ bool SamplingCore::Initialize() {
       return false;
     }
   }
-
   if (!InitializeModelAndPrediction()) return false;
-  ROS_INFO_STREAM("Sampling core is initialized!");
-  is_initialized_ = true;
   return true;
 }
 
@@ -227,7 +232,7 @@ bool SamplingCore::InitializeModelAndPrediction() {
 
   if (modeling_add_sample_client_.call(add_sample_srv) &&
       add_sample_srv.response.success) {
-    new_sample_buffer_count_ += sample_buffer_.size();
+    new_sample_buffer_count_ = 0;
     sample_buffer_.clear();
   } else {
     ROS_ERROR_STREAM("Model add initial samples failed!");
@@ -235,10 +240,8 @@ bool SamplingCore::InitializeModelAndPrediction() {
   }
 
   std_srvs::Trigger update_model_srv;
-  if (modeling_update_model_client_.call(update_model_srv) &&
-      update_model_srv.response.success) {
-    return true;
-  } else {
+  if (!modeling_update_model_client_.call(update_model_srv) ||
+      !update_model_srv.response.success) {
     ROS_ERROR_STREAM("Model initial update failed!");
     return false;
   }
@@ -246,15 +249,13 @@ bool SamplingCore::InitializeModelAndPrediction() {
   sampling_msgs::ModelPredict predict_srv;
   if (modeling_predict_client_.call(predict_srv) &&
       predict_srv.response.success) {
-    updated_mean_prediction_ = boost::make_optional(predict_srv.response.mean);
-    updated_var_prediction_ = boost::make_optional(predict_srv.response.var);
-    return true;
+    updated_mean_prediction_ = predict_srv.response.mean;
+    updated_var_prediction_ = predict_srv.response.var;
   } else {
     ROS_ERROR_STREAM("Model initial prediction failed!");
     return false;
   }
-
-  return false;
+  return true;
 }
 
 bool SamplingCore::UpdateModel() {
@@ -281,13 +282,14 @@ bool SamplingCore::UpdateModel() {
       return false;
     }
   }
+  return false;
 }
 
 bool SamplingCore::UpdatePrediction() {
   sampling_msgs::ModelPredict srv;
   if (modeling_predict_client_.call(srv) && srv.response.success) {
-    updated_mean_prediction_ = boost::make_optional(srv.response.mean);
-    updated_var_prediction_ = boost::make_optional(srv.response.var);
+    updated_mean_prediction_ = srv.response.mean;
+    updated_var_prediction_ = srv.response.var;
     return true;
   }
   return false;
@@ -305,27 +307,28 @@ bool SamplingCore::UpdateVisualization() {
     ROS_ERROR_STREAM("Failed to update robot location visualization");
     return false;
   }
+
   for (std::unordered_map<
            std::string,
            std::unique_ptr<visualization::GridVisualizationHandler>>::iterator
            it = grid_visualization_handlers_.begin();
        it != grid_visualization_handlers_.end(); ++it) {
-    if (visualization::KPartitionMapName.compare(it->first) == 0) {
-      if (!updated_mean_prediction_.is_initialized()) {
+    if (visualization::KPredictionMeanMapName.compare(it->first) == 0) {
+      if (updated_mean_prediction_.empty()) {
         ROS_ERROR_STREAM(
             "Prediction Mean for visualization update is not ready yet!");
         return false;
       }
-      it->second->UpdateMarker(updated_mean_prediction_.get());
-    } else if (visualization::KPredictionMeanMapName.compare(it->first) == 0) {
-      if (!updated_var_prediction_.is_initialized()) {
+      it->second->UpdateMarker(updated_mean_prediction_);
+    } else if (visualization::KPredictionVarianceMapName.compare(it->first) ==
+               0) {
+      if (updated_var_prediction_.empty()) {
         ROS_ERROR_STREAM(
             "Prediction Variance for visualization update is not ready yet!");
         return false;
       }
-      it->second->UpdateMarker(updated_var_prediction_.get());
-    } else if (visualization::KPredictionVarianceMapName.compare(it->first) ==
-               0) {
+      it->second->UpdateMarker(updated_var_prediction_);
+    } else if (visualization::KPartitionMapName.compare(it->first) == 0) {
       std::vector<sampling_msgs::AgentLocation> agent_locations;
       agent_locations.reserve(params_.agent_ids.size());
       for (const std::string &agent_id : params_.agent_ids) {
@@ -336,6 +339,7 @@ bool SamplingCore::UpdateVisualization() {
           agent_locations.push_back(agents_locations_[agent_id]);
         }
       }
+
       std::vector<int> partition_index;
       if (!partition_handler_->ComputePartitionForMap(agent_locations,
                                                       partition_index)) {
@@ -349,19 +353,21 @@ bool SamplingCore::UpdateVisualization() {
       return false;
     }
   }
+
   return true;
 }
 
 bool SamplingCore::AssignSamplingGoal(
     sampling_msgs::SamplingGoal::Request &req,
     sampling_msgs::SamplingGoal::Response &res) {
-  if (!updated_mean_prediction_.is_initialized() ||
-      !updated_var_prediction_.is_initialized()) {
+  if (!is_initialized_ || updated_mean_prediction_.empty() ||
+      updated_var_prediction_.empty()) {
     ROS_WARN_STREAM("Unable to assign sampling goal to : "
                     << req.agent_location.agent_id
                     << " due to environment not updated!");
     return false;
   }
+
   std::vector<sampling_msgs::AgentLocation> agent_locations;
   agent_locations.reserve(params_.agent_ids.size());
   for (const std::string &agent_id : params_.agent_ids) {
@@ -372,11 +378,17 @@ bool SamplingCore::AssignSamplingGoal(
       agent_locations.push_back(agents_locations_[agent_id]);
     }
   }
+
   std::vector<int> partition_index;
   if (!partition_handler_->ComputePartitionForAgent(
           req.agent_location.agent_id, agent_locations, partition_index)) {
     ROS_ERROR_STREAM("Failed to generate partition for "
                      << req.agent_location.agent_id);
+    return false;
+  }
+  if (partition_index.empty()) {
+    ROS_WARN_STREAM("Agent : " << req.agent_location.agent_id
+                               << " does NOT belong to any partition");
     return false;
   }
 
@@ -387,10 +399,11 @@ bool SamplingCore::AssignSamplingGoal(
                      << req.agent_location.agent_id);
     return false;
   }
+
   std::vector<double> mean =
-      utils::Extract(updated_mean_prediction_.get(), partition_index);
+      utils::Extract(updated_mean_prediction_, partition_index);
   std::vector<double> var =
-      utils::Extract(updated_var_prediction_.get(), partition_index);
+      utils::Extract(updated_var_prediction_, partition_index);
 
   geometry_msgs::Point informative_point;
 
@@ -400,6 +413,7 @@ bool SamplingCore::AssignSamplingGoal(
                      << req.agent_location.agent_id);
     return false;
   }
+
   res.target_position = informative_point;
 
   return true;

@@ -28,6 +28,7 @@ bool OnlineLearningHandler::InformativeSelection(
     ROS_ERROR_STREAM("Informative point selection data does NOT match!");
     return false;
   }
+
   if (KLearningType_Greedy.compare(learning_type_) == 0) {
     double max_variance = 0.0;
     int max_variance_index = 0;
@@ -37,8 +38,10 @@ bool OnlineLearningHandler::InformativeSelection(
         max_variance_index = i;
       }
     }
+
     informative_point.x = locations(max_variance_index, 0);
     informative_point.y = locations(max_variance_index, 1);
+
     return true;
   } else if (KLearningType_UCB.compare(learning_type_) == 0) {
     Eigen::VectorXd utility = Eigen::VectorXd(location_size);

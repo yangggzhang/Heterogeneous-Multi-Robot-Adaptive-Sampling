@@ -136,6 +136,12 @@ bool WeightedVoronoiPartition::ComputePartitionForAgent(
           cost_map.col(i).array() + heterogeneity_cost.array();
     }
   }
+  for (int i = 0; i < map_.rows(); ++i) {
+    Eigen::MatrixXd::Index index;
+    cost_map.row(i).minCoeff(&index);
+    if (agent_id.compare(location[(int)index].agent_id) == 0)
+      partition_index.push_back((int)index);
+  }
   return true;
 }
 

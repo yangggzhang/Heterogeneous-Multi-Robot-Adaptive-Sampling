@@ -2,7 +2,7 @@
   <arg name="use_sim_time" default="true" />
   <arg name="gui" default="true" />
   <arg name="headless" default="false" />
-  <arg name="world_name" default="$(find simulation_gazebo_world)/worlds/scenario1.world" />
+  <arg name="world_name" default="$(find sampling_gazebo_simulation)/worlds/scenario1.world" />
 
   <!-- jackal config -->
   <arg name="jackal_config" default="front_laser" />
@@ -15,7 +15,7 @@
   <arg name="hector0_position_z" default="1.2" />
 
   <!-- Launch Gazebo with the specified world -->
-  <include file="$(find simulation_gazebo_world)/launch/sampling_world.launch">
+  <include file="$(find sampling_gazebo_simulation)/launch/sampling_world.launch">
     <arg name="gui" value="$(arg gui)" />
     <arg name="use_sim_time" value="$(arg use_sim_time)" />
     <arg name="headless" value="$(arg headless)" />
@@ -43,7 +43,7 @@
   </include>
 
   <!-- Spawn Hector0. -->
-  <include file="$(find simulation_gazebo_world)/launch/spawn_hector.launch">
+  <include file="$(find sampling_gazebo_simulation)/launch/spawn_hector.launch">
     <arg name="ns"  value="hector0"/>
     <arg name="x" value="$(arg hector0_position_x)"/>
     <arg name="y" value="$(arg hector0_position_y)"/>

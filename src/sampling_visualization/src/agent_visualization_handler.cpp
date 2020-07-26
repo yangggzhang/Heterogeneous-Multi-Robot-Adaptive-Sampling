@@ -19,16 +19,17 @@ AgentVisualizationHandler::MakeUniqueFromXML(
   double map_center_y = map.col(1).mean();
 
   visualization_msgs::Marker marker;
-  marker.header.frame_id = params.name;
+  marker.header.frame_id = KVisualizationFrame;
   marker.header.stamp = ros::Time::now();
   marker.ns = KVisualizationNamespace;
-  marker.pose.orientation.w = 0.0;
+  marker.pose.orientation.w = 1.0;
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = 0;
-  marker.type = visualization_msgs::Marker::SPHERE;
+  marker.type = visualization_msgs::Marker::SPHERE_LIST;
   marker.scale.x = KAgentVisualizationScale;
   marker.scale.y = KAgentVisualizationScale;
   marker.scale.z = 1.0;
+  marker.color.a = 1.0;
 
   SamplingVisualizationUtils utils;
 

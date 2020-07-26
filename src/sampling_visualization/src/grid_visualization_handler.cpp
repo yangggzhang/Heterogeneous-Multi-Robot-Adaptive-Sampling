@@ -17,10 +17,10 @@ GridVisualizationHandler::MakeUniqueFromXML(
   double map_center_y = map.col(1).mean();
 
   visualization_msgs::Marker marker;
-  marker.header.frame_id = params.name;
+  marker.header.frame_id = KVisualizationFrame;
   marker.header.stamp = ros::Time::now();
   marker.ns = KVisualizationNamespace;
-  marker.pose.orientation.w = 0.0;
+  marker.pose.orientation.w = 1.0;
   marker.action = visualization_msgs::Marker::ADD;
   marker.id = 0;
   marker.type = visualization_msgs::Marker::CUBE_LIST;
@@ -63,15 +63,22 @@ GridVisualizationHandler::GridVisualizationHandler(
 bool GridVisualizationHandler::UpdateMarker(
     const std::vector<double> &marker_value) {
   if (KVisualizationType_Grid.compare(params_.visualization_type) != 0) {
-    ROS_ERROR_STREAM("Wrong data type for visualization update!");
+    ROS_ERROR_STREAM("Wrong data type for visualization update! ?????????? "
+                     << params_.visualization_type);
     return false;
   } else if (marker_value.size() != marker_.points.size()) {
     ROS_ERROR_STREAM("Visualization data size does not match!");
     return false;
   }
+  for (const double &value : marker_value) {
+    params_.bounds[0] = std::min(params_.bounds[0], value);
+    params_.bounds[1] = std::max(params_.bounds[1], value);
+  }
+  const double value_range = params_.bounds[1] - params_.bounds[0];
   for (int i = 0; i < marker_.points.size(); ++i) {
-    if (!utils_.UpdateColor(marker_value[i], marker_.colors[i])) {
-      ROS_ERROR_STREAM("Invalid visualization data point!");
+    double norm_value = (marker_value[i] - params_.bounds[0]) / value_range;
+    if (!utils_.UpdateColor(norm_value, marker_.colors[i])) {
+      ROS_ERROR_STREAM("Invalid visualization data point!" << norm_value);
       return false;
     }
   }
@@ -81,7 +88,8 @@ bool GridVisualizationHandler::UpdateMarker(
 bool GridVisualizationHandler::UpdateMarker(
     const std::vector<int> &marker_value) {
   if (KVisualizationType_Partition.compare(params_.visualization_type) != 0) {
-    ROS_ERROR_STREAM("Wrong data type for visualization update!");
+    ROS_ERROR_STREAM("Wrong data type for visualization update!"
+                     << params_.visualization_type);
     return false;
   } else if (marker_value.size() != marker_.points.size()) {
     ROS_ERROR_STREAM("Visualization data size does not match!");
@@ -89,7 +97,7 @@ bool GridVisualizationHandler::UpdateMarker(
   }
   for (int i = 0; i < marker_.points.size(); ++i) {
     if (!utils_.UpdateColor(marker_value[i], marker_.colors[i])) {
-      ROS_ERROR_STREAM("Invalid visualization data point!");
+      ROS_ERROR_STREAM("Invalid visualization data point for partition!");
       return false;
     }
   }

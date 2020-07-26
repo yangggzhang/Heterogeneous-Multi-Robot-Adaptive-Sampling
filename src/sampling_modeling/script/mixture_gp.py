@@ -21,7 +21,7 @@ class MixtureGaussianProcess:
     def Expectation(self, pred_mean, pred_var, Y_train, P):
         R = np.zeros((len(Y_train), self.num_gp))
         for i in range(self.num_gp):
-            R[:, i] = norm(loc=pred_mean[:, i], scale=pred_var[:, i]).pdf(Y_train[:,0])
+            R[:, i] = norm(loc=pred_mean[:, i], scale=pred_var[:, i]).pdf(Y_train)
         P = P * R
         P = P / P.sum(axis=1, dtype='float')[:,None]
         P = P + 1e-6
@@ -31,7 +31,7 @@ class MixtureGaussianProcess:
         pred_mean = np.zeros((len(Y_train), self.num_gp))
         pred_var = np.zeros_like(pred_mean)
         for i in range(self.num_gp):
-            pred_mean[:, [i]], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
+            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
         return pred_mean, pred_var
 
     def Optimizate(self, X_train, Y_train, noise, P):
@@ -53,16 +53,16 @@ class MixtureGaussianProcess:
 
     def AddSample(self, X_train, Y_train):
         if self.X_train is None:
-            self.X_train = X_train
-            self.Y_train = Y_train
+            self.X_train = np.asarray(X_train)
+            self.Y_train = np.asarray(Y_train)
             self.P = np.random.random((len(Y_train), self.num_gp))
-            self.P = self.P / self.P.sum(axis=1, dtype='float')[:,None]
+            self.P = self.P / self.P.sum(axis=1, dtype='float')[:, None]
         else:
-            self.X_train = np.v_stack((self.X_train, X_train))
-            self.Y_train = np.v_stack((self.Y_train, Y_train))
+            self.X_train = np.concatenate((self.X_train, X_train), axis=0)
+            self.Y_train = np.concatenate((self.Y_train, Y_train)).reshape(-1)
             new_P = np.random.random((len(Y_train), self.num_gp))
             new_P = new_P / new_P.sum(axis=1, dtype='float')[:,None]
-            self.P = np.v_stack((self.P, new_P))
+            self.P = np.concatenate((self.P, new_P), axis=0)
     
     def FitGatingFunction(self, X_train, P):
         for i in range(self.num_gp):
@@ -87,7 +87,7 @@ class MixtureGaussianProcess:
         pred_mean = np.zeros((X_test.shape[0], self.num_gp))
         pred_var = np.zeros_like(pred_mean)
         for i in range(self.num_gp):
-            pred_mean[:, [i]], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_test, X_train=X_train, Y_train=Y_train, P=P[:, i])
+            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_test, X_train=X_train, Y_train=Y_train, P=P[:, i])
         mean = pred_mean * P
         var = pred_mean * P
         return mean.sum(axis=1), var.sum(axis=1)

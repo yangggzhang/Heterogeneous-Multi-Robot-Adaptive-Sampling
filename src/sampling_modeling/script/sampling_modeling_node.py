@@ -42,7 +42,7 @@ class SamplingModeling(object):
         
     def AddSampleToModel(self, req):
         new_X = np.zeros((len(req.measurements), 2))
-        new_Y = req.measurements
+        new_Y = np.asarray(req.measurements)
         for i in range(len(req.measurements)):
             new_X[i, 0] = req.positions[i].x
             new_X[i, 1] = req.positions[i].y
