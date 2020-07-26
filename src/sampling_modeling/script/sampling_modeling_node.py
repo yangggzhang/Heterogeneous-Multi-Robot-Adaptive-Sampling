@@ -13,20 +13,15 @@ class SamplingModeling(object):
     def __init__(self):
         rospy.init_node('sampling_modeling_node')
         num_gp = rospy.get_param("~num_gp", 3)
-        modeling_kernel_l = rospy.get_param("~modeling_kernel_l", [0.5, 0.5, 0.5])
-        assert num_gp == len(modeling_kernel_l)
-        modeling_kernel_sigma_f = rospy.get_param("~modeling_kernel_sigma_f", [0.5, 0.5, 0.5])
-        assert num_gp == len(modeling_kernel_sigma_f)
-        modeling_kernel_sigma_y = rospy.get_param("~modeling_kernel_sigma_y", [0.1, 0.1, 0.1])
-        assert num_gp == len(modeling_kernel_sigma_y)
-        gating_kernel_l = rospy.get_param("~gating_kernel_l", [0.5, 0.5, 0.5])
-        assert num_gp == len(gating_kernel_l)
-        gating_kernel_sigma_f = rospy.get_param("~gating_kernel_sigma_f", [0.5, 0.5, 0.5])
-        assert num_gp == len(gating_kernel_sigma_f)
-        gating_kernel_sigma_y = rospy.get_param("~gating_kernel_sigma_y", [0.0, 0.0, 0.0])
-        assert num_gp == len(gating_kernel_sigma_y)
-        modeling_gps = [GP(l, sigma_f, sigma_y) for l, sigma_f, sigma_y in zip(modeling_kernel_l, modeling_kernel_sigma_f, modeling_kernel_sigma_y)]
-        gating_gps = [GP(l, sigma_f, sigma_y) for l, sigma_f, sigma_y in zip(gating_kernel_l, gating_kernel_sigma_f, gating_kernel_sigma_y)]
+        modeling_gps = []
+        gating_gps = []
+        for i in range(num_gp):
+            modeling_gp_param = rospy.get_param("~modeling_gp_" + str(i) + "_kernel", [0.5, 0.5, 0.1])
+            gating_gp_param = rospy.get_param("~gating_gp_" + str(i) + "_kernel", [0.5, 0.5, 0.1])
+            assert len(modeling_gp_param) == 3
+            assert len(gating_gp_param) == 3
+            modeling_gps.append(GP(modeling_gp_param[0], modeling_gp_param[1], modeling_gp_param[2]))
+            gating_gps.append(GP(gating_gp_param[0], gating_gp_param[1], gating_gp_param[2]))
         noise_stdev = rospy.get_param("~noise_stdev", 0.1)
         EM_epsilon = rospy.get_param("~EM_epsilon", 0.05)
         EM_max_iteration = rospy.get_param("~EM_max_iteration", 100)
