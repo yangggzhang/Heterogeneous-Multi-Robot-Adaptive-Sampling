@@ -20,12 +20,11 @@ class Heterogeneity {
  public:
   Heterogeneity() = delete;
 
-  static std::unique_ptr<Heterogeneity> MakeUniqueFromParam(
-      const HeterogeneityParams &params, const Eigen::MatrixXd &map);
-
   virtual Eigen::VectorXd CalculateCost(
       const geometry_msgs::Point &agent_position,
-      const Eigen::VectorXd &distance);
+      const Eigen::VectorXd &distance) = 0;
+
+  std::string GetType();
 
  protected:
   Heterogeneity(const HeterogeneityParams &params, const Eigen::MatrixXd &map);

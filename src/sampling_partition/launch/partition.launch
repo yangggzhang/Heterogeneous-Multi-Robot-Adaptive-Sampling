@@ -9,13 +9,13 @@
                 - x: 6.0
                   y: 7.0
             HeterogeneousProperty:
-                - heterogenities: ["DISTANCE"]
-                  weight_factor: [1.0]
+                - heterogenities: ["DISTANCE", "SPEED", "BATTERY_LIFE"]
+                  weight_factor: [1.0, 10.0, 3.0]
                 - agent_id: "jackal0"
-                  heterogeneity_primitive: [1.0]
+                  heterogeneity_primitive: [1.0, 0.1, 3.0]
                   number_control_area: 0
                 - agent_id: "jackal1"
-                  heterogeneity_primitive: [1.0]
+                  heterogeneity_primitive: [1.0, 1.0, 1.0]
                   number_control_area: 0
             VisualizationProperty:
                 - visualization_type: "LOCATION"

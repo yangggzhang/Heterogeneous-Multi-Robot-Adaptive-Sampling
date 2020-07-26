@@ -1,5 +1,8 @@
 #include "sampling_partition/weighted_voronoi_partition.h"
 
+#include "sampling_partition/heterogeneity_distance.h"
+#include "sampling_partition/heterogeneity_distance_dependent.h"
+#include "sampling_partition/heterogeneity_topography_dependent.h"
 #include "sampling_utils/utils.h"
 
 namespace sampling {
@@ -26,8 +29,8 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
   partiton_params.agent_ids =
       std::unordered_set<std::string>(agent_ids.begin(), agent_ids.end());
 
-  std::unordered_map<std::string, std::vector<std::unique_ptr<Heterogeneity>>>
-      heterogeneity_map;
+  std::unordered_map<std::string, std::vector<HeterogeneityParams>>
+      heterogeneity_param_map;
 
   for (int i = 1; i < heterogeneity_param_list.size(); ++i) {
     XmlRpc::XmlRpcValue agent_heterogeneity_yaml_node =
@@ -96,19 +99,32 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
       params.heterogeneity_primitive = heterogeneity_primitive[j];
       params.control_area_center = control_area_center;
       params.control_area_radius = control_area_radius;
-      std::unique_ptr<Heterogeneity> hetero_ptr =
-          Heterogeneity::MakeUniqueFromParam(params, map);
+      std::unique_ptr<Heterogeneity> hetero_ptr = nullptr;
+      if (KHomogeneityDistance.compare(params.heterogeneity_type) == 0)
+        hetero_ptr = std::make_unique<HeterogeneityDistance>(params, map);
+      else if (KHeterogeneitySpeed.compare(params.heterogeneity_type) == 0)
+        hetero_ptr =
+            std::make_unique<HeterogeneityDistanceDepedent>(params, map);
+      else if (KHeterogeneityBatteryLife.compare(params.heterogeneity_type) ==
+               0)
+        hetero_ptr =
+            std::make_unique<HeterogeneityDistanceDepedent>(params, map);
+      else if (KHeterogeneityTraversability.compare(
+                   params.heterogeneity_type) == 0)
+        hetero_ptr =
+            std::make_unique<HeterogeneityTopographyDepedent>(params, map);
+
       if (hetero_ptr == nullptr) {
         ROS_ERROR_STREAM("Error information of heterogeneity : "
                          << params.heterogeneity_type
                          << " for agent : " << agent_id);
         return nullptr;
       }
-      heterogeneity_map[agent_id].push_back(std::move(hetero_ptr));
+      heterogeneity_param_map[agent_id].push_back(params);
     }
   }
-  return std::unique_ptr<WeightedVoronoiPartition>(
-      new WeightedVoronoiPartition(partiton_params, heterogeneity_map, map));
+  return std::unique_ptr<WeightedVoronoiPartition>(new WeightedVoronoiPartition(
+      partiton_params, heterogeneity_param_map, map));
 }
 
 bool WeightedVoronoiPartition::ComputePartitionForAgent(
@@ -180,18 +196,29 @@ bool WeightedVoronoiPartition::ComputePartitionForMap(
 
 WeightedVoronoiPartition::WeightedVoronoiPartition(
     const WeightedVoronoiPartitionParam &params,
-    const std::unordered_map<std::string,
-                             std::vector<std::unique_ptr<Heterogeneity>>>
-        &heterogeneity_map,
+    const std::unordered_map<std::string, std::vector<HeterogeneityParams>>
+        &heterogeneity_param_map,
     const Eigen::MatrixXd &map)
     : params_(params), map_(map) {
   heterogeneity_map_.clear();
-  for (auto it = heterogeneity_map.begin(); it != heterogeneity_map.end();
-       ++it) {
+  for (auto it = heterogeneity_param_map.begin();
+       it != heterogeneity_param_map.end(); ++it) {
     heterogeneity_map_[it->first].reserve(it->second.size());
-    for (const auto &ptr : it->second)
-      heterogeneity_map_[it->first].push_back(
-          std::make_unique<Heterogeneity>(*ptr));
+    for (const auto &param : it->second) {
+      if (KHomogeneityDistance.compare(param.heterogeneity_type) == 0)
+        heterogeneity_map_[it->first].push_back(
+            std::make_unique<HeterogeneityDistance>(param, map));
+      else if (KHeterogeneitySpeed.compare(param.heterogeneity_type) == 0)
+        heterogeneity_map_[it->first].push_back(
+            std::make_unique<HeterogeneityDistanceDepedent>(param, map));
+      else if (KHeterogeneityBatteryLife.compare(param.heterogeneity_type) == 0)
+        heterogeneity_map_[it->first].push_back(
+            std::make_unique<HeterogeneityDistanceDepedent>(param, map));
+      else if (KHeterogeneityTraversability.compare(param.heterogeneity_type) ==
+               0)
+        heterogeneity_map_[it->first].push_back(
+            std::make_unique<HeterogeneityTopographyDepedent>(param, map));
+    }
   }
 }
 

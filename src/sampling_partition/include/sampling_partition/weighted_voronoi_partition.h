@@ -39,9 +39,8 @@ class WeightedVoronoiPartition {
  private:
   WeightedVoronoiPartition(
       const WeightedVoronoiPartitionParam &params,
-      const std::unordered_map<std::string,
-                               std::vector<std::unique_ptr<Heterogeneity>>>
-          &heterogeneity_map,
+      const std::unordered_map<std::string, std::vector<HeterogeneityParams>>
+          &heterogeneity_param_map,
       const Eigen::MatrixXd &map);
 
   Eigen::VectorXd CalculateEuclideanDistance(const geometry_msgs::Point &point,
