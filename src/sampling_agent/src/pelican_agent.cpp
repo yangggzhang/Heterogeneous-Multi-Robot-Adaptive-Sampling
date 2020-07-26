@@ -27,10 +27,7 @@ PelicanAgent::PelicanAgent(ros::NodeHandle &nh, const std::string &agent_id,
 }
 
 std::unique_ptr<PelicanAgent> PelicanAgent::MakeUniqueFromROSParam(
-    ros::NodeHandle &nh) {
-  std::string agent_id;
-  nh.param<std::string>("agent_id", agent_id, "pelican0");
-  ros::NodeHandle ph("~");
+    ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
   PelicanAgentParam params;
   if (!params.LoadFromRosParams(ph)) {
     ROS_ERROR("Failed to load pelican parameters!");

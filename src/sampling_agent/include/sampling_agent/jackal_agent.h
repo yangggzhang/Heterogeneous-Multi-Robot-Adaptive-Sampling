@@ -23,7 +23,8 @@ class JackalAgent : public SamplingAgent {
  public:
   JackalAgent() = delete;
 
-  static std::unique_ptr<JackalAgent> MakeUniqueFromROS(ros::NodeHandle &nh);
+  static std::unique_ptr<JackalAgent> MakeUniqueFromROS(
+      ros::NodeHandle &nh, const std::string &agent_id);
 
  private:
   JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,

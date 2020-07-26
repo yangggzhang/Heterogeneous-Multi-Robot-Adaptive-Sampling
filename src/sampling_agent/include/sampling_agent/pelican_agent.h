@@ -20,7 +20,7 @@ class PelicanAgent : public SamplingAgent {
   PelicanAgent() = delete;
 
   static std::unique_ptr<PelicanAgent> MakeUniqueFromROSParam(
-      ros::NodeHandle &nh);
+      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
 
  private:
   PelicanAgent(ros::NodeHandle &nh, const std::string &agent_id,

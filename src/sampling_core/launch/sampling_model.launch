@@ -1,5 +1,5 @@
 <launch>
-    <!-- <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
+    <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
         <param name="num_gp" value="3"/>
         <param name="noise_stdev" value="0.1"/>
         <param name="EM_epsilon" value="0.05"/>
@@ -17,9 +17,5 @@
             EM_epsilon: 0.05
             EM_max_iteration: 100
         </rosparam>
-    </node> -->
-
-    <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
-        <rosparam command="load" file="$(find sampling_core)/config/heterogeneous_adaptive_sampling_config.yaml" />
     </node>
 </launch>

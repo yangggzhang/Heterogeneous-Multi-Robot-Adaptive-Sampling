@@ -29,23 +29,33 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
   event_timer_ = nh.createTimer(ros::Duration(0.1),
                                 &SamplingAgent::ReportLocationCallback, this);
 
-  stop_agent_server_ = nh.advertiseService(
-      "stop_agent_channel", &SamplingAgent::StopAgentService, this);
+  stop_agent_server_ =
+      nh.advertiseService(agent_id_ + "/stop_agent_channel",
+                          &SamplingAgent::StopAgentService, this);
 
-  check_server_ =
-      nh.advertiseService("check", &SamplingAgent::CheckService, this);
+  check_server_ = nh.advertiseService(agent_id_ + "/check",
+                                      &SamplingAgent::CheckService, this);
 
   agent_state_ = IDLE;
 }
 
 std::unique_ptr<SamplingAgent> SamplingAgent::MakeUniqueFromROS(
-    ros::NodeHandle &nh, const std::string &agent_type) {
+    ros::NodeHandle &nh, ros::NodeHandle &ph) {
+  std::string agent_type, agent_id;
+  if (!ph.getParam("agent_type", agent_type)) {
+    ROS_ERROR("Please specify sampling agent type!");
+    return nullptr;
+  }
+  if (!ph.getParam("agent_id", agent_id)) {
+    ROS_ERROR("Please specify sampling agent id!");
+    return nullptr;
+  }
   if (agent_type.compare("JACKAL") == 0) {
-    return JackalAgent::MakeUniqueFromROS(nh);
+    return JackalAgent::MakeUniqueFromROS(nh, agent_id);
   } else if (agent_type.compare("PELICAN") == 0) {
-    return PelicanAgent::MakeUniqueFromROSParam(nh);
+    return PelicanAgent::MakeUniqueFromROSParam(nh, ph, agent_id);
   } else if (agent_type.compare("HECTOR") == 0) {
-    return HectorAgent::MakeUniqueFromROSParam(nh);
+    return HectorAgent::MakeUniqueFromROSParam(nh, ph, agent_id);
   } else
     return nullptr;
 }
@@ -93,6 +103,7 @@ bool SamplingAgent::StopAgentService(sampling_msgs::StopAgent::Request &req,
 
 bool SamplingAgent::CheckService(std_srvs::Trigger::Request &req,
                                  std_srvs::Trigger::Response &res) {
+  ROS_INFO_STREAM("Agent : " + agent_id_ << " received check!");
   res.success = true;
   res.message = "Agent : " + agent_id_ + "is ready!";
   return true;

@@ -32,9 +32,7 @@ JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
 }
 
 std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROS(
-    ros::NodeHandle &nh) {
-  std::string agent_id;
-  nh.param<std::string>("agent_id", agent_id, "jackal0");
+    ros::NodeHandle &nh, const std::string &agent_id) {
   std::unique_ptr<JackalNavigator> jackal_navigator =
       std::unique_ptr<JackalNavigator>(
           new JackalNavigator(agent_id + "/move_base", true));

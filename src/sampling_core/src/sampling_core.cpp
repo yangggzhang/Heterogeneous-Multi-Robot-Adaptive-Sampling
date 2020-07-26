@@ -190,6 +190,7 @@ bool SamplingCore::SampleToSrv(
 bool SamplingCore::Initialize() {
   for (int i = 0; i < params_.agent_ids.size(); ++i) {
     std_srvs::Trigger srv;
+    ros::spinOnce();
     if (!agent_check_clients_[i].call(srv)) {
       ROS_ERROR_STREAM("Failed to connect : " << params_.agent_ids[i]);
       return false;
@@ -197,6 +198,7 @@ bool SamplingCore::Initialize() {
   }
 
   if (!InitializeModelAndPrediction()) return false;
+  ROS_INFO_STREAM("Sampling core is initialized!");
   is_initialized_ = true;
   return true;
 }

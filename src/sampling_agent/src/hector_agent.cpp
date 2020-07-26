@@ -21,13 +21,8 @@ HectorAgent::HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
 }
 
 std::unique_ptr<HectorAgent> HectorAgent::MakeUniqueFromROSParam(
-    ros::NodeHandle &nh) {
-  std::string agent_id;
-  nh.param<std::string>("agent_id", agent_id, "hector0");
-
-  ros::NodeHandle ph("~");
+    ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
   HectorAgentParam params;
-
   if (!params.LoadFromRosParams(ph)) {
     ROS_ERROR("Failed to load parameters for hector agent!");
     return nullptr;

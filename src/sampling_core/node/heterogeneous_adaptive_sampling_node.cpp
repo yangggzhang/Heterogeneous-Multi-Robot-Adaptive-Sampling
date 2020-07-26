@@ -11,10 +11,13 @@ int main(int argc, char **argv) {
     ROS_ERROR_STREAM("Failed to launch heterogeneous adaptive sampling!");
     return -1;
   }
+
+  ros::AsyncSpinner spinner(0);
+  spinner.start();
+
   ros::Rate loop_rate(10);
   while (ros::ok()) {
     sampling_core->Loop();
-    ros::spinOnce();
     loop_rate.sleep();
   }
   return 0;

@@ -16,7 +16,7 @@ class HectorAgent : public SamplingAgent {
   HectorAgent() = delete;
 
   static std::unique_ptr<HectorAgent> MakeUniqueFromROSParam(
-      ros::NodeHandle &nh);
+      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
 
  private:
   HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
