@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import numpy as np
 import rospy
-from mixtureGP import MixtureGaussianProcess
+from mixture_gp import MixtureGaussianProcess
+from gp import GP
 from sampling_msgs.srv import AddSampleToModel, AddSampleToModelResponse, AddTestPositionToModel, AddTestPositionToModelResponse, ModelPredict, ModelPredictResponse
 from std_srvs.srv import Trigger, TriggerResponse
 from geometry_msgs.msg import Point
@@ -12,10 +13,24 @@ class SamplingModeling(object):
     def __init__(self):
         rospy.init_node('sampling_modeling_node')
         num_gp = rospy.get_param("~num_gp", 3)
+        modeling_kernel_l = rospy.get_param("~modeling_kernel_l", [0.5, 0.5, 0.5])
+        assert num_gp == len(modeling_kernel_l)
+        modeling_kernel_sigma_f = rospy.get_param("~modeling_kernel_sigma_f", [0.5, 0.5, 0.5])
+        assert num_gp == len(modeling_kernel_sigma_f)
+        modeling_kernel_sigma_y = rospy.get_param("~modeling_kernel_sigma_y", [0.1, 0.1, 0.1])
+        assert num_gp == len(modeling_kernel_sigma_y)
+        gating_kernel_l = rospy.get_param("~gating_kernel_l", [0.5, 0.5, 0.5])
+        assert num_gp == len(gating_kernel_l)
+        gating_kernel_sigma_f = rospy.get_param("~gating_kernel_sigma_f", [0.5, 0.5, 0.5])
+        assert num_gp == len(gating_kernel_sigma_f)
+        gating_kernel_sigma_y = rospy.get_param("~gating_kernel_sigma_y", [0.0, 0.0, 0.0])
+        assert num_gp == len(gating_kernel_sigma_y)
+        modeling_gps = [GP(l, sigma_f, sigma_y) for l, sigma_f, sigma_y in zip(modeling_kernel_l, modeling_kernel_sigma_f, modeling_kernel_sigma_y)]
+        gating_gps = [GP(l, sigma_f, sigma_y) for l, sigma_f, sigma_y in zip(gating_kernel_l, gating_kernel_sigma_f, gating_kernel_sigma_y)]
         noise_stdev = rospy.get_param("~noise_stdev", 0.1)
         EM_epsilon = rospy.get_param("~EM_epsilon", 0.05)
         EM_max_iteration = rospy.get_param("~EM_max_iteration", 100)
-        self.model = MixtureGaussianProcess(num_gp=num_gp, noise=noise_stdev, epsilon=EM_epsilon, max_iter=EM_max_iteration)
+        self.model = MixtureGaussianProcess(num_gp=num_gp, gps=modeling_gps, gating_gps=gating_gps, noise=noise_stdev, epsilon=EM_epsilon, max_iter=EM_max_iteration)
         self.X_test = None
         self.add_test_position_server = rospy.Service(KModelingNameSpace + 'add_test_position', AddTestPositionToModel, self.AddTestPosition)
         self.add_sample_server = rospy.Service(KModelingNameSpace + 'add_samples_to_model', AddSampleToModel, self.AddSampleToModel)
