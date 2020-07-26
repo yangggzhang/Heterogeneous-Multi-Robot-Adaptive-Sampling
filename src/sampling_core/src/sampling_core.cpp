@@ -12,29 +12,9 @@ namespace core {
 std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
     ros::NodeHandle &nh, ros::NodeHandle &ph) {
   SamplingCoreParams params;
+
   if (!params.LoadFromRosParams(ph)) {
     ROS_ERROR_STREAM("Failed to load core parameters for the sampling task!");
-    return nullptr;
-  }
-
-  // for (const std::string &agent_id : params.agent_ids) {
-  //   ros::ServiceClient agent_check_client =
-  //       nh.serviceClient<std_srvs::Trigger>(agent_id + "/check");
-  //   std_srvs::Trigger srv;
-  //   if (!agent_check_client.call(srv)) {
-  //     ROS_ERROR_STREAM("Failed to connect : " << agent_id);
-  //     return nullptr;
-  //   }
-  // }
-
-  // Modeling
-  ros::ServiceClient modeling_add_test_position_client =
-      nh.serviceClient<std_srvs::Trigger>(KModelingNamespace +
-                                          "add_test_position");
-  sampling_msgs::AddTestPositionToModel srv;
-  srv.request.positions = params.test_locations_msg;
-  if (!modeling_add_test_position_client.call(srv) || !srv.response.success) {
-    ROS_ERROR_STREAM("Failed to connect sampling modeling node!");
     return nullptr;
   }
 
@@ -96,12 +76,15 @@ std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
       }
     }
   }
+
   if (agent_visualization_handler == nullptr) return nullptr;
 
   return std::unique_ptr<SamplingCore>(new SamplingCore(
       nh, params, std::move(partition_ptr), std::move(learning_ptr),
       std::move(agent_visualization_handler), grid_visualization_handlers));
 }
+
+// Constructor
 
 SamplingCore::SamplingCore(
     ros::NodeHandle &nh, const SamplingCoreParams &params,
@@ -115,11 +98,17 @@ SamplingCore::SamplingCore(
       partition_handler_(std::move(partition_handler)),
       learning_handler_(std::move(learning_handler)),
       agent_visualization_handler_(std::move(agent_visualization_handler)),
-      new_sample_buffer_count_(0) {
+      new_sample_buffer_count_(0),
+      is_initialized_(false) {
   for (int i = 0; i < grid_visualization_handlers.size(); ++i) {
     grid_visualization_handlers_[grid_visualization_handlers[i]->GetName()] =
         std::move(grid_visualization_handlers[i]);
   }
+
+  modeling_add_test_location_client_ =
+      nh.serviceClient<sampling_msgs::AddTestPositionToModel>(
+          KModelingNamespace + "add_test_position");
+
   agent_location_subscriber_ =
       nh.subscribe("agent_location_channel", 1,
                    &SamplingCore::AgentLocationUpdateCallback, this);
@@ -136,17 +125,21 @@ SamplingCore::SamplingCore(
 
   sampling_goal_server_ = nh.advertiseService(
       "sampling_goal_channel", &SamplingCore::AssignSamplingGoal, this);
+
+  for (const std::string &agent_id : params.agent_ids) {
+    ros::ServiceClient agent_check_client =
+        nh.serviceClient<std_srvs::Trigger>(agent_id + "/check");
+    agent_check_clients_.push_back(agent_check_client);
+  }
 }
 
 bool SamplingCore::Loop() {
-  if (!updated_mean_prediction_.is_initialized() ||
-      !updated_var_prediction_.is_initialized()) {
-    if (!InitializeModelAndPrediction()) {
-      ROS_WARN_STREAM("Failed to initialize model and prediction!");
-      ROS_WARN_STREAM("Retry --- --- ---");
-      return false;
-    }
-  } else if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
+  if (!is_initialized_ && !Initialize()) {
+    ROS_WARN_STREAM("Failed to initialize sampling core!");
+    ROS_WARN_STREAM("Retry --- --- ---");
+    return false;
+  }
+  if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
@@ -194,7 +187,29 @@ bool SamplingCore::SampleToSrv(
   return true;
 }
 
+bool SamplingCore::Initialize() {
+  for (int i = 0; i < params_.agent_ids.size(); ++i) {
+    std_srvs::Trigger srv;
+    if (!agent_check_clients_[i].call(srv)) {
+      ROS_ERROR_STREAM("Failed to connect : " << params_.agent_ids[i]);
+      return false;
+    }
+  }
+
+  if (!InitializeModelAndPrediction()) return false;
+  is_initialized_ = true;
+  return true;
+}
+
 bool SamplingCore::InitializeModelAndPrediction() {
+  sampling_msgs::AddTestPositionToModel add_location_srv;
+  add_location_srv.request.positions = params_.test_locations_msg;
+  if (!modeling_add_test_location_client_.call(add_location_srv) ||
+      !add_location_srv.response.success) {
+    ROS_ERROR_STREAM("Failed to add test locations to modeling node!");
+    return false;
+  }
+
   sampling_msgs::AddSampleToModel add_sample_srv;
   add_sample_srv.request.positions.reserve(params_.initial_measurements.size());
   add_sample_srv.request.measurements.reserve(
@@ -226,10 +241,11 @@ bool SamplingCore::InitializeModelAndPrediction() {
     return false;
   }
 
-  sampling_msgs::ModelPredict srv;
-  if (modeling_predict_client_.call(srv) && srv.response.success) {
-    updated_mean_prediction_ = boost::make_optional(srv.response.mean);
-    updated_var_prediction_ = boost::make_optional(srv.response.var);
+  sampling_msgs::ModelPredict predict_srv;
+  if (modeling_predict_client_.call(predict_srv) &&
+      predict_srv.response.success) {
+    updated_mean_prediction_ = boost::make_optional(predict_srv.response.mean);
+    updated_var_prediction_ = boost::make_optional(predict_srv.response.var);
     return true;
   } else {
     ROS_ERROR_STREAM("Model initial prediction failed!");

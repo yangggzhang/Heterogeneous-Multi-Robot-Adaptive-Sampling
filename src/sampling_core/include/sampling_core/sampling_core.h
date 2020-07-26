@@ -51,6 +51,8 @@ class SamplingCore {
   std::unordered_map<std::string, sampling_msgs::AgentLocation>
       agents_locations_;
 
+  ros::ServiceClient modeling_add_test_location_client_;
+
   ros::ServiceClient modeling_add_sample_client_;
 
   ros::ServiceClient modeling_update_model_client_;
@@ -58,6 +60,8 @@ class SamplingCore {
   ros::ServiceClient modeling_predict_client_;
 
   ros::ServiceServer sampling_goal_server_;
+
+  std::vector<ros::ServiceClient> agent_check_clients_;
 
   // Partition
   std::unique_ptr<partition::WeightedVoronoiPartition> partition_handler_;
@@ -87,6 +91,8 @@ class SamplingCore {
 
   bool InitializeModelAndPrediction();
 
+  bool Initialize();
+
   bool UpdateModel();
 
   bool UpdatePrediction();
@@ -99,6 +105,8 @@ class SamplingCore {
   boost::optional<std::vector<double>> updated_mean_prediction_;
 
   boost::optional<std::vector<double>> updated_var_prediction_;
+
+  bool is_initialized_;
 };
 }  // namespace core
 }  // namespace sampling

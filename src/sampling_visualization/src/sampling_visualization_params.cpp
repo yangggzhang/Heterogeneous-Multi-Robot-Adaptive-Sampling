@@ -38,7 +38,8 @@ bool SamplingVisualizationParams::LoadFromXML(
 
   if (!utils::GetParam(yaml_node, "bounds", bounds) ||
       bounds.size() != KVisualizationDimension) {
-    ROS_WARN_STREAM("Error loading scale for sampling visualization!");
+    ROS_WARN_STREAM("Error loading bounds for sampling visualization " << name
+                                                                       << " !");
     bounds =
         std::vector<double>{KVisualizationLowerBound, KVisualizationUpperBound};
   }

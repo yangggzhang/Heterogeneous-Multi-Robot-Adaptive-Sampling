@@ -49,7 +49,7 @@ template <typename T>
 bool GetParam(const XmlRpc::XmlRpcValue &YamlNode,
               const std::string &param_name, T &data) {
   if (!YamlNode.hasMember(param_name)) {
-    ROS_INFO_STREAM("Missing parameter : " << param_name);
+    ROS_WARN_STREAM("Missing parameter : " << param_name);
     return false;
   } else {
     data = static_cast<T>(YamlNode[param_name]);
@@ -61,7 +61,7 @@ template <typename T>
 bool GetParam(const XmlRpc::XmlRpcValue &YamlNode,
               const std::string &param_name, std::vector<T> &data) {
   if (!YamlNode.hasMember(param_name)) {
-    ROS_INFO_STREAM("Missing parameter : " << param_name);
+    ROS_WARN_STREAM("Missing parameter : " << param_name);
     return false;
   }
   data.reserve(YamlNode[param_name].size());
