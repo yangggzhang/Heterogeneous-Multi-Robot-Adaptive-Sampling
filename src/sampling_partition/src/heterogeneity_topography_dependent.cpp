@@ -22,7 +22,7 @@ HeterogeneityTopographyDepedent::HeterogeneityTopographyDepedent(
     distance_map.col(1).array() = map_.col(1).array() - center.y;
     Eigen::VectorXd distance = distance_map.rowwise().norm();
     for (int j = 0; j < distance.size(); ++j) {
-      if (distance(j) <= params_.control_area_radius[j]) {
+      if (distance(j) <= params_.control_area_radius[i]) {
         topography_cost_(j) = params_.heterogeneity_primitive;
       }
     }

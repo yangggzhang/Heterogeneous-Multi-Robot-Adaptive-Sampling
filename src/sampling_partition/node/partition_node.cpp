@@ -170,6 +170,7 @@ class PartitionNode {
       ROS_ERROR_STREAM("Failed to update agent location visualization!");
       return false;
     }
+
     if (!partition_visualization_handler_->UpdateMarker(partition_index)) {
       ROS_ERROR_STREAM("Failed to update map partition visualization!");
       return false;
