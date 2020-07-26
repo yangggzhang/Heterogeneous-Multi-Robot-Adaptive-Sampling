@@ -44,16 +44,16 @@ VisualizationProperty:
     name: "AgentLocation"
     offset: [0.0, 0.0]
     scale: [1.0, 1.0]
-  - visualization_type: ""PARTITION""
+  - visualization_type: "PARTITION"
     name: "Partition"
     offset: [50.0, 0.0]
     scale: [1.0, 1.0]
-  - visualization_type: ""GRID""
+  - visualization_type: "GRID"
     name: "PredictionMean"
     offset: [0.0, 50.0]
     scale: [1.0, 1.0]
     bounds: [-1.0, 10.0]
-  - visualization_type: ""GRID""
+  - visualization_type: "GRID"
     name: "PredictionVariance"
     offset: [50.0, 50.0]
     scale: [1.0, 1.0]   

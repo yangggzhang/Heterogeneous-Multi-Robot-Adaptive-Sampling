@@ -14,6 +14,11 @@ const std::string KVisualizationType_Grid = "GRID";
 const std::string KVisualizationType_Location = "LOCATION";
 const std::string KVisualizationType_Partition = "PARTITION";
 
+const std::string KAgentLocationMapName = "AgentLocation";
+const std::string KPartitionMapName = "Partition";
+const std::string KPredictionMeanMapName = "PredictionMean";
+const std::string KPredictionVarianceMapName = "PredictionVariance";
+
 const std::string KVisualizationNamespace = "/sampling_visualization/";
 
 const double KVisualizationUpdateRate_hz = 1.0;

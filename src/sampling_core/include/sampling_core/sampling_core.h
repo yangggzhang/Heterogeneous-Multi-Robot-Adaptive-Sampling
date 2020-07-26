@@ -91,6 +91,8 @@ class SamplingCore {
 
   bool UpdatePrediction();
 
+  bool UpdateVisualization();
+
   bool AssignSamplingGoal(sampling_msgs::SamplingGoal::Request &req,
                           sampling_msgs::SamplingGoal::Response &res);
 

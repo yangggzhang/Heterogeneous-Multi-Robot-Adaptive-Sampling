@@ -69,17 +69,17 @@ AgentVisualizationHandler::AgentVisualizationHandler(
 }
 
 bool AgentVisualizationHandler::UpdateMarker(
-    const std::vector<geometry_msgs::Point> &agent_locations) {
+    const std::vector<sampling_msgs::AgentLocation> &agent_locations) {
   if (agent_locations.size() != marker_.points.size()) {
     ROS_ERROR_STREAM("Number of agents for visualization does NOT match!");
     return false;
   }
   for (int i = 0; i < agent_locations.size(); ++i) {
     marker_.points[i].x =
-        (agent_locations[i].x - map_center_x_) * params_.scale[0] +
+        (agent_locations[i].position.x - map_center_x_) * params_.scale[0] +
         params_.offset[0];
     marker_.points[i].y =
-        (agent_locations[i].y - map_center_y_) * params_.scale[1] +
+        (agent_locations[i].position.y - map_center_y_) * params_.scale[1] +
         params_.offset[1];
   }
   return true;

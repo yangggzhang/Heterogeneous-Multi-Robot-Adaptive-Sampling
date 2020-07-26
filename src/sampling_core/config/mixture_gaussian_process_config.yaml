@@ -1,10 +1,11 @@
 num_gp: 3
-modeling_kernel_l: [1.0, 2.0, 3.0]
-modeling_kernel_sigma_f: [5.0, 3.0, 2.0]
-modeling_kernel_sigma_y: [0.15, 0.15, 0.15]
-gating_kernel_l: [1.0, 2.0, 3.0] 
-gating_kernel_sigma_f: [0.5, 0.5, 0.5]
-gating_kernel_sigma_y: [0.0, 0.0, 0.0]
+gating: [1.0, 2.0, 3.0]
+modeling_gp_0_kernel: [5.0, 1.0, 0.1]
+gating_gp_0_kernel: [1.0, 0.5, 0.0]
+modeling_gp_1_kernel: [3.0, 2.0, 0.1]
+gating_gp_1_kernel: [2.0, 0.5, 0.0]
+modeling_gp_2_kernel: [1.0, 3.0, 0.1]
+gating_gp_2_kernel: [3.0, 0.5, 0.0]
 noise_stdev: 0.1
 EM_epsilon: 0.05
 EM_max_iteration: 100

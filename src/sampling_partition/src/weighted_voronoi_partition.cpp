@@ -111,11 +111,37 @@ WeightedVoronoiPartition::MakeUniqueFromRosParam(
       new WeightedVoronoiPartition(partiton_params, heterogeneity_map, map));
 }
 
-bool WeightedVoronoiPartition::ComputePartition(
+bool WeightedVoronoiPartition::ComputePartitionForAgent(
     const std::string &agent_id,
     const std::vector<sampling_msgs::AgentLocation> &location,
-    std::vector<int> &partition_index, std::vector<int> &index_for_map) {
+    std::vector<int> &partition_index) {
   partition_index.clear();
+  Eigen::MatrixXd cost_map =
+      Eigen::MatrixXd::Zero(map_.rows(), location.size());
+  for (int i = 0; i < location.size(); ++i) {
+    sampling_msgs::AgentLocation agent_info = location.at(i);
+    if (!heterogeneity_map_.count(agent_info.agent_id)) {
+      ROS_ERROR_STREAM(
+          "Failed to do partition for unknown agent : " << agent_info.agent_id);
+      return false;
+    }
+    const Eigen::VectorXd distance =
+        CalculateEuclideanDistance(agent_info.position, map_);
+    for (int j = 0; j < heterogeneity_map_[agent_info.agent_id].size(); ++j) {
+      Eigen::VectorXd heterogeneity_cost =
+          params_.weight_factor[j] *
+          heterogeneity_map_[agent_info.agent_id][j]->CalculateCost(
+              agent_info.position, distance);
+      cost_map.col(i).array() =
+          cost_map.col(i).array() + heterogeneity_cost.array();
+    }
+  }
+  return true;
+}
+
+bool WeightedVoronoiPartition::ComputePartitionForMap(
+    const std::vector<sampling_msgs::AgentLocation> &location,
+    std::vector<int> &index_for_map) {
   index_for_map.clear();
   Eigen::MatrixXd cost_map =
       Eigen::MatrixXd::Zero(map_.rows(), location.size());
@@ -141,9 +167,6 @@ bool WeightedVoronoiPartition::ComputePartition(
   for (int i = 0; i < map_.rows(); ++i) {
     Eigen::MatrixXd::Index index;
     cost_map.row(i).minCoeff(&index);
-    if (agent_id.compare(location[index].agent_id) == 0) {
-      partition_index.push_back(i);
-    }
     index_for_map[i] = (int)index;
   }
   return true;

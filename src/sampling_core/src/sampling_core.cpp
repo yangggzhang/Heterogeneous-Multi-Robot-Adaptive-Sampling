@@ -17,15 +17,15 @@ std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
     return nullptr;
   }
 
-  for (const std::string &agent_id : params.agent_ids) {
-    ros::ServiceClient agent_check_client =
-        nh.serviceClient<std_srvs::Trigger>(agent_id + "/check");
-    std_srvs::Trigger srv;
-    if (!agent_check_client.call(srv)) {
-      ROS_ERROR_STREAM("Failed to connect : " << agent_id);
-      return nullptr;
-    }
-  }
+  // for (const std::string &agent_id : params.agent_ids) {
+  //   ros::ServiceClient agent_check_client =
+  //       nh.serviceClient<std_srvs::Trigger>(agent_id + "/check");
+  //   std_srvs::Trigger srv;
+  //   if (!agent_check_client.call(srv)) {
+  //     ROS_ERROR_STREAM("Failed to connect : " << agent_id);
+  //     return nullptr;
+  //   }
+  // }
 
   // Modeling
   ros::ServiceClient modeling_add_test_position_client =
@@ -158,6 +158,11 @@ bool SamplingCore::Loop() {
       return false;
     }
   }
+  if (!UpdateVisualization()) {
+    ROS_WARN_STREAM("Failed to update visualization!");
+    ROS_WARN_STREAM("Retry --- --- ---");
+    return false;
+  }
   return true;
 }
 
@@ -270,6 +275,65 @@ bool SamplingCore::UpdatePrediction() {
   return false;
 }
 
+bool SamplingCore::UpdateVisualization() {
+  // Update Agent Location
+  std::vector<sampling_msgs::AgentLocation> agent_locations_msg;
+  agent_locations_msg.reserve(params_.agent_ids.size());
+  for (const std::string &agent_id : params_.agent_ids) {
+    if (agents_locations_.count(agent_id))
+      agent_locations_msg.push_back(agents_locations_[agent_id]);
+  }
+  if (!agent_visualization_handler_->UpdateMarker(agent_locations_msg)) {
+    ROS_ERROR_STREAM("Failed to update robot location visualization");
+    return false;
+  }
+  for (std::unordered_map<
+           std::string,
+           std::unique_ptr<visualization::GridVisualizationHandler>>::iterator
+           it = grid_visualization_handlers_.begin();
+       it != grid_visualization_handlers_.end(); ++it) {
+    if (visualization::KPartitionMapName.compare(it->first) == 0) {
+      if (!updated_mean_prediction_.is_initialized()) {
+        ROS_ERROR_STREAM(
+            "Prediction Mean for visualization update is not ready yet!");
+        return false;
+      }
+      it->second->UpdateMarker(updated_mean_prediction_.get());
+    } else if (visualization::KPredictionMeanMapName.compare(it->first) == 0) {
+      if (!updated_var_prediction_.is_initialized()) {
+        ROS_ERROR_STREAM(
+            "Prediction Variance for visualization update is not ready yet!");
+        return false;
+      }
+      it->second->UpdateMarker(updated_var_prediction_.get());
+    } else if (visualization::KPredictionVarianceMapName.compare(it->first) ==
+               0) {
+      std::vector<sampling_msgs::AgentLocation> agent_locations;
+      agent_locations.reserve(params_.agent_ids.size());
+      for (const std::string &agent_id : params_.agent_ids) {
+        if (!agents_locations_.count(agent_id)) {
+          ROS_ERROR_STREAM("Do NOT have location information for " << agent_id);
+          return false;
+        } else {
+          agent_locations.push_back(agents_locations_[agent_id]);
+        }
+      }
+      std::vector<int> partition_index;
+      if (!partition_handler_->ComputePartitionForMap(agent_locations,
+                                                      partition_index)) {
+        ROS_ERROR_STREAM("Failed to generate map partition for visualization!");
+        return false;
+      } else {
+        it->second->UpdateMarker(partition_index);
+      }
+    } else {
+      ROS_ERROR_STREAM("Unknown grid map visualization update!");
+      return false;
+    }
+  }
+  return true;
+}
+
 bool SamplingCore::AssignSamplingGoal(
     sampling_msgs::SamplingGoal::Request &req,
     sampling_msgs::SamplingGoal::Response &res) {
@@ -291,10 +355,8 @@ bool SamplingCore::AssignSamplingGoal(
     }
   }
   std::vector<int> partition_index;
-  std::vector<int> index_for_map;
-  if (!partition_handler_->ComputePartition(req.agent_location.agent_id,
-                                            agent_locations, partition_index,
-                                            index_for_map)) {
+  if (!partition_handler_->ComputePartitionForAgent(
+          req.agent_location.agent_id, agent_locations, partition_index)) {
     ROS_ERROR_STREAM("Failed to generate partition for "
                      << req.agent_location.agent_id);
     return false;

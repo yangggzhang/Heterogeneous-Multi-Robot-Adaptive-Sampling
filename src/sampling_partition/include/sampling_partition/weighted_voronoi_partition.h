@@ -27,10 +27,14 @@ class WeightedVoronoiPartition {
       const std::vector<std::string> &agent_ids, const Eigen::MatrixXd &map,
       ros::NodeHandle &ph);
 
-  bool ComputePartition(
+  bool ComputePartitionForAgent(
       const std::string &agent_id,
       const std::vector<sampling_msgs::AgentLocation> &location,
-      std::vector<int> &partition_index, std::vector<int> &index_for_map);
+      std::vector<int> &partition_index);
+
+  bool ComputePartitionForMap(
+      const std::vector<sampling_msgs::AgentLocation> &location,
+      std::vector<int> &index_for_map);
 
  private:
   WeightedVoronoiPartition(

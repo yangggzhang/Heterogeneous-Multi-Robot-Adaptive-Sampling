@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 
+#include "sampling_msgs/AgentLocation.h"
 #include "sampling_visualization/sampling_visualization_params.h"
 
 namespace sampling {
@@ -23,7 +24,8 @@ class AgentVisualizationHandler {
       ros::NodeHandle &nh, const XmlRpc::XmlRpcValue &yaml_node,
       const int &number_of_agents, const Eigen::MatrixXd &map);
 
-  bool UpdateMarker(const std::vector<geometry_msgs::Point> &agent_locations);
+  bool UpdateMarker(
+      const std::vector<sampling_msgs::AgentLocation> &agent_locations);
 
   std::string GetName();
 
