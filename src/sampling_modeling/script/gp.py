@@ -16,24 +16,24 @@ class RBF_kernel:
         self.l = l
         self.sigma_f = sigma_f
     
-    def compute(self, X1, X2):
+    def Compute(self, X1, X2):
         sqdist = np.sum(X1**2, 1).reshape(-1, 1) + np.sum(X2**2, 1) - 2 * np.dot(X1, X2.T)
         return self.sigma_f ** 2 * np.exp(-0.5 / self.l ** 2 * sqdist)
     
-    def update_kernel(self, l, sigma_f):
+    def UpdateKernel(self, l, sigma_f):
         self.l = l
         self.sigma_f = sigma_f
 
-    def compute_kernel(self, X1, X2, l, sigma_f):
+    def ComputeKernel(self, X1, X2, l, sigma_f):
         sqdist = np.sum(X1**2, 1).reshape(-1, 1) + np.sum(X2**2, 1) - 2 * np.dot(X1, X2.T)
         return sigma_f ** 2 * np.exp(-0.5 / l ** 2 * sqdist)
     
-    def get_hyperparam(self):
+    def GetHyperparam(self):
         return self.l, self.sigma_f
 
 class GP:
-    def __init__(self, kernel=RBF_kernel(), sigma_y=0.1):
-        self.kernel = kernel
+    def __init__(self, l=0.5, sigma_f=0.5, sigma_y=0.1):
+        self.kernel = RBF_kernel(l, sigma_f)
         self.sigma_y = sigma_y
         self.X_train = None
         self.Y_train = None
@@ -42,7 +42,7 @@ class GP:
         self.X_train = X_train
         self.Y_train = Y_train
     
-    def posterior_predictive(self, X_s, X_train=None, Y_train=None, P= None):
+    def PosteriorPredict(self, X_s, X_train=None, Y_train=None, P= None):
         '''  
         Computes the suffifient statistics of the GP posterior predictive distribution 
         from m training data X_train and Y_train and n new inputs X_s.
@@ -61,9 +61,9 @@ class GP:
         if X_train is not None:
             self.UpdateData(X_train, Y_train)
 
-        K = self.kernel.compute(self.X_train, self.X_train) + self.sigma_y**2 * np.eye(len(self.X_train))
-        K_s = self.kernel.compute(self.X_train, X_s)
-        K_ss = self.kernel.compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
+        K = self.kernel.Compute(self.X_train, self.X_train) + self.sigma_y**2 * np.eye(len(self.X_train))
+        K_s = self.kernel.Compute(self.X_train, X_s)
+        K_ss = self.kernel.Compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
         if P is not None:
             K_ss += self.sigma_y**2 * np.diag(1/P)
         K_inv = inv(K)
@@ -74,9 +74,9 @@ class GP:
         
         return mu_s, np.diag(cov_s)
     
-    def optimize_kernel(self, noise, X_train=None, Y_train=None, p = None):
+    def OptimizeKernel(self, noise, X_train=None, Y_train=None, p = None):
         '''
-        Returns a function that computes the negative log marginal
+        Returns a function that Computes the negative log marginal
         likelihood for training data X_train and Y_train and given 
         noise level.
         
@@ -88,18 +88,18 @@ class GP:
         if X_train is not None:
             self.UpdateData(X_train, Y_train)
         def nnl_stable(theta):
-            K = self.kernel.compute_kernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  noise**2 * np.eye(len(Y_train))
+            K = self.kernel.ComputeKernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  noise**2 * np.eye(len(Y_train))
             L = cholesky(K)
             return np.sum(np.log(np.diagonal(L))) + \
                 0.5 * Y_train.T.dot(lstsq(L.T, lstsq(L, Y_train,rcond=None)[0],rcond=None)[0]) + \
                 0.5 * len(X_train) * np.log(2*np.pi)
-        l_init, sigma_f_init = self.kernel.get_hyperparam()
+        l_init, sigma_f_init = self.kernel.GetHyperparam()
 
         res = minimize(nnl_stable, [l_init, sigma_f_init], method='L-BFGS-B')
         updated_l, updated_sigma_f = res.x
-        self.kernel.update_kernel(updated_l, updated_sigma_f)    
+        self.kernel.UpdateKernel(updated_l, updated_sigma_f)    
 
-# from gaussian_processes_util import plot_gp
+# from gp_util import plot_gp
 
 # # Finite number of points
 # X = np.arange(-5, 5, 0.2).reshape(-1, 1)
@@ -113,12 +113,12 @@ class GP:
 
 
 
-# test_gp.optimize_kernel(X_train, Y_train, noise)
+# test_gp.OptimizeKernel(X_train, Y_train, noise)
 
 # res = minimize(nll_fn(X_train, Y_train, noise), [1, 1], 
 #                bounds=((1e-5, None), (1e-5, None)),
 #                method='L-BFGS-B')
 
-# mu_s, cov_s = test_gp.posterior_predictive(X, X_train, Y_train)
+# mu_s, cov_s = test_gp.PosteriorPredict(X, X_train, Y_train)
 # samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, 3)
 # plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)
