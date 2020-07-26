@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 
-#include <boost/optional.hpp>
 #include <unordered_map>
 
 #include "sampling_core/sampling_core_params.h"

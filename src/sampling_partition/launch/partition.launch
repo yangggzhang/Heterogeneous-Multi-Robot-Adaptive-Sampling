@@ -1,0 +1,33 @@
+<launch>
+    <node pkg="sampling_partition" type="partition_node" name="partition_test" output="screen"> 
+        <rosparam>
+            test_map_file: "test_map.txt"
+            agent_ids: ["jackal0", "jackal1"]
+            AgentLocations:
+                - x: 2.0
+                  y: 2.0
+                - x: 6.0
+                  y: 7.0
+            HeterogeneousProperty:
+                - heterogenities: ["DISTANCE"]
+                  weight_factor: [1.0]
+                - agent_id: "jackal0"
+                  heterogeneity_primitive: [1.0]
+                  number_control_area: 0
+                - agent_id: "jackal1"
+                  heterogeneity_primitive: [1.0]
+                  number_control_area: 0
+            VisualizationProperty:
+                - visualization_type: "LOCATION"
+                  name: "AgentLocation"
+                  offset: [0.0, 0.0]
+                  scale: [1.0, 1.0]
+                - visualization_type: "PARTITION"
+                  name: "Partition"
+                  offset: [0.0, 0.0]
+                  scale: [1.0, 1.0]
+        </rosparam>
+    </node>
+
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
+</launch>

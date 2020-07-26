@@ -37,7 +37,7 @@ class SamplingCoreParams {
 
   Eigen::VectorXd initial_measurements;
 
-  bool LoadMactrix(const std::string &path, Eigen::MatrixXd &data);
+  bool LoadMatrix(const std::string &path, Eigen::MatrixXd &data);
 
   bool LoadVector(const std::string &path, Eigen::VectorXd &data);
 

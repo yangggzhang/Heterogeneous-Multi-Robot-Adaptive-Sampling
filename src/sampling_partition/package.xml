@@ -32,7 +32,9 @@
   <depend>roscpp</depend>
   <depend>sampling_msgs</depend>
   <depend>sampling_utils</depend>
+  <depend>sampling_visualization</depend>
   <depend>geometry_msgs</depend>
+  <depend>roslib</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

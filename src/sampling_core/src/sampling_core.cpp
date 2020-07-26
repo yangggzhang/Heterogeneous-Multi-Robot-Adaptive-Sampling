@@ -346,7 +346,10 @@ bool SamplingCore::UpdateVisualization() {
         ROS_ERROR_STREAM("Failed to generate map partition for visualization!");
         return false;
       } else {
-        it->second->UpdateMarker(partition_index);
+        if (!it->second->UpdateMarker(partition_index)) {
+          ROS_ERROR_STREAM("Failed to update map partition for visualization!");
+          return false;
+        }
       }
     } else {
       ROS_ERROR_STREAM("Unknown grid map visualization update!");

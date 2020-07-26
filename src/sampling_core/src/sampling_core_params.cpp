@@ -34,7 +34,7 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
   std::string pack_path = ros::package::getPath(KDataPackage);
   std::string test_location_dir = pack_path + "/location/" + test_location_file;
 
-  if (!LoadMactrix(test_location_dir, test_locations)) {
+  if (!LoadMatrix(test_location_dir, test_locations)) {
     ROS_ERROR_STREAM("Failed to load test locations for sampling!");
     return false;
   }
@@ -83,7 +83,7 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
     }
     std::string initial_location_dir =
         pack_path + "/location/" + initial_location_file;
-    if (!LoadMactrix(initial_location_dir, initial_locations)) {
+    if (!LoadMatrix(initial_location_dir, initial_locations)) {
       ROS_ERROR_STREAM("Failed to load initial locations for sampling!");
       return false;
     }
@@ -138,8 +138,8 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
   return true;
 }  // namespace core
 
-bool SamplingCoreParams::LoadMactrix(const std::string &path,
-                                     Eigen::MatrixXd &data) {
+bool SamplingCoreParams::LoadMatrix(const std::string &path,
+                                    Eigen::MatrixXd &data) {
   std::ifstream file(path.c_str(), std::ifstream::in);
 
   if (!file.is_open()) {
@@ -178,7 +178,7 @@ bool SamplingCoreParams::LoadMactrix(const std::string &path,
 bool SamplingCoreParams::LoadVector(const std::string &path,
                                     Eigen::VectorXd &data) {
   Eigen::MatrixXd data_mat;
-  if (!LoadMactrix(path, data_mat)) {
+  if (!LoadMatrix(path, data_mat)) {
     ROS_ERROR_STREAM("Failed to load " << path);
     return false;
   }
