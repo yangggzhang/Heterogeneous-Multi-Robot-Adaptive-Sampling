@@ -15,6 +15,9 @@ namespace sampling {
 namespace utils {
 
 template <typename T>
+void VectorInfo(const std::vector<T> &data);
+
+template <typename T>
 bool ExtractVec(const T &full, const std::vector<int> &ind, T &target);
 
 template <typename T>

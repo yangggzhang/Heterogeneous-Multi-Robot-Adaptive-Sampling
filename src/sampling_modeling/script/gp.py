@@ -42,7 +42,7 @@ class GP:
         self.X_train = X_train
         self.Y_train = Y_train
     
-    def PosteriorPredict(self, X_s, X_train=None, Y_train=None, P= None):
+    def PosteriorPredict(self, X_test, X_train=None, Y_train=None, P= None):
         '''  
         Computes the suffifient statistics of the GP posterior predictive distribution 
         from m training data X_train and Y_train and n new inputs X_s.
@@ -60,18 +60,19 @@ class GP:
         '''
         if X_train is not None:
             self.UpdateData(X_train, Y_train)
-
-        K = self.kernel.Compute(self.X_train, self.X_train) + self.sigma_y**2 * np.eye(len(self.X_train))
-        K_s = self.kernel.Compute(self.X_train, X_s)
-        K_ss = self.kernel.Compute(X_s, X_s) + 1e-8 * np.eye(len(X_s))
-        if P is not None:
-            K_ss += self.sigma_y**2 * np.diag(1/P)
-        K_inv = inv(K)
         
-        mu_s = K_s.T.dot(K_inv).dot(self.Y_train)
-
-        cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)
+        K_train_test = self.kernel.Compute(self.X_train, X_test)
+        K_train_train = self.kernel.Compute(self.X_train, self.X_train)
+        K_test_test = self.kernel.Compute(X_test, X_test) +  1e-8 * np.eye(len(X_test))
+        if P is None:        
+            K_inv = inv(K_train_train + self.sigma_y ** 2 * np.eye(len(self.X_train)))
+        else:
+            K_inv = inv(K_train_train + self.sigma_y ** 2 * np.eye(len(self.X_train)) * np.diag(1.0/P))
         
+        mu_s = K_train_test.T.dot(K_inv).dot(self.Y_train)
+
+        cov_s = K_test_test - K_train_test.T.dot(K_inv).dot(K_train_test)
+    
         return mu_s, np.diag(cov_s)
     
     def OptimizeKernel(self, noise, X_train=None, Y_train=None, p = None):

@@ -1,28 +1,45 @@
 <launch>
     <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
-        <param name="num_gp" value="3"/>
-        <param name="noise_stdev" value="0.1"/>
-        <param name="EM_epsilon" value="0.05"/>
-        <param name="EM_max_iteration" value="100"/>
         <rosparam>
             num_gp: 3
-            gating: [1.0, 2.0, 3.0]
+            gating: [1.0, 2.0]
             modeling_gp_0_kernel: [5.0, 1.0, 0.1]
             gating_gp_0_kernel: [1.0, 0.5, 0.0]
             modeling_gp_1_kernel: [3.0, 2.0, 0.1]
             gating_gp_1_kernel: [2.0, 0.5, 0.0]
-            modeling_gp_2_kernel: [1.0, 3.0, 0.1]
-            gating_gp_2_kernel: [3.0, 0.5, 0.0]
             noise_stdev: 0.1
             EM_epsilon: 0.05
             EM_max_iteration: 100
         </rosparam>
     </node>
 
+    <remap from="measurement_channel" to="measurement_simulation"/>
+
+    <node pkg="sampling_agent" type="sampling_agent_node" name="hector0" output="screen" >
+        <rosparam>
+            agent_type: "HECTOR"
+            agent_id: "hector0"
+        </rosparam>
+    </node>
+
+    <node pkg="sampling_agent" type="sampling_agent_node" name="jackal0" output="screen" >
+        <rosparam>
+            agent_type: "JACKAL"
+            agent_id: "jackal0"
+        </rosparam>
+    </node>
+    
+    <node pkg="sampling_agent" type="sampling_agent_node" name="jackal1" output="screen" >
+        <rosparam>
+            agent_type: "JACKAL"
+            agent_id: "jackal1"
+        </rosparam>
+    </node>
+
     <node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
         <param name="measurement_trial" value="wifi_2_routers"/>
         <param name="poly_order" value="7"/>
-        <param name="noise_stdev" value="0.3"/>
+        <param name="noise_stdev" value="0.05"/>
     </node>
 
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 

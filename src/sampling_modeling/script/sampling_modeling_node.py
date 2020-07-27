@@ -13,6 +13,7 @@ class SamplingModeling(object):
     def __init__(self):
         rospy.init_node('sampling_modeling_node')
         num_gp = rospy.get_param("~num_gp", 3)
+        self.optimize_kernel = rospy.get_param("~online_kernel_optimization", True)
         modeling_gps = []
         gating_gps = []
         for i in range(num_gp):
@@ -50,7 +51,7 @@ class SamplingModeling(object):
         return AddSampleToModelResponse(True)
 
     def UpdateModel(self, req):
-        self.model.OptimizeModel()
+        self.model.OptimizeModel(optimize_kernel =  self.optimize_kernel)
         return TriggerResponse( success=True, message="Successfully updated MGP model!") 
 
     def ModelPredict(self, req):

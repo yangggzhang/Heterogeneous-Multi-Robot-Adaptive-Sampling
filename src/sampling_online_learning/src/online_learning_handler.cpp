@@ -1,5 +1,7 @@
 #include "sampling_online_learning/online_learning_handler.h"
 
+#include "sampling_utils/utils.h"
+
 namespace sampling {
 namespace learning {
 

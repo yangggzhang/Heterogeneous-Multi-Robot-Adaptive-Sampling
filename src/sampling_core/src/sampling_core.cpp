@@ -145,18 +145,24 @@ bool SamplingCore::Loop() {
       return true;
     }
   }
-  ROS_INFO_STREAM("New sample : " << sample_buffer_.size() << " out of "
-                                  << params_.model_update_frequency_count);
+  // ROS_INFO_STREAM("New sample : " << sample_buffer_.size() << " out of "
+  //                                 << params_.model_update_frequency_count);
   if (sample_buffer_.size() >= params_.model_update_frequency_count) {
+    ROS_INFO_STREAM("Start updating model!");
+
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
       return false;
+    } else {
+      ROS_INFO_STREAM("Finish model update!");
     }
     if (!UpdatePrediction()) {
       ROS_WARN_STREAM("Failed to update prediction!");
       ROS_WARN_STREAM("Retry --- --- ---");
       return false;
+    } else {
+      ROS_INFO_STREAM("Finish prediction update!");
     }
   }
   if (!UpdateVisualization()) {
@@ -164,6 +170,7 @@ bool SamplingCore::Loop() {
     ROS_WARN_STREAM("Retry --- --- ---");
     return false;
   }
+
   return true;
 }
 
@@ -274,9 +281,10 @@ bool SamplingCore::UpdateModel() {
     }
 
     std_srvs::Trigger update_model_srv;
+    sample_buffer_.clear();
     if (modeling_update_model_client_.call(update_model_srv) &&
         update_model_srv.response.success) {
-      sample_buffer_.clear();
+      ROS_INFO_STREAM("Model is updated!");
       return true;
     } else {
       return false;
@@ -358,7 +366,7 @@ bool SamplingCore::UpdateVisualization() {
   }
 
   return true;
-}
+}  // namespace core
 
 bool SamplingCore::AssignSamplingGoal(
     sampling_msgs::SamplingGoal::Request &req,

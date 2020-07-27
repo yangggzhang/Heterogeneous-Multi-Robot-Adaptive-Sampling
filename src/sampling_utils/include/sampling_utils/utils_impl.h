@@ -1,7 +1,19 @@
+#include <ros/ros.h>
+
 #include "utils.h"
 
 namespace sampling {
 namespace utils {
+
+template <typename T>
+void VectorInfo(const std::vector<T> &data) {
+  std::string info;
+  for (const T &value : data) {
+    info += std::to_string(value);
+    info += " ";
+  }
+  ROS_INFO_STREAM(info);
+}
 
 template <typename T>
 bool ExtractVec(const T &full, const std::vector<int> &ind, T &target) {

@@ -8,8 +8,8 @@
   <arg name="jackal_config" default="front_laser" />
   <arg name="jackal0_position_x" default="2.5" />
   <arg name="jackal0_position_y" default="2.5" />
-  <arg name="jackal1_position_x" default="-2.5" />
-  <arg name="jackal1_position_y" default="-2.5" />
+  <arg name="jackal1_position_x" default="7.5" />
+  <arg name="jackal1_position_y" default="10.5" />
   <arg name="hector0_position_x" default="0.0" />
   <arg name="hector0_position_y" default="0.0" />
   <arg name="hector0_position_z" default="1.2" />

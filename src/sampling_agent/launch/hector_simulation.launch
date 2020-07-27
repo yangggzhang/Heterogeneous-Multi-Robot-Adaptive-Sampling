@@ -1,5 +1,10 @@
 <launch>   
-   <node pkg="sampling_agent" type="sampling_agent_node" name="jackal" output="screen" >
-      <param name="agent_type" value="HECTOR" />
+   <remap from="measurement_channel" to="measurement_simulation"/>
+
+   <node pkg="sampling_agent" type="sampling_agent_node" name="hector" output="screen" >
+      <rosparam>
+         agent_type: "HECTOR"
+         agent_id: "hector0"
+      </rosparam>
    </node>
 </launch>

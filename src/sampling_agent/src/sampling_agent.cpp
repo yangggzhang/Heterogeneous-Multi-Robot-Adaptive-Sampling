@@ -1,5 +1,6 @@
 #include "sampling_agent/sampling_agent.h"
 
+#include <math.h>
 #include <sampling_msgs/AgentLocation.h>
 #include <sampling_msgs/MeasurementService.h>
 #include <sampling_msgs/RequestMeasurement.h>
@@ -142,6 +143,10 @@ bool SamplingAgent::ReportSample() {
   sampling_msgs::Sample msg;
   msg.agent_id = agent_id_;
   msg.position = current_position_.get();
+  msg.position.x =
+      static_cast<float>(static_cast<int>(msg.position.x * 10.)) / 10.;
+  msg.position.y =
+      static_cast<float>(static_cast<int>(msg.position.y * 10.)) / 10.;
   msg.data = measurement_.get();
   measurement_ = boost::none;
   sample_publisher_.publish(msg);

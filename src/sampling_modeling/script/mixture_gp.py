@@ -31,19 +31,20 @@ class MixtureGaussianProcess:
         pred_mean = np.zeros((len(Y_train), self.num_gp))
         pred_var = np.zeros_like(pred_mean)
         for i in range(self.num_gp):
-            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
+            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_test=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
         return pred_mean, pred_var
 
     def Optimizate(self, X_train, Y_train, noise, P):
         for i in range(self.num_gp):
             self.gps[i].OptimizeKernel(noise=noise, X_train=X_train, Y_train=Y_train, p=P[:,[i]])
     
-    def EMOptimize(self):
+    def EMOptimize(self, optimize_kernel = False):
         for i in range(self.max_iter):
             prev_P = self.P
             pred_mean, pred_var = self.Maximization(self.X_train, self.Y_train, self.P)
             self.P = self.Expectation(pred_mean, pred_var, self.Y_train, self.P)
-            self.Optimizate(self.X_train, self.Y_train, self.noise, self.P)
+            if optimize_kernel == True:
+                self.Optimizate(self.X_train, self.Y_train, self.noise, self.P)
             diff_P = np.abs(self.P - prev_P)
             if (diff_P.max() <= self.epsilon):
                 break
@@ -63,6 +64,9 @@ class MixtureGaussianProcess:
             new_P = np.random.random((len(Y_train), self.num_gp))
             new_P = new_P / new_P.sum(axis=1, dtype='float')[:,None]
             self.P = np.concatenate((self.P, new_P), axis=0)
+        self.X_train, I = np.unique(self.X_train, axis=0, return_index=True)
+        self.Y_train = self.Y_train[I]
+        self.P = self.P[I,:]
     
     def FitGatingFunction(self, X_train, P):
         for i in range(self.num_gp):
@@ -75,8 +79,8 @@ class MixtureGaussianProcess:
             P[:, [i]] = p
         return P
     
-    def OptimizeModel(self):
-        _, _, P = self.EMOptimize()
+    def OptimizeModel(self, optimize_kernel = False):
+        _, _, P = self.EMOptimize(optimize_kernel)
         self.FitGatingFunction(self.X_train, P)
     
     def Predict(self, X_test, X_train=None, Y_train=None):
@@ -87,9 +91,9 @@ class MixtureGaussianProcess:
         pred_mean = np.zeros((X_test.shape[0], self.num_gp))
         pred_var = np.zeros_like(pred_mean)
         for i in range(self.num_gp):
-            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_s=X_test, X_train=X_train, Y_train=Y_train, P=P[:, i])
+            pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_test=X_test, X_train=X_train, Y_train=Y_train, P=self.P[:, i])
         mean = pred_mean * P
-        var = pred_mean * P
+        var = pred_var * P
         return mean.sum(axis=1), var.sum(axis=1)
 
 # from gp_util import plot_gp

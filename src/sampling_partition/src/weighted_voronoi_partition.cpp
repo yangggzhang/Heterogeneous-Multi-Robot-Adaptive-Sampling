@@ -156,7 +156,7 @@ bool WeightedVoronoiPartition::ComputePartitionForAgent(
     Eigen::MatrixXd::Index index;
     cost_map.row(i).minCoeff(&index);
     if (agent_id.compare(location[(int)index].agent_id) == 0)
-      partition_index.push_back((int)index);
+      partition_index.push_back(i);
   }
   return true;
 }
