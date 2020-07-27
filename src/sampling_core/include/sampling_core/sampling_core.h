@@ -81,8 +81,6 @@ class SamplingCore {
 
   std::vector<sampling_msgs::Sample> sample_buffer_;
 
-  int new_sample_buffer_count_;
-
   bool SampleToSrv(const std::vector<sampling_msgs::Sample> &samples,
                    sampling_msgs::AddSampleToModel &srv);
 

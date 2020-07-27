@@ -39,7 +39,7 @@ class MeasurementSimulator(object):
     def loadposition(self, measurement_trial):
         position_x = []
         position_y = []
-        position_file = self.rospack.get_path('sampling_data') + "/data/position/" + measurement_trial + ".txt"
+        position_file = self.rospack.get_path('sampling_data') + "/location/" + measurement_trial + ".txt"
         with open(position_file, "r") as filestream:
             for line in filestream:
                 new_x, new_y = line.split(",")
@@ -48,7 +48,7 @@ class MeasurementSimulator(object):
         return np.array(position_x), np.array(position_y)
 
     def loadmeasurement(self, measurement_trail):
-        measurement_file = self.rospack.get_path('sampling_data') + "/data/measurement/" + measurement_trail + ".txt"
+        measurement_file = self.rospack.get_path('sampling_data') + "/measurement/" + measurement_trail + ".txt"
         return np.loadtxt(measurement_file)
     
     def simulatemeasurement(self, req):

@@ -92,13 +92,31 @@ bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
 
 bool JackalAgent::Navigate() {
   move_base_msgs::MoveBaseGoal navigation_goal;
-  navigation_goal.target_pose.header.frame_id = agent_id_ + "/odom";
+  const std::string navigation_frame = agent_id_ + "/odom";
+  navigation_goal.target_pose.header.frame_id = navigation_frame;
   navigation_goal.target_pose.header.stamp = ros::Time::now();
   navigation_goal.target_pose.pose.orientation.w = 1.0;
 
   switch (navigation_mode_) {
     case ODOM: {
       navigation_goal.target_pose.pose.position = target_position_.get();
+
+      geometry_msgs::PointStamped point_in, point_out;
+      point_in.header.frame_id = KWorldFrame;
+      point_in.point = target_position_.get();
+
+      try {
+        // geometry_msgs::PointStamped base_point;
+        listener_.transformPoint(navigation_frame, point_in, point_out);
+        navigation_goal.target_pose.pose.position = point_out.point;
+
+      } catch (tf::TransformException &ex) {
+        ROS_ERROR_STREAM(
+            "Received an exception trying to transform a point from "
+            << KWorldFrame << "to " << point_in.header.frame_id << " "
+            << ex.what());
+        return false;
+      }
       break;
     }
     case GPS: {
@@ -118,11 +136,22 @@ bool JackalAgent::Navigate() {
     }
   }
 
+  ROS_INFO_STREAM("Jackal ready to go to target pose : "
+                  << navigation_goal.target_pose.pose.position.x << " "
+                  << navigation_goal.target_pose.pose.position.y
+                  << " in frame : "
+                  << navigation_goal.target_pose.header.frame_id);
+  ROS_INFO_STREAM("Pose : " << target_position_.get().x << " "
+                            << target_position_.get().y << " in "
+                            << KWorldFrame);
+
   jackal_navigator_->sendGoalAndWait(navigation_goal,
                                      ros::Duration(execute_timeout_s_),
                                      ros::Duration(preempt_timeout_s_));
   if (jackal_navigator_->getState() ==
       actionlib::SimpleClientGoalState::SUCCEEDED) {
+    ROS_INFO_STREAM("Jackal reached goal!");
+
     return true;
   } else {
     ROS_INFO_STREAM("Robot "

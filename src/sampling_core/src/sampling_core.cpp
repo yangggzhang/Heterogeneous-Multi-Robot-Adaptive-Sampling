@@ -98,7 +98,6 @@ SamplingCore::SamplingCore(
       partition_handler_(std::move(partition_handler)),
       learning_handler_(std::move(learning_handler)),
       agent_visualization_handler_(std::move(agent_visualization_handler)),
-      new_sample_buffer_count_(0),
       is_initialized_(false) {
   for (int i = 0; i < grid_visualization_handlers.size(); ++i) {
     grid_visualization_handlers_[grid_visualization_handlers[i]->GetName()] =
@@ -146,8 +145,9 @@ bool SamplingCore::Loop() {
       return true;
     }
   }
-  if (new_sample_buffer_count_ >= params_.model_update_frequency_count) {
-    ROS_INFO_STREAM("Loop" << 1 << " ??????????");
+  ROS_INFO_STREAM("New sample : " << sample_buffer_.size() << " out of "
+                                  << params_.model_update_frequency_count);
+  if (sample_buffer_.size() >= params_.model_update_frequency_count) {
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
@@ -175,6 +175,10 @@ void SamplingCore::AgentLocationUpdateCallback(
 
 void SamplingCore::SampleUpdateCallback(
     const sampling_msgs::SampleConstPtr &msg) {
+  ROS_INFO_STREAM("Master received new sample from " << msg->agent_id);
+  ROS_INFO_STREAM("Measurement : " << msg->data << " from position ("
+                                   << msg->position.x << "," << msg->position.y
+                                   << ").");
   sample_buffer_.push_back(*msg);
   if (!learning_handler_->UpdateSampleCount(msg->position)) {
     ROS_WARN_STREAM("Failed to update sample account to online learner!");
@@ -232,7 +236,6 @@ bool SamplingCore::InitializeModelAndPrediction() {
 
   if (modeling_add_sample_client_.call(add_sample_srv) &&
       add_sample_srv.response.success) {
-    new_sample_buffer_count_ = 0;
     sample_buffer_.clear();
   } else {
     ROS_ERROR_STREAM("Model add initial samples failed!");
@@ -259,24 +262,21 @@ bool SamplingCore::InitializeModelAndPrediction() {
 }
 
 bool SamplingCore::UpdateModel() {
-  if (new_sample_buffer_count_ < params_.model_update_frequency_count)
+  if (sample_buffer_.size() < params_.model_update_frequency_count)
     return false;
   else {
     sampling_msgs::AddSampleToModel add_sample_srv;
 
     if (!SampleToSrv(sample_buffer_, add_sample_srv)) return false;
-    if (modeling_add_sample_client_.call(add_sample_srv) &&
-        add_sample_srv.response.success) {
-      new_sample_buffer_count_ += sample_buffer_.size();
-      sample_buffer_.clear();
-    } else {
+    if (!modeling_add_sample_client_.call(add_sample_srv) ||
+        !add_sample_srv.response.success) {
       return false;
     }
 
     std_srvs::Trigger update_model_srv;
     if (modeling_update_model_client_.call(update_model_srv) &&
         update_model_srv.response.success) {
-      new_sample_buffer_count_ = 0;
+      sample_buffer_.clear();
       return true;
     } else {
       return false;

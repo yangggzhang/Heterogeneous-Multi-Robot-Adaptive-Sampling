@@ -18,7 +18,7 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id)
   sampling_goal_service_ =
       nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_goal_channel");
 
-  measurement_service_ = nh.serviceClient<sampling_msgs::MeasurementService>(
+  measurement_service_ = nh.serviceClient<sampling_msgs::RequestMeasurement>(
       "measurement_channel");
 
   agent_location_publisher_ =

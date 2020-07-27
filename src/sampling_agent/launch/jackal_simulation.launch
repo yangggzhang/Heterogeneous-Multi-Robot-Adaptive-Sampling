@@ -1,14 +1,16 @@
 <launch>   
+   <remap from="measurement_channel" to="measurement_simulation"/>
+
    <node pkg="sampling_agent" type="sampling_agent_node" name="jackal0" output="screen" >
       <rosparam>
          agent_type: "JACKAL"
          agent_id: "jackal0"
       </rosparam>
    </node>
-   <node pkg="sampling_agent" type="sampling_agent_node" name="jackal1" output="screen" >
+   <!-- <node pkg="sampling_agent" type="sampling_agent_node" name="jackal1" output="screen" >
       <rosparam>
          agent_type: "JACKAL"
          agent_id: "jackal1"
       </rosparam>
-   </node>
+   </node> -->
 </launch>
