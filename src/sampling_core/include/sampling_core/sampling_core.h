@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "sampling_core/sampling_core_params.h"
+#include "sampling_core/sampling_core_performance_evaluation.h"
 #include "sampling_msgs/AddSampleToModel.h"
 #include "sampling_msgs/AgentLocation.h"
 #include "sampling_msgs/Sample.h"
@@ -38,7 +39,8 @@ class SamplingCore {
       std::unique_ptr<visualization::AgentVisualizationHandler>
           agent_visualization_handler,
       std::vector<std::unique_ptr<visualization::GridVisualizationHandler>>
-          &grid_visualization_handlers);
+          &grid_visualization_handlers,
+      std::unique_ptr<SamplingCorePerformanceEvaluation> evaluation_handler);
 
   SamplingCoreParams params_;
 
@@ -72,6 +74,8 @@ class SamplingCore {
   std::unique_ptr<visualization::AgentVisualizationHandler>
       agent_visualization_handler_;
 
+  std::unique_ptr<SamplingCorePerformanceEvaluation> evaluation_handler_;
+
   std::unordered_map<std::string,
                      std::unique_ptr<visualization::GridVisualizationHandler>>
       grid_visualization_handlers_;
@@ -102,6 +106,8 @@ class SamplingCore {
   std::vector<double> updated_mean_prediction_;
 
   std::vector<double> updated_var_prediction_;
+
+  int sample_count_;
 
   bool is_initialized_;
 };

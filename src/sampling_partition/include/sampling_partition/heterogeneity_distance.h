@@ -17,11 +17,6 @@ class HeterogeneityDistance : public Heterogeneity {
 
   Eigen::VectorXd CalculateCost(const geometry_msgs::Point &agent_position,
                                 const Eigen::VectorXd &distance) override;
-
-  std::string Test() {
-    std::string a = "haha";
-    return a;
-  }
 };
 }  // namespace partition
 }  // namespace sampling

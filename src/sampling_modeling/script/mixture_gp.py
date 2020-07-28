@@ -5,6 +5,7 @@
 import numpy as np
 from scipy.stats import norm
 from gp import RBF_kernel, GP
+from sklearn.preprocessing import normalize
 
 class MixtureGaussianProcess:
     def __init__(self, num_gp=3, gps = [GP() for i in range(3)], gating_gps = [GP() for i in range(3)], noise=0.1, epsilon=0.05, max_iter=100):
@@ -21,9 +22,9 @@ class MixtureGaussianProcess:
     def Expectation(self, pred_mean, pred_var, Y_train, P):
         R = np.zeros((len(Y_train), self.num_gp))
         for i in range(self.num_gp):
-            R[:, i] = norm(loc=pred_mean[:, i], scale=pred_var[:, i]).pdf(Y_train)
+            R[:, i] = norm(loc=pred_mean[:, i], scale=np.std(pred_var[:, i])).pdf(Y_train)
         P = P * R
-        P = P / P.sum(axis=1, dtype='float')[:,None]
+        P = P / np.linalg.norm(P, axis = 1)[:,np.newaxis]
         P = P + 1e-6
         return P
     

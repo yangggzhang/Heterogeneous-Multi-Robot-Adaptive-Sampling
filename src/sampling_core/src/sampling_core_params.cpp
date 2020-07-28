@@ -40,7 +40,7 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
   }
 
   MatrixToMsg(test_locations, test_locations_msg);
-
+  bool has_groundtruth_measurement = false;
   std::string groundtruth_measurement_file;
   if (!ph.getParam("groundtruth_measurement_file",
                    groundtruth_measurement_file)) {
@@ -57,9 +57,22 @@ bool SamplingCoreParams::LoadFromRosParams(ros::NodeHandle &ph) {
           "Failed to load ground truth measurements for sampling!");
       return false;
     }
+    ground_truth_measurements_vec.reserve(ground_truth_measurements.size());
+    for (int i = 0; i < ground_truth_measurements.size(); ++i)
+      ground_truth_measurements_vec.push_back(ground_truth_measurements(i));
+
     has_groundtruth_measurement = true;
   }
 
+  if (has_groundtruth_measurement) {
+    if (!ph.getParam("enable_performance_evaluation",
+                     enable_performance_evaluation)) {
+      ROS_WARN_STREAM("Missing enable performance evaluation option!");
+      enable_performance_evaluation = false;
+    } else {
+      enable_performance_evaluation = true;
+    }
+  }
   bool random_initialization;
   ph.param<bool>("random_initialization", random_initialization, true);
 

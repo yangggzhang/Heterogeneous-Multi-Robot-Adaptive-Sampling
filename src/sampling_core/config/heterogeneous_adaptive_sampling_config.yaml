@@ -130,6 +130,8 @@ random_initialization: true
 test_location_file: "wifi_2_routers.txt"
 groundtruth_measurement_file: "wifi_2_routers.txt"
 
+enable_performance_evaluation: True
+
 # Model Update
 model_update_frequency_count: 1
 

@@ -79,9 +79,23 @@ std::unique_ptr<SamplingCore> SamplingCore::MakeUniqueFromRos(
 
   if (agent_visualization_handler == nullptr) return nullptr;
 
+  std::unique_ptr<SamplingCorePerformanceEvaluation> evaluation_handler;
+
+  if (params.enable_performance_evaluation) {
+    evaluation_handler = SamplingCorePerformanceEvaluation::MakeUniqueFromRos(
+        nh, params.ground_truth_measurements_vec);
+    if (evaluation_handler == nullptr) {
+      ROS_ERROR_STREAM("Failed to construct performance evaluator!");
+      return nullptr;
+    }
+  } else {
+    evaluation_handler = nullptr;
+  }
+
   return std::unique_ptr<SamplingCore>(new SamplingCore(
       nh, params, std::move(partition_ptr), std::move(learning_ptr),
-      std::move(agent_visualization_handler), grid_visualization_handlers));
+      std::move(agent_visualization_handler), grid_visualization_handlers,
+      std::move(evaluation_handler)));
 }
 
 // Constructor
@@ -93,12 +107,15 @@ SamplingCore::SamplingCore(
     std::unique_ptr<visualization::AgentVisualizationHandler>
         agent_visualization_handler,
     std::vector<std::unique_ptr<visualization::GridVisualizationHandler>>
-        &grid_visualization_handlers)
+        &grid_visualization_handlers,
+    std::unique_ptr<SamplingCorePerformanceEvaluation> evaluation_handler)
     : params_(params),
       partition_handler_(std::move(partition_handler)),
       learning_handler_(std::move(learning_handler)),
       agent_visualization_handler_(std::move(agent_visualization_handler)),
-      is_initialized_(false) {
+      evaluation_handler_(std::move(evaluation_handler)),
+      is_initialized_(false),
+      sample_count_(0) {
   for (int i = 0; i < grid_visualization_handlers.size(); ++i) {
     grid_visualization_handlers_[grid_visualization_handlers[i]->GetName()] =
         std::move(grid_visualization_handlers[i]);
@@ -186,6 +203,7 @@ void SamplingCore::SampleUpdateCallback(
   ROS_INFO_STREAM("Measurement : " << msg->data << " from position ("
                                    << msg->position.x << "," << msg->position.y
                                    << ").");
+  sample_count_++;
   sample_buffer_.push_back(*msg);
   if (!learning_handler_->UpdateSampleCount(msg->position)) {
     ROS_WARN_STREAM("Failed to update sample account to online learner!");
@@ -261,6 +279,11 @@ bool SamplingCore::InitializeModelAndPrediction() {
       predict_srv.response.success) {
     updated_mean_prediction_ = predict_srv.response.mean;
     updated_var_prediction_ = predict_srv.response.var;
+    for (const auto &d : updated_var_prediction_) {
+      if (d < 0) {
+        ROS_WARN_STREAM("!!!!!!!!!!!!!!!!!!!!!!");
+      }
+    }
   } else {
     ROS_ERROR_STREAM("Model initial prediction failed!");
     return false;
@@ -298,6 +321,11 @@ bool SamplingCore::UpdatePrediction() {
   if (modeling_predict_client_.call(srv) && srv.response.success) {
     updated_mean_prediction_ = srv.response.mean;
     updated_var_prediction_ = srv.response.var;
+    if (evaluation_handler_ != nullptr) {
+      if (!evaluation_handler_->UpdatePerformance(sample_count_,
+                                                  updated_mean_prediction_))
+        ROS_WARN_STREAM("Failed to update performance evaluation!");
+    }
     return true;
   }
   return false;

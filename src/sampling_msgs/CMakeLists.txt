@@ -13,6 +13,7 @@ add_message_files(
   temperature_measurement.msg
   AgentLocation.msg
   report.msg
+  SamplingPerformance.msg
 )
 
 add_service_files(
