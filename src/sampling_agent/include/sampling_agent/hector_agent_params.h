@@ -22,8 +22,6 @@ class HectorAgentParams {
 
   double navigation_height_m;
 
-  double navigation_speed_ms;
-
   double takeoff_distance_m;
 
 };  // namespace scene

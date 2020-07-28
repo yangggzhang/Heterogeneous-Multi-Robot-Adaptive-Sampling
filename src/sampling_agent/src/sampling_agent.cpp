@@ -44,6 +44,9 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh,
 
   agent_state_ = IDLE;
 
+  retreat_point_.x = KDiedAgentPositionX_m;
+  retreat_point_.y = KDiedAgentPositionY_m;
+
   start_time_ = ros::Time::now();
 }
 
@@ -165,8 +168,7 @@ bool SamplingAgent::Run() {
         if (last_run_is_done_) {
           agent_state_ = DIED;
         } else {
-          target_position_.get().x = KDiedAgentPositionX_m;
-          target_position_.get().y = KDiedAgentPositionY_m;
+          target_position_ = boost::make_optional(retreat_point_);
           agent_state_ = NAVIGATE;
         }
       }
@@ -191,8 +193,7 @@ bool SamplingAgent::Run() {
         if (last_run_is_done_) {
           agent_state_ = DIED;
         } else {
-          target_position_.get().x = KDiedAgentPositionX_m;
-          target_position_.get().y = KDiedAgentPositionY_m;
+          target_position_ = boost::make_optional(retreat_point_);
           agent_state_ = NAVIGATE;
         }
       }
@@ -208,17 +209,21 @@ bool SamplingAgent::Run() {
           ROS_INFO_STREAM("Agent failed to reach the target location!");
         }
         agent_state_ = MEASURE;
-      } else if (target_position_.get().x == KDiedAgentPositionX_m &&
-                     target_position_.get().y == KDiedAgentPositionY_m ||
-                 !last_run_is_done_) {
-        while (!Navigate()) {
-          ROS_INFO_STREAM("sgent " << params_.agent_id
-                                   << " is trying to reach retiring spot!");
-        }
-        last_run_is_done_ = true;
-        agent_state_ = DIED;
       } else {
-        agent_state_ = DIED;
+        if (!target_position_.is_initialized()) {
+          agent_state_ = DIED;
+        } else if (target_position_.get().x == KDiedAgentPositionX_m &&
+                       target_position_.get().y == KDiedAgentPositionY_m ||
+                   !last_run_is_done_) {
+          while (!Navigate()) {
+            ROS_INFO_STREAM("sgent " << params_.agent_id
+                                     << " is trying to reach retiring spot!");
+          }
+          last_run_is_done_ = true;
+          agent_state_ = DIED;
+        } else {
+          agent_state_ = DIED;
+        }
       }
       break;
     }
@@ -238,8 +243,7 @@ bool SamplingAgent::Run() {
         if (last_run_is_done_) {
           agent_state_ = DIED;
         } else {
-          target_position_.get().x = KDiedAgentPositionX_m;
-          target_position_.get().y = KDiedAgentPositionY_m;
+          target_position_ = boost::make_optional(retreat_point_);
           agent_state_ = NAVIGATE;
         }
       }
@@ -259,8 +263,7 @@ bool SamplingAgent::Run() {
         if (last_run_is_done_) {
           agent_state_ = DIED;
         } else {
-          target_position_.get().x = KDiedAgentPositionX_m;
-          target_position_.get().y = KDiedAgentPositionY_m;
+          target_position_ = boost::make_optional(retreat_point_);
           agent_state_ = NAVIGATE;
         }
       }
@@ -279,7 +282,7 @@ bool SamplingAgent::Run() {
 }
 
 bool SamplingAgent::IsAgentAlive() {
-  return (ros::Time::now() - start_time_) >=
+  return (ros::Time::now() - start_time_) <=
          ros::Duration(params_.batterylife_ros_sec);
 }
 

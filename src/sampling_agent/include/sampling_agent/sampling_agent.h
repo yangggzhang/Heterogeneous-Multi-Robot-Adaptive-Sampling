@@ -86,6 +86,8 @@ class SamplingAgent {
   bool ReportDiedAgent();
 
   bool last_run_is_done_;
+
+  geometry_msgs::Point retreat_point_;
 };
 }  // namespace agent
 }  // namespace sampling
