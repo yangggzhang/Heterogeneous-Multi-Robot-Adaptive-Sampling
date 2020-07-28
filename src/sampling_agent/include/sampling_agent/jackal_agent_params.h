@@ -25,8 +25,6 @@ class JackalAgentParams {
 
   JackalNavigationMode navigation_mode;
 
-  double max_speed_ms;
-
   double execute_timeout_s;
 
   double preempt_timeout_s;

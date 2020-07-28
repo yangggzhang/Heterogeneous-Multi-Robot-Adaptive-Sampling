@@ -69,7 +69,7 @@ bool HectorAgent::Navigate() {
   hector_navigation_msgs::Navigation navigation_srv;
   navigation_srv.request.goal = target_position_.get();
   navigation_srv.request.goal.z = hector_params_.navigation_height_m;
-  navigation_srv.request.speed = hector_params_.navigation_speed_ms;
+  navigation_srv.request.speed = params_.max_speed_ms;
 
   if (!hector_navigate_client_.call(navigation_srv)) {
     ROS_INFO_STREAM("Hector" << params_.agent_id

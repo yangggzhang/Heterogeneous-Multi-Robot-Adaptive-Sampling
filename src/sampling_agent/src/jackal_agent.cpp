@@ -30,11 +30,11 @@ JackalAgent::JackalAgent(ros::NodeHandle &nh,
 
   nh.setParam("/" + agent_params.agent_id +
                   "/jackal_velocity_controller/linear/x/max_velocity",
-              jackal_params.max_speed_ms);
+              agent_params.max_speed_ms);
 
   nh.setParam(
       "/" + agent_params.agent_id + "/move_base/TrajectoryPlannerROS/max_vel_x",
-      jackal_params.max_speed_ms);
+      agent_params.max_speed_ms);
 }
 
 std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROSParam(

@@ -22,8 +22,6 @@ bool JackalAgentParams::LoadFromRosParams(ros::NodeHandle& ph) {
     return false;
   }
 
-  ph.param<double>("max_speed_ms", max_speed_ms, KJackalMaxSpeed_ms);
-
   ph.param<double>("execute_timeout_s", execute_timeout_s,
                    KJackalExecuteTimeout_s);
 
