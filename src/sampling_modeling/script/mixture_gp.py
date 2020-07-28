@@ -58,12 +58,12 @@ class MixtureGaussianProcess:
             self.X_train = np.asarray(X_train)
             self.Y_train = np.asarray(Y_train)
             self.P = np.random.random((len(Y_train), self.num_gp))
-            self.P = self.P / self.P.sum(axis=1, dtype='float')[:, None]
+            self.P = self.P / np.linalg.norm(self.P, axis = 1)[:,np.newaxis]
         else:
             self.X_train = np.concatenate((self.X_train, X_train), axis=0)
             self.Y_train = np.concatenate((self.Y_train, Y_train)).reshape(-1)
             new_P = np.random.random((len(Y_train), self.num_gp))
-            new_P = new_P / new_P.sum(axis=1, dtype='float')[:,None]
+            new_P = new_P / np.linalg.norm(new_P, axis = 1)[:,np.newaxis]
             self.P = np.concatenate((self.P, new_P), axis=0)
         self.X_train, I = np.unique(self.X_train, axis=0, return_index=True)
         self.Y_train = self.Y_train[I]
@@ -96,19 +96,3 @@ class MixtureGaussianProcess:
         mean = pred_mean * P
         var = pred_var * P
         return mean.sum(axis=1), var.sum(axis=1)
-
-# from gp_util import plot_gp
-
-# # Finite number of points
-# X = np.arange(-5, 5, 0.2).reshape(-1, 1)
-
-# test_gp = mixture_gp()
-# noise = 0.4
-
-# # Noisy training data
-# X_train = np.arange(-3, 4, 1).reshape(-1, 1)
-# Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
-# test_gp.AddSample(X_train, Y_train)
-# mu_s, var_s, P = test_gp.EMOptimize()
-# test_gp.FitGatingFunction(X_train, P)
-# pred_P = test_gp.PredictGatingFunction(X_train)
