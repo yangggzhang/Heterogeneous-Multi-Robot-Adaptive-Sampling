@@ -8,6 +8,8 @@
 #include <boost/optional.hpp>
 #include <string>
 
+#include "sampling_agent/sampling_agent_params.h"
+
 namespace sampling {
 namespace agent {
 
@@ -33,7 +35,7 @@ class SamplingAgent {
   bool Run();
 
  protected:
-  SamplingAgent(ros::NodeHandle &nh, const std::string &agent_id);
+  SamplingAgent(ros::NodeHandle &nh, const SamplingAgentParams &params);
 
   bool RequestTarget();
 
@@ -55,11 +57,13 @@ class SamplingAgent {
 
   SamplingState agent_state_;
 
-  std::string agent_id_;
+  SamplingAgentParams params_;
 
   ros::ServiceClient sampling_goal_service_;
 
   ros::ServiceClient measurement_service_;
+
+  ros::ServiceClient notify_died_agent_service_;
 
   ros::ServiceServer stop_agent_server_;
 
@@ -74,6 +78,14 @@ class SamplingAgent {
   boost::optional<geometry_msgs::Point> target_position_;
 
   boost::optional<double> measurement_;
+
+  ros::Time start_time_;
+
+  bool IsAgentAlive();
+
+  bool ReportDiedAgent();
+
+  bool last_run_is_done_;
 };
 }  // namespace agent
 }  // namespace sampling

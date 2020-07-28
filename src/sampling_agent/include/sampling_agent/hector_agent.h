@@ -5,6 +5,7 @@
 
 #include "sampling_agent/hector_agent_params.h"
 #include "sampling_agent/sampling_agent.h"
+#include "sampling_agent/sampling_agent_params.h"
 
 namespace sampling {
 namespace agent {
@@ -16,13 +17,13 @@ class HectorAgent : public SamplingAgent {
   HectorAgent() = delete;
 
   static std::unique_ptr<HectorAgent> MakeUniqueFromROSParam(
-      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
+      ros::NodeHandle &nh, ros::NodeHandle &ph);
 
  private:
-  HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
+  HectorAgent(ros::NodeHandle &nh, const SamplingAgentParams &agent_params,
               const HectorAgentParams &params);
 
-  HectorAgentParams params_;
+  HectorAgentParams hector_params_;
 
   bool Navigate() override;
 

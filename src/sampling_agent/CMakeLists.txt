@@ -43,6 +43,7 @@ include_directories(
 # Declare a C++ library
 add_library(${PROJECT_NAME}
   src/sampling_agent.cpp
+  src/sampling_agent_params.cpp
   src/jackal_agent.cpp
   src/jackal_agent_params.cpp
   src/pelican_agent.cpp

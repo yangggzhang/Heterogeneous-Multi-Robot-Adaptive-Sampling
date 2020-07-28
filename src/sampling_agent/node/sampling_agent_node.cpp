@@ -15,9 +15,6 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  // ros::AsyncSpinner spinner(0);
-  // spinner.start();
-
   while (ros::ok()) {
     agent->Run();
     ros::spinOnce();

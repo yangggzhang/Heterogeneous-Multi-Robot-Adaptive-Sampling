@@ -3,9 +3,9 @@
 namespace sampling {
 namespace agent {
 
-PelicanAgentParam::PelicanAgentParam() {}
+PelicanAgentParams::PelicanAgentParams() {}
 
-bool PelicanAgentParam::LoadFromRosParams(ros::NodeHandle &ph) {
+bool PelicanAgentParams::LoadFromRosParams(ros::NodeHandle &ph) {
   ph.param<double>("hover_time_s", hover_time_s, KHoverTime_s);
 
   ph.param<double>("navigate_wait_time_s", navigate_wait_time_s,

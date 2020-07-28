@@ -21,16 +21,16 @@ class JackalAgent : public SamplingAgent {
   JackalAgent() = delete;
 
   static std::unique_ptr<JackalAgent> MakeUniqueFromROSParam(
-      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
+      ros::NodeHandle &nh, ros::NodeHandle &ph);
 
  private:
-  JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
-              const JackalAgentParams &params,
+  JackalAgent(ros::NodeHandle &nh, const SamplingAgentParams &agent_params,
+              const JackalAgentParams &jackal_params,
               std::unique_ptr<JackalNavigator> jackal_navigator);
 
   bool Navigate() override;
 
-  JackalAgentParams params_;
+  JackalAgentParams jackal_params_;
 
   tf::TransformListener listener_;
 

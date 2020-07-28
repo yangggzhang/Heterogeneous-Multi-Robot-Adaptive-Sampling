@@ -2,9 +2,10 @@
 
 namespace sampling {
 namespace agent {
-PelicanAgent::PelicanAgent(ros::NodeHandle &nh, const std::string &agent_id,
-                           const PelicanAgentParam &params)
-    : SamplingAgent(nh, agent_id), params_(params) {
+PelicanAgent::PelicanAgent(ros::NodeHandle &nh,
+                           const SamplingAgentParams &agent_params,
+                           const PelicanAgentParams &pelican_params)
+    : SamplingAgent(nh, agent_params), pelican_params_(pelican_params) {
   /// todo \paul \yunfei
   /// load necessary parameters
 
@@ -27,13 +28,20 @@ PelicanAgent::PelicanAgent(ros::NodeHandle &nh, const std::string &agent_id,
 }
 
 std::unique_ptr<PelicanAgent> PelicanAgent::MakeUniqueFromROSParam(
-    ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
-  PelicanAgentParam params;
-  if (!params.LoadFromRosParams(ph)) {
+    ros::NodeHandle &nh, ros::NodeHandle &ph) {
+  SamplingAgentParams agent_params;
+  if (!agent_params.LoadFromRosParams(ph)) {
+    ROS_ERROR("Failed to load agent parameters for hector agent!");
+    return nullptr;
+  }
+
+  PelicanAgentParams pelican_params;
+  if (!pelican_params.LoadFromRosParams(ph)) {
     ROS_ERROR("Failed to load pelican parameters!");
     return nullptr;
   }
-  return std::unique_ptr<PelicanAgent>(new PelicanAgent(nh, agent_id, params));
+  return std::unique_ptr<PelicanAgent>(
+      new PelicanAgent(nh, agent_params, pelican_params));
 }
 
 bool PelicanAgent::WaypointNavigate(const double &latitude,
@@ -71,7 +79,8 @@ bool PelicanAgent::Navigate() {
 
   if (!WaypointNavigate(current_gps_position_.get().x * KGPSScaleFactor,
                         current_gps_position_.get().y * KGPSScaleFactor,
-                        params_.hover_height_mm, params_.measure_height_mm)) {
+                        pelican_params_.hover_height_mm,
+                        pelican_params_.measure_height_mm)) {
     ROS_INFO_STREAM("Pelican failed to increase height");
     return false;
   }
@@ -81,21 +90,22 @@ bool PelicanAgent::Navigate() {
   /// solution when it fails
 
   double transformed_gps_rtk_latitude_ =
-      target_position_.get().x + params_.latitude_offset;
+      target_position_.get().x + pelican_params_.latitude_offset;
   double transformed_gps_rtk_lonitude_ =
-      target_position_.get().y + params_.longitude_offset;
+      target_position_.get().y + pelican_params_.longitude_offset;
 
   double relative_rtk_latitude =
-      transformed_gps_rtk_latitude_ - params_.rtk_latitude_offset;
+      transformed_gps_rtk_latitude_ - pelican_params_.rtk_latitude_offset;
   double relative_rtk_longitude =
-      transformed_gps_rtk_lonitude_ - params_.rtk_longitude_offset;
+      transformed_gps_rtk_lonitude_ - pelican_params_.rtk_longitude_offset;
 
   double cmd_latitude = relative_rtk_latitude * KGPSScaleFactor;
   double cmd_longitude = relative_rtk_longitude * KGPSScaleFactor;
 
   gps_converge_flag_ = false;
-  if (!WaypointNavigate(cmd_latitude, cmd_longitude, params_.hover_height_mm,
-                        params_.navigate_wait_time_s)) {
+  if (!WaypointNavigate(cmd_latitude, cmd_longitude,
+                        pelican_params_.hover_height_mm,
+                        pelican_params_.navigate_wait_time_s)) {
     ROS_INFO_STREAM("Pelican failed to navigate to next location");
     return false;
   }
@@ -104,17 +114,17 @@ bool PelicanAgent::Navigate() {
   /// todo \paul \yunfei
   /// can not converge forever?
   converge_count_ = 0;
-  ros::Rate navigate_loop_rate(params_.navigate_loop_rate_hz);
+  ros::Rate navigate_loop_rate(pelican_params_.navigate_loop_rate_hz);
   ros::Time begin = ros::Time::now();
   ros::Duration navigationTime = ros::Time::now() - begin;
   while (ros::ok() &&            // ros is still alive
          !gps_converge_flag_ &&  // gps not converged
-         navigationTime.toSec() <= params_.navigate_timeout_s) {
+         navigationTime.toSec() <= pelican_params_.navigate_timeout_s) {
     ros::spinOnce();
     navigate_loop_rate.sleep();
     navigationTime = ros::Time::now() - begin;
   }
-  if (navigationTime.toSec() > params_.navigate_timeout_s) {
+  if (navigationTime.toSec() > pelican_params_.navigate_timeout_s) {
     ROS_INFO_STREAM("Pelican Navigation Time Out");
     return false;
   }
@@ -122,8 +132,9 @@ bool PelicanAgent::Navigate() {
   /// step 4. navigate to next gap waypoint
   /// todo \paul \yunfei
   /// solution when it fails
-  if (!WaypointNavigate(cmd_latitude, cmd_longitude, params_.measure_height_mm,
-                        params_.hover_time_s)) {
+  if (!WaypointNavigate(cmd_latitude, cmd_longitude,
+                        pelican_params_.measure_height_mm,
+                        pelican_params_.hover_time_s)) {
     ROS_INFO_STREAM("Pelican failed to land down to measurement height!");
     return false;
   }
@@ -140,11 +151,11 @@ void PelicanAgent::CheckConvergence() {
       pow(last_gps_position_.get().x - current_gps_position_.get().x, 2) +
       pow(last_gps_position_.get().y - current_gps_position_.get().y, 2));
   distance *= KGPSScaleFactor;
-  if (distance >= params_.gps_converge_threshold_mm) {
+  if (distance >= pelican_params_.gps_converge_threshold_mm) {
     converge_count_ = 0;
     gps_converge_flag_ = false;
   } else {
-    gps_converge_flag_ = ++converge_count_ >= params_.gps_buffer_size;
+    gps_converge_flag_ = ++converge_count_ >= pelican_params_.gps_buffer_size;
     if (gps_converge_flag_)
       ROS_INFO_STREAM("Pelican GPS waypoint navigation converged!");
   }
@@ -173,24 +184,26 @@ void PelicanAgent::UpdatePositionFromGPS(const sensor_msgs::NavSatFix &msg) {
 
   CheckConvergence();
 
-  double latitude_in_rtk_frame =
-      current_gps_position_.get().x +
-      (params_.rtk_latitude_offset - params_.navigation_latitude_offset);
-  double longitude_in_rtk_frame =
-      current_gps_position_.get().y +
-      (params_.rtk_longitude_offset - params_.navigation_longitude_offset);
+  double latitude_in_rtk_frame = current_gps_position_.get().x +
+                                 (pelican_params_.rtk_latitude_offset -
+                                  pelican_params_.navigation_latitude_offset);
+  double longitude_in_rtk_frame = current_gps_position_.get().y +
+                                  (pelican_params_.rtk_longitude_offset -
+                                   pelican_params_.navigation_longitude_offset);
 
   if (!current_position_.is_initialized()) {
     geometry_msgs::Point current_position;
-    current_position.x = (latitude_in_rtk_frame - params_.latitude_offset);
-    current_position.y = (longitude_in_rtk_frame - params_.longitude_offset);
+    current_position.x =
+        (latitude_in_rtk_frame - pelican_params_.latitude_offset);
+    current_position.y =
+        (longitude_in_rtk_frame - pelican_params_.longitude_offset);
     current_position.z = current_gps_position_.get().z;
     current_position_ = boost::make_optional(current_position);
   } else {
     current_position_.get().x =
-        (latitude_in_rtk_frame - params_.latitude_offset);
+        (latitude_in_rtk_frame - pelican_params_.latitude_offset);
     current_position_.get().y =
-        (longitude_in_rtk_frame - params_.longitude_offset);
+        (longitude_in_rtk_frame - pelican_params_.longitude_offset);
     current_position_.get().z = current_gps_position_.get().z;
   }
 }

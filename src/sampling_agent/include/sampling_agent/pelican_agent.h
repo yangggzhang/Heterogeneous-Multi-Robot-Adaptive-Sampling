@@ -20,11 +20,11 @@ class PelicanAgent : public SamplingAgent {
   PelicanAgent() = delete;
 
   static std::unique_ptr<PelicanAgent> MakeUniqueFromROSParam(
-      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
+      ros::NodeHandle &nh, ros::NodeHandle &ph);
 
  private:
-  PelicanAgent(ros::NodeHandle &nh, const std::string &agent_id,
-               const PelicanAgentParam &params);
+  PelicanAgent(ros::NodeHandle &nh, const SamplingAgentParams &agent_params,
+               const PelicanAgentParams &pelican_params);
 
   ros::Publisher xb_command_publisher_;
 
@@ -39,7 +39,7 @@ class PelicanAgent : public SamplingAgent {
 
   bool Navigate() override;
 
-  PelicanAgentParam params_;
+  PelicanAgentParams pelican_params_;
 
   double cmd_latitude_;
   double cmd_longitude_;

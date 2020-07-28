@@ -18,9 +18,9 @@ const int KGPSBufferSize = 5;
 const int KNavigateLoopRate_hz = 10;
 const double KGPSScaleFactor = 10e8;
 
-class PelicanAgentParam {
+class PelicanAgentParams {
  public:
-  PelicanAgentParam();
+  PelicanAgentParams();
 
   bool LoadFromRosParams(ros::NodeHandle &ph);
 

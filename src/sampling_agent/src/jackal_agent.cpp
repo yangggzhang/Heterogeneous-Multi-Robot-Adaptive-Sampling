@@ -5,21 +5,22 @@
 namespace sampling {
 namespace agent {
 
-JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
-                         const JackalAgentParams &params,
+JackalAgent::JackalAgent(ros::NodeHandle &nh,
+                         const SamplingAgentParams &agent_params,
+                         const JackalAgentParams &jackal_params,
                          std::unique_ptr<JackalNavigator> jackal_navigator)
-    : SamplingAgent(nh, agent_id),
-      params_(params),
+    : SamplingAgent(nh, agent_params),
+      jackal_params_(jackal_params),
       jackal_navigator_(std::move(jackal_navigator)) {
-  switch (params.navigation_mode) {
+  switch (jackal_params.navigation_mode) {
     case ODOM: {
       odom_subscriber_ =
-          nh.subscribe(agent_id + "/odometry/local_filtered", 1,
+          nh.subscribe(agent_params.agent_id + "/odometry/local_filtered", 1,
                        &JackalAgent::UpdatePositionFromOdom, this);
       break;
     }
     case GPS: {
-      gps_subscriber_ = nh.subscribe(agent_id + "/navsat/fix", 1,
+      gps_subscriber_ = nh.subscribe(agent_params.agent_id + "/navsat/fix", 1,
                                      &JackalAgent::UpdatePositionFromGPS, this);
       break;
     }
@@ -27,31 +28,39 @@ JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
       break;
   }
 
-  nh.setParam(
-      "/" + agent_id + "/jackal_velocity_controller/linear/x/max_velocity",
-      params.max_speed_ms);
+  nh.setParam("/" + agent_params.agent_id +
+                  "/jackal_velocity_controller/linear/x/max_velocity",
+              jackal_params.max_speed_ms);
 
-  nh.setParam("/" + agent_id + "/move_base/TrajectoryPlannerROS/max_vel_x",
-              params.max_speed_ms);
+  nh.setParam(
+      "/" + agent_params.agent_id + "/move_base/TrajectoryPlannerROS/max_vel_x",
+      jackal_params.max_speed_ms);
 }
 
 std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROSParam(
-    ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
-  JackalAgentParams params;
-  if (!params.LoadFromRosParams(ph)) {
-    ROS_ERROR_STREAM("Failed to load parameters for agent : " << agent_id);
+    ros::NodeHandle &nh, ros::NodeHandle &ph) {
+  SamplingAgentParams agent_params;
+  if (!agent_params.LoadFromRosParams(ph)) {
+    ROS_ERROR("Failed to load agent parameters for hector agent!");
+    return nullptr;
+  }
+
+  JackalAgentParams jackal_params;
+  if (!jackal_params.LoadFromRosParams(ph)) {
+    ROS_ERROR_STREAM(
+        "Failed to load parameters for agent : " << agent_params.agent_id);
     return nullptr;
   }
   std::unique_ptr<JackalNavigator> jackal_navigator =
       std::unique_ptr<JackalNavigator>(
-          new JackalNavigator(agent_id + "/move_base", true));
+          new JackalNavigator(agent_params.agent_id + "/move_base", true));
   if (!jackal_navigator->waitForServer(ros::Duration(10.0))) {
     ROS_INFO_STREAM("Missing move base action for Jackal!");
     return nullptr;
   }
 
-  return std::unique_ptr<JackalAgent>(
-      new JackalAgent(nh, agent_id, params, std::move(jackal_navigator)));
+  return std::unique_ptr<JackalAgent>(new JackalAgent(
+      nh, agent_params, jackal_params, std::move(jackal_navigator)));
 }  // namespace agent
 
 bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
@@ -73,7 +82,8 @@ bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
 
   try {
     odom_point.header.stamp = ros::Time::now();
-    listener_.transformPoint(params_.navigation_frame, UTM_point, odom_point);
+    listener_.transformPoint(jackal_params_.navigation_frame, UTM_point,
+                             odom_point);
   } catch (tf::TransformException &ex) {
     ROS_WARN("%s", ex.what());
     return false;
@@ -83,17 +93,17 @@ bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
 
 bool JackalAgent::Navigate() {
   move_base_msgs::MoveBaseGoal navigation_goal;
-  const std::string navigation_frame = agent_id_ + "/odom";
+  const std::string navigation_frame = params_.agent_id + "/odom";
   navigation_goal.target_pose.header.frame_id = navigation_frame;
   navigation_goal.target_pose.header.stamp = ros::Time::now();
   navigation_goal.target_pose.pose.orientation.w = 1.0;
 
-  switch (params_.navigation_mode) {
+  switch (jackal_params_.navigation_mode) {
     case ODOM: {
       navigation_goal.target_pose.pose.position = target_position_.get();
 
       geometry_msgs::PointStamped point_in, point_out;
-      point_in.header.frame_id = params_.navigation_frame;
+      point_in.header.frame_id = jackal_params_.navigation_frame;
       point_in.point = target_position_.get();
 
       try {
@@ -104,8 +114,8 @@ bool JackalAgent::Navigate() {
       } catch (tf::TransformException &ex) {
         ROS_ERROR_STREAM(
             "Received an exception trying to transform a point from "
-            << params_.navigation_frame << "to " << point_in.header.frame_id
-            << " " << ex.what());
+            << jackal_params_.navigation_frame << "to "
+            << point_in.header.frame_id << " " << ex.what());
         return false;
       }
       break;
@@ -127,9 +137,9 @@ bool JackalAgent::Navigate() {
     }
   }
 
-  jackal_navigator_->sendGoalAndWait(navigation_goal,
-                                     ros::Duration(params_.execute_timeout_s),
-                                     ros::Duration(params_.preempt_timeout_s));
+  jackal_navigator_->sendGoalAndWait(
+      navigation_goal, ros::Duration(jackal_params_.execute_timeout_s),
+      ros::Duration(jackal_params_.preempt_timeout_s));
   if (jackal_navigator_->getState() ==
       actionlib::SimpleClientGoalState::SUCCEEDED) {
     ROS_INFO_STREAM("Jackal reached goal!");
@@ -137,7 +147,7 @@ bool JackalAgent::Navigate() {
     return true;
   } else {
     ROS_INFO_STREAM("Robot "
-                    << agent_id_
+                    << params_.agent_id
                     << " failed to reach the target location with state "
                     << jackal_navigator_->getState().toString());
     return false;
@@ -151,14 +161,15 @@ void JackalAgent::UpdatePositionFromOdom(const nav_msgs::Odometry &msg) {
 
   try {
     // geometry_msgs::PointStamped base_point;
-    listener_.transformPoint(params_.navigation_frame, point_in, point_out);
-    point_out.header.frame_id = params_.navigation_frame;
+    listener_.transformPoint(jackal_params_.navigation_frame, point_in,
+                             point_out);
+    point_out.header.frame_id = jackal_params_.navigation_frame;
     current_position_ = boost::make_optional(point_out.point);
 
   } catch (tf::TransformException &ex) {
     ROS_ERROR_STREAM("Received an exception trying to transform a point from "
                      << point_in.header.frame_id << "to "
-                     << params_.navigation_frame << " " << ex.what());
+                     << jackal_params_.navigation_frame << " " << ex.what());
   }
 }
 
