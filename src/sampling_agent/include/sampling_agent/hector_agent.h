@@ -20,9 +20,9 @@ class HectorAgent : public SamplingAgent {
 
  private:
   HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
-              const HectorAgentParam &params);
+              const HectorAgentParams &params);
 
-  HectorAgentParam params_;
+  HectorAgentParams params_;
 
   bool Navigate() override;
 

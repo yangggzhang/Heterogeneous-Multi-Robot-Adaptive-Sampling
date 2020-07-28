@@ -27,4 +27,5 @@
   <depend>sampling_visualization</depend>
   <depend>sampling_utils</depend>
   <depend>std_srvs</depend>
+  <depend>sampling_agent</depend>
 </package>

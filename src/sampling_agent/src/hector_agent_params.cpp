@@ -3,9 +3,9 @@
 namespace sampling {
 namespace agent {
 
-HectorAgentParam::HectorAgentParam() {}
+HectorAgentParams::HectorAgentParams() {}
 
-bool HectorAgentParam::LoadFromRosParams(ros::NodeHandle& ph) {
+bool HectorAgentParams::LoadFromRosParams(ros::NodeHandle& ph) {
   ph.param<std::string>("navigation_frame", navigation_frame, KNavigationFrame);
 
   ph.param<double>("navigation_height_m", navigation_height_m,

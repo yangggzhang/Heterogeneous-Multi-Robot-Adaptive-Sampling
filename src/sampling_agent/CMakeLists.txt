@@ -44,17 +44,17 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/sampling_agent.cpp
   src/jackal_agent.cpp
+  src/jackal_agent_params.cpp
   src/pelican_agent.cpp
   src/pelican_agent_params.cpp
   src/hector_agent.cpp
   src/hector_agent_params.cpp
-  # src/fake_agent.cpp
 )
 
 add_executable(sampling_agent_node node/sampling_agent_node.cpp)
 target_link_libraries(sampling_agent_node ${PROJECT_NAME} ${catkin_LIBRARIES} )
 
-# add_executable(pelican_node node/pelican_node.cpp)
+# add_executable(pelican_node node/pelican_node.cpp)/
 # target_link_libraries(pelican_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 # add_executable(fake_agent_node node/fake_agent_node.cpp)

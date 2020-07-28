@@ -52,7 +52,7 @@ std::unique_ptr<SamplingAgent> SamplingAgent::MakeUniqueFromROS(
     return nullptr;
   }
   if (agent_type.compare("JACKAL") == 0) {
-    return JackalAgent::MakeUniqueFromROS(nh, agent_id);
+    return JackalAgent::MakeUniqueFromROSParam(nh, ph, agent_id);
   } else if (agent_type.compare("PELICAN") == 0) {
     return PelicanAgent::MakeUniqueFromROSParam(nh, ph, agent_id);
   } else if (agent_type.compare("HECTOR") == 0) {
@@ -171,8 +171,6 @@ bool SamplingAgent::Run() {
                                    << " succeeded in receiving "
                                       "target from master "
                                       "computer : ");
-        ROS_INFO_STREAM("Position : " << target_position_.get().x << " "
-                                      << target_position_.get().y);
         agent_state_ = NAVIGATE;
       }
       break;

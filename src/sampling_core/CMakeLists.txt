@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   sampling_measurement
   sampling_utils
   sampling_msgs
+  sampling_agent
   sampling_partition
   sampling_online_learning
   sampling_visualization

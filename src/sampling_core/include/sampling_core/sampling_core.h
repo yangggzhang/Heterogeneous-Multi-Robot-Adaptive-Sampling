@@ -8,6 +8,7 @@
 #include "sampling_core/sampling_core_performance_evaluation.h"
 #include "sampling_msgs/AddSampleToModel.h"
 #include "sampling_msgs/AgentLocation.h"
+#include "sampling_msgs/KillAgent.h"
 #include "sampling_msgs/Sample.h"
 #include "sampling_msgs/SamplingGoal.h"
 #include "sampling_online_learning/online_learning_handler.h"
@@ -60,6 +61,8 @@ class SamplingCore {
 
   ros::ServiceClient modeling_predict_client_;
 
+  ros::ServiceServer kill_agent_server_;
+
   ros::ServiceServer sampling_goal_server_;
 
   std::vector<ros::ServiceClient> agent_check_clients_;
@@ -103,9 +106,14 @@ class SamplingCore {
   bool AssignSamplingGoal(sampling_msgs::SamplingGoal::Request &req,
                           sampling_msgs::SamplingGoal::Response &res);
 
+  bool KillAgent(sampling_msgs::KillAgent::Request &req,
+                 sampling_msgs::KillAgent::Response &res);
+
   std::vector<double> updated_mean_prediction_;
 
   std::vector<double> updated_var_prediction_;
+
+  std::unordered_set<std::string> died_agents_;
 
   int sample_count_;
 

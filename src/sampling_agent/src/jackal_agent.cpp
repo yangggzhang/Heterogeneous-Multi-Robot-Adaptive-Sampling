@@ -6,15 +6,12 @@ namespace sampling {
 namespace agent {
 
 JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
-                         std::unique_ptr<JackalNavigator> jackal_navigator,
-                         const JackalNavigationMode &navigation_mode)
+                         const JackalAgentParams &params,
+                         std::unique_ptr<JackalNavigator> jackal_navigator)
     : SamplingAgent(nh, agent_id),
-      navigation_mode_(navigation_mode),
+      params_(params),
       jackal_navigator_(std::move(jackal_navigator)) {
-  nh.param<double>("execute_timeout_s", execute_timeout_s_, 30.0);
-  nh.param<double>("preempt_timeout_s", preempt_timeout_s_, 15.0);
-
-  switch (navigation_mode) {
+  switch (params.navigation_mode) {
     case ODOM: {
       odom_subscriber_ =
           nh.subscribe(agent_id + "/odometry/local_filtered", 1,
@@ -29,10 +26,22 @@ JackalAgent::JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
     default:
       break;
   }
+
+  nh.setParam(
+      "/" + agent_id + "/jackal_velocity_controller/linear/x/max_velocity",
+      params.max_speed_ms);
+
+  nh.setParam("/" + agent_id + "/move_base/TrajectoryPlannerROS/max_vel_x",
+              params.max_speed_ms);
 }
 
-std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROS(
-    ros::NodeHandle &nh, const std::string &agent_id) {
+std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROSParam(
+    ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
+  JackalAgentParams params;
+  if (!params.LoadFromRosParams(ph)) {
+    ROS_ERROR_STREAM("Failed to load parameters for agent : " << agent_id);
+    return nullptr;
+  }
   std::unique_ptr<JackalNavigator> jackal_navigator =
       std::unique_ptr<JackalNavigator>(
           new JackalNavigator(agent_id + "/move_base", true));
@@ -40,27 +49,9 @@ std::unique_ptr<JackalAgent> JackalAgent::MakeUniqueFromROS(
     ROS_INFO_STREAM("Missing move base action for Jackal!");
     return nullptr;
   }
-  std::string navigation_mode_str;
-  nh.param<std::string>("navigation_mode", navigation_mode_str, "ODOM");
-  JackalNavigationMode navigation_mode;
-  if (navigation_mode_str.compare("ODOM") == 0) {
-    navigation_mode = ODOM;
-  } else if (navigation_mode_str.compare("GPS") == 0) {
-    navigation_mode = GPS;
-    tf::TransformListener listener(nh);
-    if (!listener.waitForTransform(KWorldFrame, "utm", ros::Time::now(),
-                                   ros::Duration(10.0))) {
-      ROS_INFO_STREAM(
-          "Failed to get connect get utm information for GPS navigation!");
-      return nullptr;
-    }
-  } else {
-    ROS_INFO_STREAM("Unknown navigation mode for Jackal!");
-    return nullptr;
-  }
 
-  return std::unique_ptr<JackalAgent>(new JackalAgent(
-      nh, agent_id, std::move(jackal_navigator), navigation_mode));
+  return std::unique_ptr<JackalAgent>(
+      new JackalAgent(nh, agent_id, params, std::move(jackal_navigator)));
 }  // namespace agent
 
 bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
@@ -82,7 +73,7 @@ bool JackalAgent::GPStoOdom(const double &latitude, const double &longitude,
 
   try {
     odom_point.header.stamp = ros::Time::now();
-    listener_.transformPoint(KWorldFrame, UTM_point, odom_point);
+    listener_.transformPoint(params_.navigation_frame, UTM_point, odom_point);
   } catch (tf::TransformException &ex) {
     ROS_WARN("%s", ex.what());
     return false;
@@ -97,12 +88,12 @@ bool JackalAgent::Navigate() {
   navigation_goal.target_pose.header.stamp = ros::Time::now();
   navigation_goal.target_pose.pose.orientation.w = 1.0;
 
-  switch (navigation_mode_) {
+  switch (params_.navigation_mode) {
     case ODOM: {
       navigation_goal.target_pose.pose.position = target_position_.get();
 
       geometry_msgs::PointStamped point_in, point_out;
-      point_in.header.frame_id = KWorldFrame;
+      point_in.header.frame_id = params_.navigation_frame;
       point_in.point = target_position_.get();
 
       try {
@@ -113,8 +104,8 @@ bool JackalAgent::Navigate() {
       } catch (tf::TransformException &ex) {
         ROS_ERROR_STREAM(
             "Received an exception trying to transform a point from "
-            << KWorldFrame << "to " << point_in.header.frame_id << " "
-            << ex.what());
+            << params_.navigation_frame << "to " << point_in.header.frame_id
+            << " " << ex.what());
         return false;
       }
       break;
@@ -136,18 +127,9 @@ bool JackalAgent::Navigate() {
     }
   }
 
-  ROS_INFO_STREAM("Jackal ready to go to target pose : "
-                  << navigation_goal.target_pose.pose.position.x << " "
-                  << navigation_goal.target_pose.pose.position.y
-                  << " in frame : "
-                  << navigation_goal.target_pose.header.frame_id);
-  ROS_INFO_STREAM("Pose : " << target_position_.get().x << " "
-                            << target_position_.get().y << " in "
-                            << KWorldFrame);
-
   jackal_navigator_->sendGoalAndWait(navigation_goal,
-                                     ros::Duration(execute_timeout_s_),
-                                     ros::Duration(preempt_timeout_s_));
+                                     ros::Duration(params_.execute_timeout_s),
+                                     ros::Duration(params_.preempt_timeout_s));
   if (jackal_navigator_->getState() ==
       actionlib::SimpleClientGoalState::SUCCEEDED) {
     ROS_INFO_STREAM("Jackal reached goal!");
@@ -169,14 +151,14 @@ void JackalAgent::UpdatePositionFromOdom(const nav_msgs::Odometry &msg) {
 
   try {
     // geometry_msgs::PointStamped base_point;
-    listener_.transformPoint(KWorldFrame, point_in, point_out);
-    point_out.header.frame_id = KWorldFrame;
+    listener_.transformPoint(params_.navigation_frame, point_in, point_out);
+    point_out.header.frame_id = params_.navigation_frame;
     current_position_ = boost::make_optional(point_out.point);
 
   } catch (tf::TransformException &ex) {
     ROS_ERROR_STREAM("Received an exception trying to transform a point from "
-                     << point_in.header.frame_id << "to " << KWorldFrame << " "
-                     << ex.what());
+                     << point_in.header.frame_id << "to "
+                     << params_.navigation_frame << " " << ex.what());
   }
 }
 

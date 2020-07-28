@@ -10,9 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Sample.msg
-  temperature_measurement.msg
   AgentLocation.msg
-  report.msg
   SamplingPerformance.msg
 )
 
@@ -28,6 +26,7 @@ add_service_files(
   AddSampleToModel.srv
   AddTestPositionToModel.srv
   ModelPredict.srv
+  KillAgent.srv
 )
 
 generate_messages(

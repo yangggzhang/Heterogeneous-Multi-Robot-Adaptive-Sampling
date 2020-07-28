@@ -1,4 +1,0 @@
-Header header
-float64 raw_temperature
-float64 filtered_temperature
-bool converged

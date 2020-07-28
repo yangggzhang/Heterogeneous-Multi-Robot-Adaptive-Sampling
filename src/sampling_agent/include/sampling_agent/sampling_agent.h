@@ -11,6 +11,9 @@
 namespace sampling {
 namespace agent {
 
+const double KDiedAgentPositionX_m = -1.0;
+const double KDiedAgentPositionY_m = -1.0;
+
 /// robot state machine
 /// Default : IDLE
 /// Workflow

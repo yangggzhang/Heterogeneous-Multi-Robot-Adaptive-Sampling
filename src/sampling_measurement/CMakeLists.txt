@@ -38,6 +38,3 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-
-# add_executable(sampling_measurement_simulation_node node/sampling_measurement_simulation_node.cpp)
-# target_link_libraries(sampling_measurement_simulation_node ${catkin_LIBRARIES})

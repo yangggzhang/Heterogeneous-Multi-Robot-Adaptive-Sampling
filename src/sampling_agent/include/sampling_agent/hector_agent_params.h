@@ -12,9 +12,9 @@ const double KNavigationHeight_m = 2.0;
 const double KNavigationSpeed_ms = 4.0;
 const double KTakeoffDistance_m = 0.5;
 
-class HectorAgentParam {
+class HectorAgentParams {
  public:
-  HectorAgentParam();
+  HectorAgentParams();
 
   bool LoadFromRosParams(ros::NodeHandle &ph);
 

@@ -1,6 +1,0 @@
-<launch>   
-   <node pkg="sampling_agent" type="jackal_node" name="jackal" output="screen" >
-         <rosparam command="load" file="$(find sampling_agent)/config/sampling_agent_config.yaml" />
-         <rosparam command="load" file="$(find sampling_agent)/config/jackal_config.yaml" />
-   </node>
-</launch>

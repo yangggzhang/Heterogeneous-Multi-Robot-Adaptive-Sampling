@@ -19,6 +19,9 @@
         <rosparam>
             agent_type: "HECTOR"
             agent_id: "hector0"
+            navigation_height_m: 3.0
+            navigation_speed_ms: 4.0
+            takeoff_distance_m: 0.5
         </rosparam>
     </node>
 
@@ -26,6 +29,7 @@
         <rosparam>
             agent_type: "JACKAL"
             agent_id: "jackal0"
+            max_speed_ms: 2.0
         </rosparam>
     </node>
     
@@ -33,6 +37,7 @@
         <rosparam>
             agent_type: "JACKAL"
             agent_id: "jackal1"
+            max_speed_ms: 2.0
         </rosparam>
     </node>
 

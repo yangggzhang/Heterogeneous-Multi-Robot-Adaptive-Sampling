@@ -2,6 +2,7 @@
 
 #include <std_srvs/Trigger.h>
 
+#include "sampling_agent/sampling_agent.h"
 #include "sampling_msgs/AddTestPositionToModel.h"
 #include "sampling_msgs/ModelPredict.h"
 #include "sampling_utils/utils.h"
@@ -142,6 +143,9 @@ SamplingCore::SamplingCore(
   sampling_goal_server_ = nh.advertiseService(
       "sampling_goal_channel", &SamplingCore::AssignSamplingGoal, this);
 
+  kill_agent_server_ =
+      nh.advertiseService("kill_agent", &SamplingCore::KillAgent, this);
+
   for (const std::string &agent_id : params.agent_ids) {
     ros::ServiceClient agent_check_client =
         nh.serviceClient<std_srvs::Trigger>(agent_id + "/check");
@@ -162,26 +166,21 @@ bool SamplingCore::Loop() {
       return true;
     }
   }
-  // ROS_INFO_STREAM("New sample : " << sample_buffer_.size() << " out of "
-  //                                 << params_.model_update_frequency_count);
+
   if (sample_buffer_.size() >= params_.model_update_frequency_count) {
     ROS_INFO_STREAM("Start updating model!");
-
     if (!UpdateModel()) {
       ROS_WARN_STREAM("Failed to update model!");
       ROS_WARN_STREAM("Retry --- --- ---");
       return false;
-    } else {
-      ROS_INFO_STREAM("Finish model update!");
     }
     if (!UpdatePrediction()) {
       ROS_WARN_STREAM("Failed to update prediction!");
       ROS_WARN_STREAM("Retry --- --- ---");
       return false;
-    } else {
-      ROS_INFO_STREAM("Finish prediction update!");
     }
   }
+
   if (!UpdateVisualization()) {
     ROS_WARN_STREAM("Failed to update visualization!");
     ROS_WARN_STREAM("Retry --- --- ---");
@@ -194,7 +193,8 @@ bool SamplingCore::Loop() {
 void SamplingCore::AgentLocationUpdateCallback(
     const sampling_msgs::AgentLocationConstPtr &msg) {
   // todo: check valid
-  agents_locations_[msg->agent_id] = *msg;
+  if (!died_agents_.count(msg->agent_id))
+    agents_locations_[msg->agent_id] = *msg;
 }
 
 void SamplingCore::SampleUpdateCallback(
@@ -279,11 +279,6 @@ bool SamplingCore::InitializeModelAndPrediction() {
       predict_srv.response.success) {
     updated_mean_prediction_ = predict_srv.response.mean;
     updated_var_prediction_ = predict_srv.response.var;
-    for (const auto &d : updated_var_prediction_) {
-      if (d < 0) {
-        ROS_WARN_STREAM("!!!!!!!!!!!!!!!!!!!!!!");
-      }
-    }
   } else {
     ROS_ERROR_STREAM("Model initial prediction failed!");
     return false;
@@ -336,7 +331,12 @@ bool SamplingCore::UpdateVisualization() {
   std::vector<sampling_msgs::AgentLocation> agent_locations_msg;
   agent_locations_msg.reserve(params_.agent_ids.size());
   for (const std::string &agent_id : params_.agent_ids) {
-    if (agents_locations_.count(agent_id))
+    if (died_agents_.count(agent_id)) {
+      sampling_msgs::AgentLocation msg;
+      msg.agent_id = agent_id;
+      msg.position.x = agent::KDiedAgentPositionX_m;
+      msg.position.y = agent::KDiedAgentPositionY_m;
+    } else if (agents_locations_.count(agent_id))
       agent_locations_msg.push_back(agents_locations_[agent_id]);
   }
   if (!agent_visualization_handler_->UpdateMarker(agent_locations_msg)) {
@@ -368,7 +368,9 @@ bool SamplingCore::UpdateVisualization() {
       std::vector<sampling_msgs::AgentLocation> agent_locations;
       agent_locations.reserve(params_.agent_ids.size());
       for (const std::string &agent_id : params_.agent_ids) {
-        if (!agents_locations_.count(agent_id)) {
+        if (died_agents_.count(agent_id))
+          continue;
+        else if (!agents_locations_.count(agent_id)) {
           ROS_ERROR_STREAM("Do NOT have location information for " << agent_id);
           return false;
         } else {
@@ -410,7 +412,9 @@ bool SamplingCore::AssignSamplingGoal(
   std::vector<sampling_msgs::AgentLocation> agent_locations;
   agent_locations.reserve(params_.agent_ids.size());
   for (const std::string &agent_id : params_.agent_ids) {
-    if (!agents_locations_.count(agent_id)) {
+    if (died_agents_.count(agent_id))
+      continue;
+    else if (!agents_locations_.count(agent_id)) {
       ROS_ERROR_STREAM("Do NOT have location information for " << agent_id);
       return false;
     } else {
@@ -455,6 +459,14 @@ bool SamplingCore::AssignSamplingGoal(
 
   res.target_position = informative_point;
 
+  return true;
+}
+
+bool SamplingCore::KillAgent(sampling_msgs::KillAgent::Request &req,
+                             sampling_msgs::KillAgent::Response &res) {
+  died_agents_.insert(req.agent_id);
+  agents_locations_.erase(req.agent_id);
+  res.success = true;
   return true;
 }
 

@@ -7,31 +7,30 @@
 #include <sensor_msgs/NavSatFix.h>
 #include <tf/transform_listener.h>
 
+#include "sampling_agent/jackal_agent_params.h"
 #include "sampling_agent/sampling_agent.h"
 
 namespace sampling {
 namespace agent {
 
-enum JackalNavigationMode { GPS, ODOM };
-
 using JackalNavigator =
     actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>;
-
-const std::string KWorldFrame = "map";
 
 class JackalAgent : public SamplingAgent {
  public:
   JackalAgent() = delete;
 
-  static std::unique_ptr<JackalAgent> MakeUniqueFromROS(
-      ros::NodeHandle &nh, const std::string &agent_id);
+  static std::unique_ptr<JackalAgent> MakeUniqueFromROSParam(
+      ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id);
 
  private:
   JackalAgent(ros::NodeHandle &nh, const std::string &agent_id,
-              std::unique_ptr<JackalNavigator> jackal_navigator,
-              const JackalNavigationMode &navigation_mode);
+              const JackalAgentParams &params,
+              std::unique_ptr<JackalNavigator> jackal_navigator);
 
   bool Navigate() override;
+
+  JackalAgentParams params_;
 
   tf::TransformListener listener_;
 
@@ -47,12 +46,6 @@ class JackalAgent : public SamplingAgent {
   void UpdatePositionFromGPS(const sensor_msgs::NavSatFix &msg);
 
   std::unique_ptr<JackalNavigator> jackal_navigator_;
-
-  double execute_timeout_s_;
-
-  double preempt_timeout_s_;
-
-  JackalNavigationMode navigation_mode_;
 };
 }  // namespace agent
 }  // namespace sampling

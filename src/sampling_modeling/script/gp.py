@@ -99,27 +99,3 @@ class GP:
         res = minimize(nnl_stable, [l_init, sigma_f_init], method='L-BFGS-B')
         updated_l, updated_sigma_f = res.x
         self.kernel.UpdateKernel(updated_l, updated_sigma_f)    
-
-# from gp_util import plot_gp
-
-# # Finite number of points
-# X = np.arange(-5, 5, 0.2).reshape(-1, 1)
-
-# test_gp = GP(kernel=RBF_kernel(l=1.0, sigma_f=1.0), sigma_y=3)
-# noise = 0.4
-
-# # Noisy training data
-# X_train = np.arange(-3, 4, 1).reshape(-1, 1)
-# Y_train = np.sin(X_train) + noise * np.random.randn(*X_train.shape)
-
-
-
-# test_gp.OptimizeKernel(X_train, Y_train, noise)
-
-# res = minimize(nll_fn(X_train, Y_train, noise), [1, 1], 
-#                bounds=((1e-5, None), (1e-5, None)),
-#                method='L-BFGS-B')
-
-# mu_s, cov_s = test_gp.PosteriorPredict(X, X_train, Y_train)
-# samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, 3)
-# plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)

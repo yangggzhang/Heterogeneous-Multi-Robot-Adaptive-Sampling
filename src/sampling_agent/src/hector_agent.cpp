@@ -7,7 +7,7 @@ namespace sampling {
 namespace agent {
 
 HectorAgent::HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
-                         const HectorAgentParam &params)
+                         const HectorAgentParams &params)
     : SamplingAgent(nh, agent_id), params_(params), taken_off_(false) {
   odom_subscriber_ = nh.subscribe(agent_id + "/ground_truth/state", 1,
                                   &HectorAgent::UpdatePositionFromOdom, this);
@@ -22,7 +22,7 @@ HectorAgent::HectorAgent(ros::NodeHandle &nh, const std::string &agent_id,
 
 std::unique_ptr<HectorAgent> HectorAgent::MakeUniqueFromROSParam(
     ros::NodeHandle &nh, ros::NodeHandle &ph, const std::string &agent_id) {
-  HectorAgentParam params;
+  HectorAgentParams params;
   if (!params.LoadFromRosParams(ph)) {
     ROS_ERROR("Failed to load parameters for hector agent!");
     return nullptr;
