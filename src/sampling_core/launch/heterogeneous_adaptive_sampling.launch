@@ -46,12 +46,12 @@
 
     <node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
         <param name="measurement_trial" value="wifi_2_routers"/>
-        <param name="poly_order" value="7"/>
-        <param name="noise_stdev" value="0.05"/>
+        <param name="poly_order" value="5"/>
+        <param name="noise_stdev" value="0.65"/>
     </node>
 
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
-        <rosparam command="load" file="$(find sampling_core)/config/heterogeneous_adaptive_sampling_config.yaml" />
+        <rosparam command="load" file="$(find sampling_core)/config/scenerio1_heterogeneous_adaptive_sampling_config.yaml" />
     </node>
 
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
