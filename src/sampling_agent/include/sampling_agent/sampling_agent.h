@@ -88,6 +88,10 @@ class SamplingAgent {
   bool last_run_is_done_;
 
   geometry_msgs::Point retreat_point_;
+
+  bool active_in_master_;
+
+  bool StartRetreat();
 };
 }  // namespace agent
 }  // namespace sampling

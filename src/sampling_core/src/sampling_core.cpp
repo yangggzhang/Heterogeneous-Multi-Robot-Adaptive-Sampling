@@ -336,6 +336,7 @@ bool SamplingCore::UpdateVisualization() {
       msg.agent_id = agent_id;
       msg.position.x = agent::KDiedAgentPositionX_m;
       msg.position.y = agent::KDiedAgentPositionY_m;
+      agent_locations_msg.push_back(msg);
     } else if (agents_locations_.count(agent_id))
       agent_locations_msg.push_back(agents_locations_[agent_id]);
   }
@@ -368,9 +369,9 @@ bool SamplingCore::UpdateVisualization() {
       std::vector<sampling_msgs::AgentLocation> agent_locations;
       agent_locations.reserve(params_.agent_ids.size());
       for (const std::string &agent_id : params_.agent_ids) {
-        if (died_agents_.count(agent_id))
+        if (died_agents_.count(agent_id)) {
           continue;
-        else if (!agents_locations_.count(agent_id)) {
+        } else if (!agents_locations_.count(agent_id)) {
           ROS_ERROR_STREAM("Do NOT have location information for " << agent_id);
           return false;
         } else {
@@ -412,9 +413,9 @@ bool SamplingCore::AssignSamplingGoal(
   std::vector<sampling_msgs::AgentLocation> agent_locations;
   agent_locations.reserve(params_.agent_ids.size());
   for (const std::string &agent_id : params_.agent_ids) {
-    if (died_agents_.count(agent_id))
+    if (died_agents_.count(agent_id)) {
       continue;
-    else if (!agents_locations_.count(agent_id)) {
+    } else if (!agents_locations_.count(agent_id)) {
       ROS_ERROR_STREAM("Do NOT have location information for " << agent_id);
       return false;
     } else {
@@ -465,6 +466,9 @@ bool SamplingCore::AssignSamplingGoal(
 bool SamplingCore::KillAgent(sampling_msgs::KillAgent::Request &req,
                              sampling_msgs::KillAgent::Response &res) {
   died_agents_.insert(req.agent_id);
+  ROS_INFO_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  ROS_ERROR_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  ROS_WARN_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   agents_locations_.erase(req.agent_id);
   res.success = true;
   return true;

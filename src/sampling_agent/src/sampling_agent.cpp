@@ -17,7 +17,7 @@ namespace agent {
 
 SamplingAgent::SamplingAgent(ros::NodeHandle &nh,
                              const SamplingAgentParams &params)
-    : params_(params), last_run_is_done_(false) {
+    : params_(params), last_run_is_done_(false), active_in_master_(false) {
   sampling_goal_service_ =
       nh.serviceClient<sampling_msgs::SamplingGoal>("sampling_goal_channel");
 
@@ -113,6 +113,7 @@ bool SamplingAgent::CheckService(std_srvs::Trigger::Request &req,
   ROS_INFO_STREAM("Agent : " + params_.agent_id << " received check!");
   res.success = true;
   res.message = "Agent : " + params_.agent_id + "is ready!";
+  active_in_master_ = true;
   return true;
 }
 
@@ -167,9 +168,10 @@ bool SamplingAgent::Run() {
       else {
         if (last_run_is_done_) {
           agent_state_ = DIED;
-        } else {
-          target_position_ = boost::make_optional(retreat_point_);
-          agent_state_ = NAVIGATE;
+        } else if (!StartRetreat()) {
+          ROS_WARN_STREAM("Agent : "
+                          << params_.agent_id
+                          << " failed to report running out of battery!");
         }
       }
       break;
@@ -192,9 +194,10 @@ bool SamplingAgent::Run() {
       } else {
         if (last_run_is_done_) {
           agent_state_ = DIED;
-        } else {
-          target_position_ = boost::make_optional(retreat_point_);
-          agent_state_ = NAVIGATE;
+        } else if (!StartRetreat()) {
+          ROS_WARN_STREAM("Agent : "
+                          << params_.agent_id
+                          << " failed to report running out of battery!");
         }
       }
       break;
@@ -242,9 +245,10 @@ bool SamplingAgent::Run() {
       } else {
         if (last_run_is_done_) {
           agent_state_ = DIED;
-        } else {
-          target_position_ = boost::make_optional(retreat_point_);
-          agent_state_ = NAVIGATE;
+        } else if (!StartRetreat()) {
+          ROS_WARN_STREAM("Agent : "
+                          << params_.agent_id
+                          << " failed to report running out of battery!");
         }
       }
       break;
@@ -262,9 +266,10 @@ bool SamplingAgent::Run() {
       } else {
         if (last_run_is_done_) {
           agent_state_ = DIED;
-        } else {
-          target_position_ = boost::make_optional(retreat_point_);
-          agent_state_ = NAVIGATE;
+        } else if (!StartRetreat()) {
+          ROS_WARN_STREAM("Agent : "
+                          << params_.agent_id
+                          << " failed to report running out of battery!");
         }
       }
       break;
@@ -279,18 +284,28 @@ bool SamplingAgent::Run() {
     }
   }
   return true;
-}
+}  // namespace agent
 
 bool SamplingAgent::IsAgentAlive() {
   return (ros::Time::now() - start_time_) <=
          ros::Duration(params_.batterylife_ros_sec);
 }
-
-bool SamplingAgent::ReportDiedAgent() {
+bool SamplingAgent::StartRetreat() {
   sampling_msgs::KillAgent srv;
   srv.request.agent_id = params_.agent_id;
-  if (!notify_died_agent_service_.call(srv)) return false;
-  return srv.response.success;
+  while (active_in_master_) {
+    ros::spinOnce();
+    if (!notify_died_agent_service_.call(srv) || !srv.response.success) {
+      ros::Duration(0.1).sleep();
+      continue;
+    }
+    active_in_master_ = false;
+    ROS_WARN_STREAM("Agent : " << params_.agent_id
+                               << " failed to report running out of battery!");
+  }
+  target_position_ = boost::make_optional(retreat_point_);
+  agent_state_ = NAVIGATE;
+  return true;
 }
 
 }  // namespace agent

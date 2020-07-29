@@ -31,7 +31,7 @@
             agent_type: "JACKAL"
             agent_id: "jackal0"
             max_speed_ms: 2.0
-            batterylife_ros_sec: 10000
+            batterylife_ros_sec: 30
         </rosparam>
     </node>
     
