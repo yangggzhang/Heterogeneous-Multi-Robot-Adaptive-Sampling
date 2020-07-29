@@ -9,7 +9,6 @@ import rospy
 from numpy.linalg import inv
 from numpy.linalg import cholesky, det, lstsq
 from scipy.optimize import minimize
-import operator
 
 class RBF_kernel:
     def __init__(self, l=0.5, sigma_f=0.5):
