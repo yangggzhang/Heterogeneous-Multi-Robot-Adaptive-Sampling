@@ -334,8 +334,8 @@ bool SamplingCore::UpdateVisualization() {
     if (died_agents_.count(agent_id)) {
       sampling_msgs::AgentLocation msg;
       msg.agent_id = agent_id;
-      msg.position.x = agent::KDiedAgentPositionX_m;
-      msg.position.y = agent::KDiedAgentPositionY_m;
+      msg.position.x = agent::KRetreatPositionX_m;
+      msg.position.y = agent::KRetreatPositionY_m;
       agent_locations_msg.push_back(msg);
     } else if (agents_locations_.count(agent_id))
       agent_locations_msg.push_back(agents_locations_[agent_id]);
