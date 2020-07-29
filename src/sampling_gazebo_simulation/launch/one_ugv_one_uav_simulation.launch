@@ -2,7 +2,7 @@
   <arg name="use_sim_time" default="true" />
   <arg name="gui" default="true" />
   <arg name="headless" default="false" />
-  <arg name="world_name" default="$(find sampling_gazebo_simulation)/worlds/scenario1.world" />
+  <arg name="scenario" default="1" />
 
   <!-- jackal config -->
   <arg name="jackal_config" default="front_laser" />
@@ -17,7 +17,7 @@
     <arg name="gui" value="$(arg gui)" />
     <arg name="use_sim_time" value="$(arg use_sim_time)" />
     <arg name="headless" value="$(arg headless)" />
-    <arg name="world_name" value="$(arg world_name)" />
+    <arg name="world_name" value="$(find sampling_gazebo_simulation)/worlds/scenario$(arg scenario).world" />
   </include>
 
   <!-- Spawn jackal0. -->

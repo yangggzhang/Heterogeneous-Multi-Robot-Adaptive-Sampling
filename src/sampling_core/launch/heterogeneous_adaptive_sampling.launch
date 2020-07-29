@@ -1,4 +1,8 @@
 <launch>
+    <arg name="ground_truth_data" default="wifi_3_routers" />
+    <arg name="scenario" default="1" />
+
+
     <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
         <rosparam>
             num_gp: 3
@@ -45,13 +49,15 @@
     </node>
 
     <node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
-        <param name="measurement_trial" value="wifi_2_routers"/>
+        <param name="measurement_trial" value="$(arg ground_truth_data)"/>
         <param name="poly_order" value="5"/>
         <param name="noise_stdev" value="0.65"/>
     </node>
 
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
-        <rosparam command="load" file="$(find sampling_core)/config/scenerio1_heterogeneous_adaptive_sampling_config.yaml" />
+        <rosparam command="load" file="$(find sampling_core)/config/scenario$(arg scenario).yaml" />
+        <param name="test_location_file" value="$(arg ground_truth_data).txt"/>
+        <param name="groundtruth_measurement_file" value="$(arg ground_truth_data).txt"/>
     </node>
 
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
