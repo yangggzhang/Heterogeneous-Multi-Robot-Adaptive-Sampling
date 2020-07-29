@@ -317,8 +317,8 @@ bool SamplingCore::UpdatePrediction() {
     updated_mean_prediction_ = srv.response.mean;
     updated_var_prediction_ = srv.response.var;
     if (evaluation_handler_ != nullptr) {
-      if (!evaluation_handler_->UpdatePerformance(sample_count_,
-                                                  updated_mean_prediction_))
+      if (!evaluation_handler_->UpdatePerformance(
+              sample_count_, updated_mean_prediction_, updated_var_prediction_))
         ROS_WARN_STREAM("Failed to update performance evaluation!");
     }
     return true;

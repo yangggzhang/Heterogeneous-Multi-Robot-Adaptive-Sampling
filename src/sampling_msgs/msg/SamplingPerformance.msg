@@ -1,3 +1,4 @@
 Header header
 int32 sample_count
 float64 rmse
+float64 average_variance

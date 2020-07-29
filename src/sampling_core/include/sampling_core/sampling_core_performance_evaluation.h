@@ -17,7 +17,8 @@ class SamplingCorePerformanceEvaluation {
       ros::NodeHandle &nh, const std::vector<double> &ground_truth_data);
 
   bool UpdatePerformance(const int &sample_count,
-                         const std::vector<double> &prediction_data);
+                         const std::vector<double> &prediction_data,
+                         const std::vector<double> &prediction_variance);
 
  private:
   SamplingCorePerformanceEvaluation(
@@ -25,6 +26,9 @@ class SamplingCorePerformanceEvaluation {
 
   bool CalculateRMSE(const std::vector<double> &ground_truth_data,
                      const std::vector<double> &prediction_data, double &rmse);
+
+  bool CalculateMeanVariance(const std::vector<double> &prediction_variance,
+                             double &mean_variance);
 
   void ReportPerformanceCallback(const ros::TimerEvent &);
 
@@ -34,11 +38,11 @@ class SamplingCorePerformanceEvaluation {
 
   std::vector<double> ground_truth_data_;
 
-  std::vector<double> prediction_data_;
-
   int sample_count_;
 
   double rmse_;
+
+  double average_variance_;
 
 };  // namespace scene
 }  // namespace core

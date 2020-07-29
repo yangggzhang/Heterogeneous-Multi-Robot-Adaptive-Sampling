@@ -20,7 +20,10 @@ SamplingCorePerformanceEvaluation::MakeUniqueFromRos(
 
 SamplingCorePerformanceEvaluation::SamplingCorePerformanceEvaluation(
     ros::NodeHandle &nh, const std::vector<double> &ground_truth_data)
-    : ground_truth_data_(ground_truth_data), sample_count_(0) {
+    : ground_truth_data_(ground_truth_data),
+      sample_count_(0),
+      average_variance_(-1.0),
+      rmse_(-1.0) {
   event_timer_ = nh.createTimer(
       ros::Duration(1.0),
       &SamplingCorePerformanceEvaluation::ReportPerformanceCallback, this);
@@ -30,14 +33,17 @@ SamplingCorePerformanceEvaluation::SamplingCorePerformanceEvaluation(
 }
 
 bool SamplingCorePerformanceEvaluation::UpdatePerformance(
-    const int &sample_count, const std::vector<double> &prediction_data) {
+    const int &sample_count, const std::vector<double> &prediction_data,
+    const std::vector<double> &prediction_variance) {
   if (prediction_data.size() != ground_truth_data_.size()) {
     ROS_ERROR_STREAM("Evaluation data size does NOT match!");
     return false;
   }
   sample_count_ = sample_count;
-  prediction_data_ = prediction_data;
-  if (!CalculateRMSE(ground_truth_data_, prediction_data_, rmse_)) {
+  if (!CalculateRMSE(ground_truth_data_, prediction_data, rmse_)) {
+    return false;
+  }
+  if (!CalculateMeanVariance(prediction_variance, average_variance_)) {
     return false;
   }
   return true;
@@ -58,6 +64,26 @@ bool SamplingCorePerformanceEvaluation::CalculateRMSE(
   return true;
 }
 
+bool SamplingCorePerformanceEvaluation::CalculateMeanVariance(
+    const std::vector<double> &prediction_variance, double &mean_variance) {
+  mean_variance = 0.0;
+  double count = 0.0;
+  for (const double &var : prediction_variance) {
+    if (var > 0) {
+      count += 1.0;
+      mean_variance += var;
+    }
+  }
+  if (count > 0) {
+    mean_variance /= count;
+    return true;
+  } else {
+    mean_variance = -1;
+    return false;
+  }
+  return false;
+}
+
 void SamplingCorePerformanceEvaluation::ReportPerformanceCallback(
     const ros::TimerEvent &) {
   if (sample_count_ > 0) {
@@ -65,6 +91,7 @@ void SamplingCorePerformanceEvaluation::ReportPerformanceCallback(
     msg.header.stamp = ros::Time::now();
     msg.sample_count = sample_count_;
     msg.rmse = rmse_;
+    msg.average_variance = average_variance_;
     performance_publisher_.publish(msg);
   }
 }
