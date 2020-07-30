@@ -74,7 +74,7 @@ class GP:
     
         return mu_s, np.diag(cov_s)
     
-    def OptimizeKernel(self, noise, X_train=None, Y_train=None, p = None):
+    def OptimizeKernel(self, X_train=None, Y_train=None, p = None):
         '''
         Returns a function that Computes the negative log marginal
         likelihood for training data X_train and Y_train and given 
@@ -88,7 +88,7 @@ class GP:
         if X_train is not None:
             self.UpdateData(X_train, Y_train)
         def nnl_stable(theta):
-            K = self.kernel.ComputeKernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  noise**2 * np.eye(len(Y_train))
+            K = self.kernel.ComputeKernel(X_train, X_train, l=theta[0], sigma_f=theta[1]) +  self.sigma_y**2 * np.eye(len(Y_train))
             L = cholesky(K)
             return np.sum(np.log(np.diagonal(L))) + \
                 0.5 * Y_train.T.dot(lstsq(L.T, lstsq(L, Y_train,rcond=None)[0],rcond=None)[0]) + \

@@ -13,7 +13,7 @@ namespace core {
 const std::string KDataPackage = "sampling_data";
 const int KModelUpdateFrequencyCount = 1;
 const int KInitSampleSize = 10;
-const double KInitSampleRatio = 0.10;
+const double KInitSampleRatio = 0.05;
 
 class SamplingCoreParams {
  public:

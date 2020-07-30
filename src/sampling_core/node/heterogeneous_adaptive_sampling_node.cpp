@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   ros::AsyncSpinner spinner(0);
   spinner.start();
 
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(3);
   while (ros::ok()) {
     sampling_core->Loop();
     loop_rate.sleep();
