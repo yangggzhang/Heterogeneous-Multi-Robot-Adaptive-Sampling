@@ -8,7 +8,7 @@ from std_srvs.srv import Trigger, TriggerResponse
 from geometry_msgs.msg import Point
 
 KModelingNameSpace = "modeling/"
-KOnlineOptimizationThreshold = 50
+KOnlineOptimizationThreshold = 1000
 
 class SamplingModeling(object):
     def __init__(self):
@@ -24,10 +24,9 @@ class SamplingModeling(object):
             assert len(gating_gp_param) == 3
             modeling_gps.append(GP(modeling_gp_param[0], modeling_gp_param[1], modeling_gp_param[2]))
             gating_gps.append(GP(gating_gp_param[0], gating_gp_param[1], gating_gp_param[2]))
-        noise_stdev = rospy.get_param("~noise_stdev", 0.1)
         EM_epsilon = rospy.get_param("~EM_epsilon", 0.03)
         EM_max_iteration = rospy.get_param("~EM_max_iteration", 100)
-        self.model = MixtureGaussianProcess(num_gp=num_gp, gps=modeling_gps, gating_gps=gating_gps, noise=noise_stdev, epsilon=EM_epsilon, max_iter=EM_max_iteration)
+        self.model = MixtureGaussianProcess(num_gp=num_gp, gps=modeling_gps, gating_gps=gating_gps, epsilon=EM_epsilon, max_iter=EM_max_iteration)
         self.X_test = None
         self.add_test_position_server = rospy.Service(KModelingNameSpace + 'add_test_position', AddTestPositionToModel, self.AddTestPosition)
         self.add_sample_server = rospy.Service(KModelingNameSpace + 'add_samples_to_model', AddSampleToModel, self.AddSampleToModel)

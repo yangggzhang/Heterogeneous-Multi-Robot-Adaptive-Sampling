@@ -9,9 +9,8 @@ from sklearn.preprocessing import normalize
 
 
 class MixtureGaussianProcess:
-    def __init__(self, num_gp=3, gps = [GP() for i in range(3)], gating_gps = [GP() for i in range(3)], noise=0.1, epsilon=0.05, max_iter=100):
+    def __init__(self, num_gp=3, gps = [GP() for i in range(3)], gating_gps = [GP() for i in range(3)], epsilon=0.05, max_iter=100):
         self.num_gp = num_gp
-        self.noise = noise
         self.gps = gps
         self.gating_gps = gating_gps
         self.X_train = None
@@ -35,20 +34,20 @@ class MixtureGaussianProcess:
             pred_mean[:, i], pred_var[:, i] = self.gps[i].PosteriorPredict(X_test=X_train, X_train=X_train, Y_train=Y_train, P=P[:, i])
         return pred_mean, pred_var
 
-    def Optimizate(self, X_train, Y_train, noise, P):
+    def Optimizate(self, X_train, Y_train, P):
         for i in range(self.num_gp):
-            self.gps[i].OptimizeKernel(noise=noise, X_train=X_train, Y_train=Y_train, p=P[:,[i]])
+            self.gps[i].OptimizeKernel(X_train=X_train, Y_train=Y_train, p=P[:,[i]])
     
     def EMOptimize(self, optimize_kernel = False):
         for i in range(self.max_iter):
             prev_P = self.P
-            if optimize_kernel == True:
-                self.Optimizate(self.X_train, self.Y_train, self.noise, self.P)
             pred_mean, pred_var = self.Maximization(self.X_train, self.Y_train, self.P)
             self.P = self.Expectation(pred_mean, pred_var, self.Y_train, self.P)
             diff_P = np.abs(self.P - prev_P)
             if (diff_P.max() <= self.epsilon):
                 break
+        if optimize_kernel == True:
+            self.Optimizate(self.X_train, self.Y_train, self.P)
         pred_mean = pred_mean * self.P
         pred_var = pred_var * self.P
         return pred_mean.sum(axis=1), pred_var.sum(axis=1), self.P
@@ -65,13 +64,13 @@ class MixtureGaussianProcess:
             new_P = np.random.random((len(Y_train), self.num_gp))
             new_P = new_P / np.sum(new_P, axis = 1)[:,np.newaxis]
             self.P = np.concatenate((self.P, new_P), axis=0)
-        self.X_train, I = np.unique(self.X_train, axis=0, return_index=True)
-        self.Y_train = self.Y_train[I]
-        self.P = self.P[I,:]
+        # self.X_train, I = np.unique(self.X_train, axis=0, return_index=True)
+        # self.Y_train = self.Y_train[I]
+        # self.P = self.P[I,:]
     
     def FitGatingFunction(self, X_train, P):
         for i in range(self.num_gp):
-            self.gating_gps[i].OptimizeKernel(noise=0.1, X_train=X_train, Y_train=P[:, [i]])
+            self.gating_gps[i].OptimizeKernel( X_train=X_train, Y_train=P[:, [i]])
     
     def PredictGatingFunction(self, X_test, X_train, P):
         P_prediction = np.zeros((X_test.shape[0], self.num_gp))
