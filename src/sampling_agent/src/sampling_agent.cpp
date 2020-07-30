@@ -148,9 +148,9 @@ bool SamplingAgent::ReportSample() {
   msg.agent_id = params_.agent_id;
   msg.position = current_position_.get();
   msg.position.x =
-      static_cast<float>(static_cast<int>(msg.position.x * 10.)) / 10.;
+      static_cast<float>(static_cast<int>(msg.position.x * 100.)) / 100.;
   msg.position.y =
-      static_cast<float>(static_cast<int>(msg.position.y * 10.)) / 10.;
+      static_cast<float>(static_cast<int>(msg.position.y * 100.)) / 100.;
   msg.data = measurement_.get();
   measurement_ = boost::none;
   sample_publisher_.publish(msg);
