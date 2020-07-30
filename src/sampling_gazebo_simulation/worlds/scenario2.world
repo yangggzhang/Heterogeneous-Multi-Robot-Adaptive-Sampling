@@ -101,30 +101,30 @@
         </link>
       </model>
       <model name='unit_cylinder'>
-        <pose frame=''>0 0 0.5 0 0 -0</pose>
+        <pose frame=''>2.5 3.5 0.5 0 0 -0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>0 0 0.499997 3e-06 4e-06 -0</pose>
+          <pose frame=''>2.5 3.5 0.499997 3e-06 4e-06 -0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 -9.8 0 -0 0</acceleration>
           <wrench>0 0 -9.8 0 -0 0</wrench>
         </link>
       </model>
       <model name='unit_cylinder_0'>
-        <pose frame=''>2.0 4.5 0.499997 3e-06 4e-06 -0</pose>
+        <pose frame=''>0.0 9.5 0.499997 3e-06 4e-06 -0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>2.0 4.5 0.499997 3e-06 4e-06 -0</pose>
+          <pose frame=''>0.0 9.5 0.499997 3e-06 4e-06 -0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 -9.8 0 -0 0</acceleration>
           <wrench>0 0 -9.8 0 -0 0</wrench>
         </link>
       </model>
       <model name='unit_cylinder_1'>
-        <pose frame=''>6.5 9.5 0.5 -3e-06 -4e-06 -0</pose>
+        <pose frame=''>7.5 0.5 0.5 -3e-06 -4e-06 -0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>6.5 9.5 0.499993 -3e-06 -4e-06 -0</pose>
+          <pose frame=''>7.5 0.5 0.499993 -3e-06 -4e-06 -0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 -9.8 0 -0 0</acceleration>
           <wrench>0 0 -9.8 0 -0 0</wrench>
@@ -142,7 +142,7 @@
       </camera>
     </gui>
     <model name='unit_cylinder'>
-      <pose frame=''>0.0 0.0 0.5 0 -0 0</pose>
+      <pose frame=''>2.5 3.5 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -196,7 +196,7 @@
       </link>
     </model>
     <model name='unit_cylinder_0'>
-      <pose frame=''>2.0 4.5 0.5 0 -0 0</pose>
+      <pose frame=''>0.0 9.5 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -250,7 +250,7 @@
       </link>
     </model>
     <model name='unit_cylinder_1'>
-      <pose frame=''>6.5 9.5 0.5 0 -0 0</pose>
+      <pose frame=''>7.5 0.5 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
