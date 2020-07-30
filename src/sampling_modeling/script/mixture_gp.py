@@ -23,7 +23,7 @@ class MixtureGaussianProcess:
         R = np.zeros((len(Y_train), self.num_gp))
         for i in range(self.num_gp):
             R[:, i] = norm(loc=pred_mean[:, i], scale=np.std(pred_var[:, i])).pdf(Y_train)
-        P = P * R
+        P = P * R + 1e-6
         P = P / np.linalg.norm(P, axis = 1)[:,np.newaxis]
         P = P + 1e-6
         return P
