@@ -10,19 +10,6 @@ rospack = rospkg.RosPack()
 
 # bag_name = "./homo/"
 bag_folder = "./hetero/"
-obstacle_id = "obs_1_"
-# obstacle_yaml = rospack.get_path('sampling_agent')+"/config/fake_agent_config.yaml"
-
-
-
-def terminate_process_and_children(p):
-    ps_command = subprocess.Popen("ps -o pid --ppid %d --noheaders" % p.pid, shell=True, stdout=subprocess.PIPE)
-    ps_output = ps_command.stdout.read()
-    (output, errors) = ps_command.communicate()
-    # assert retcode == 0, "ps command returned %d" % retcode
-    for pid_str in ps_output.split("\n")[:-1]:
-            os.kill(int(pid_str), signal.SIGINT)
-    p.terminate()
 
 if not os.path.exists(bag_folder):
     os.makedirs(bag_folder)
@@ -49,7 +36,7 @@ for i in range(2):
 
 		rospy.loginfo("started")
 
-		rospy.sleep(20)
+		rospy.sleep(200)
 		# 2 seconds later
 		launch.shutdown()
 		launch2.shutdown()
