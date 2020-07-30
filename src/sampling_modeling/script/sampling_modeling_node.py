@@ -8,7 +8,7 @@ from std_srvs.srv import Trigger, TriggerResponse
 from geometry_msgs.msg import Point
 
 KModelingNameSpace = "modeling/"
-KOnlineOptimizationThreshold = 100
+KOnlineOptimizationThreshold = 50
 
 class SamplingModeling(object):
     def __init__(self):

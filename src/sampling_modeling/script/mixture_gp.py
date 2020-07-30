@@ -71,12 +71,12 @@ class MixtureGaussianProcess:
     
     def FitGatingFunction(self, X_train, P):
         for i in range(self.num_gp):
-            self.gating_gps[i].OptimizeKernel(noise=0.0, X_train=X_train, Y_train=P[:, [i]])
+            self.gating_gps[i].OptimizeKernel(noise=0.1, X_train=X_train, Y_train=P[:, [i]])
     
     def PredictGatingFunction(self, X_test, X_train, P):
         P_prediction = np.zeros((X_test.shape[0], self.num_gp))
         for i in range(self.num_gp):
-            P_prediction[:, [i]], _ = self.gating_gps[i].PosteriorPredict(X_test, X_train, P[:, [i]])
+            P_prediction[:, [i]], _ = self.gating_gps[i].PosteriorPredict(X_test, X_train=X_train, Y_train=P[:, [i]])
         return P_prediction
     
     def OptimizeModel(self, optimize_kernel = False):
