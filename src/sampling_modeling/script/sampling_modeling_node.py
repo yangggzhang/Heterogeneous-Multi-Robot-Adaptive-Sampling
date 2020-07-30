@@ -8,6 +8,7 @@ from std_srvs.srv import Trigger, TriggerResponse
 from geometry_msgs.msg import Point
 
 KModelingNameSpace = "modeling/"
+KOnlineOptimizationThreshold = 100
 
 class SamplingModeling(object):
     def __init__(self):
@@ -24,7 +25,7 @@ class SamplingModeling(object):
             modeling_gps.append(GP(modeling_gp_param[0], modeling_gp_param[1], modeling_gp_param[2]))
             gating_gps.append(GP(gating_gp_param[0], gating_gp_param[1], gating_gp_param[2]))
         noise_stdev = rospy.get_param("~noise_stdev", 0.1)
-        EM_epsilon = rospy.get_param("~EM_epsilon", 0.05)
+        EM_epsilon = rospy.get_param("~EM_epsilon", 0.03)
         EM_max_iteration = rospy.get_param("~EM_max_iteration", 100)
         self.model = MixtureGaussianProcess(num_gp=num_gp, gps=modeling_gps, gating_gps=gating_gps, noise=noise_stdev, epsilon=EM_epsilon, max_iter=EM_max_iteration)
         self.X_test = None
@@ -32,6 +33,7 @@ class SamplingModeling(object):
         self.add_sample_server = rospy.Service(KModelingNameSpace + 'add_samples_to_model', AddSampleToModel, self.AddSampleToModel)
         self.update_model_server = rospy.Service(KModelingNameSpace + 'update_model', Trigger, self.UpdateModel)
         self.model_predict_server = rospy.Service(KModelingNameSpace + 'model_predict', ModelPredict, self.ModelPredict)
+        self.sample_count = 0
         rospy.spin()
     
     def AddTestPosition(self, req):
@@ -48,6 +50,8 @@ class SamplingModeling(object):
             new_X[i, 0] = req.positions[i].x
             new_X[i, 1] = req.positions[i].y
         self.model.AddSample(new_X, new_Y.reshape(-1))
+        self.sample_count = self.sample_count + len(new_Y)
+        self.optimize_kernel = (self.sample_count <= KOnlineOptimizationThreshold)
         return AddSampleToModelResponse(True)
 
     def UpdateModel(self, req):
