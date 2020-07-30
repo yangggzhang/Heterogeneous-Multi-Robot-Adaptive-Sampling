@@ -6,12 +6,12 @@
     <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
         <rosparam>
             num_gp: 3
-            modeling_gp_0_kernel: [0.5, 0.5, 0.25]
-            gating_gp_0_kernel: [0.75, 0.5, 0.1]
-            modeling_gp_1_kernel: [0.65, 0.65, 0.25]
-            gating_gp_1_kernel: [0.5, 0.5, 0.1]
-            modeling_gp_2_kernel: [0.35, 0.35, 0.25]
-            gating_gp_2_kernel: [1.25, 0.5, 0.1]
+            modeling_gp_0_kernel: [0.5, 0.5, 0.5]
+            gating_gp_0_kernel: [0.75, 0.5, 0.05]
+            modeling_gp_1_kernel: [0.65, 0.65, 0.5]
+            gating_gp_1_kernel: [0.5, 0.5, 0.05]
+            modeling_gp_2_kernel: [0.35, 0.35, 0.5]
+            gating_gp_2_kernel: [1.25, 0.5, 0.05]
             EM_epsilon: 0.05
             EM_max_iteration: 100
             online_kernel_optimization: True
@@ -52,7 +52,7 @@
     <node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
         <param name="measurement_trial" value="$(arg ground_truth_data)"/>
         <param name="poly_order" value="5"/>
-        <param name="noise_stdev" value="0.25"/>
+        <param name="noise_stdev" value="0.5"/>
     </node>
 
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
