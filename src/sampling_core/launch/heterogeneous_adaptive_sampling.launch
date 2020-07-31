@@ -25,7 +25,7 @@
             agent_type: "HECTOR"
             agent_id: "hector0"
             max_speed_ms: 4.0
-            batterylife_ros_sec: 3000
+            batterylife_ros_sec: 500
             navigation_height_m: 3.0
             takeoff_distance_m: 0.5
         </rosparam>
@@ -36,7 +36,7 @@
             agent_type: "JACKAL"
             agent_id: "jackal0"
             max_speed_ms: 2.0
-            batterylife_ros_sec: 5000
+            batterylife_ros_sec: 1000
         </rosparam>
     </node>
     
@@ -45,7 +45,7 @@
             agent_type: "JACKAL"
             agent_id: "jackal1"
             max_speed_ms: 2.0
-            batterylife_ros_sec: 5000
+            batterylife_ros_sec: 1000
         </rosparam>
     </node>
 
@@ -61,5 +61,5 @@
         <param name="groundtruth_measurement_file" value="$(arg ground_truth_data).txt"/>
     </node>
 
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
+    <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" /> -->
 </launch>

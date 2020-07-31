@@ -1,0 +1,61 @@
+#agents
+agent_ids: ["hector0", "jackal0", "jackal1"]
+
+# data
+random_initialization: true
+
+enable_performance_evaluation: True
+
+# Model Update
+model_update_frequency_count: 1
+
+# partition parameters
+HeterogeneousProperty:
+  - heterogenities: ["DISTANCE", "SPEED", "BATTERY_LIFE", "TRAVERSABILITY"]
+    weight_factor: [0.75, 1.0, 0.5, 1000.0]
+  - agent_id: "hector0"
+    heterogeneity_primitive: [1.0, 0.5, 1.0, 1.0]
+    number_control_area: 0
+  - agent_id: "jackal0"
+    heterogeneity_primitive: [1.0, 1.0, 0.75, 1.0]
+    number_control_area: 3
+    control_area_center_0: [0.0, 0.0]
+    control_area_radius_0: 2.25
+    control_area_center_1: [2.0, 4.5]
+    control_area_radius_1: 1.55
+    control_area_center_2: [6.5, 9.5]
+    control_area_radius_2: 1.05
+  - agent_id: "jackal1"
+    heterogeneity_primitive: [1.0, 1.0, 0.75, 1.0]
+    number_control_area: 3
+    control_area_center_0: [0.0, 0.0]
+    control_area_radius_0: 2.25
+    control_area_center_1: [2.0, 4.5]
+    control_area_radius_1: 1.55
+    control_area_center_2: [6.5, 9.5]
+    control_area_radius_2: 1.05
+
+#Online Learning Handler
+learning_type: "GREEDY"
+learning_beta: 0.5
+
+#Visualization
+VisualizationProperty:
+  - visualization_type: "LOCATION"
+    name: "AgentLocation"
+    offset: [0.0, 0.0]
+    scale: [1.0, 1.0]
+  - visualization_type: "PARTITION"
+    name: "Partition"
+    offset: [0.0, 0.0]
+    scale: [1.0, 1.0]
+  - visualization_type: "GRID"
+    name: "PredictionMean"
+    offset: [15.0, 0.0]
+    scale: [1.0, 1.0]
+    bounds: [-1.0, 7.5]
+  - visualization_type: "GRID"
+    name: "PredictionVariance"
+    offset: [30.0, 0.0]
+    scale: [1.0, 1.0]   
+    bounds: [0.0, 1.0]
