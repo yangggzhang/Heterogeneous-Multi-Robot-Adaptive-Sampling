@@ -11,8 +11,8 @@ from std_srvs.srv import Empty
 import time
 from roslaunch.parent import ROSLaunchParent
 
-# bag_folder = "./homo/"
-bag_folder = "./hetero/"
+experiment_type = "homo"  #hetero
+bag_folder = "./" + experiment_type + "/"
 experiment_num = 15 # num of trials to play in each scenario
 task_time = 400
 scenario_num = 3
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 			parent = ROSLaunchParent("experiment", [], is_core=True)     # run_id can be any string
 			parent.start()
 			rospy.sleep(10)
-			rospy.init_node('auto_experiment\', anonymous=True)
+			rospy.init_node('auto_experiment', anonymous=True)
 			uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 			roslaunch.configure_logging(uuid)
 			# launch gazebo simulation with corresponding world
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 			rosbag_proc = subprocess.Popen(command)
 			# launch sampling core
 			launch2 = roslaunch.parent.ROSLaunchParent(uuid, 
-			[(rospack.get_path('sampling_core')+"/launch/heterogeneous_adaptive_sampling.launch", "scenario:="+str(scenario))])
+			[(rospack.get_path('sampling_core')+"/launch/heterogeneous_adaptive_sampling.launch", "scenario:="+str(scenario) +" type:="+experiment_type)])
 			launch2.start()
 			rospy.loginfo("started")
 			# wait for task_time (s)

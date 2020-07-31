@@ -1,6 +1,7 @@
 <launch>
     <arg name="ground_truth_data" default="wifi_3_routers" />
     <arg name="scenario" default="1" />
+    <arg name="type" default="hetero" />
 
 
     <node pkg="sampling_modeling" type="sampling_modeling_node.py" name="sampling_modeling_node" output="screen">
@@ -56,7 +57,7 @@
     </node>
 
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
-        <rosparam command="load" file="$(find sampling_core)/config/scenario$(arg scenario).yaml" />
+        <rosparam command="load" file="$(find sampling_core)/config/scenario$(arg scenario)_$(arg type).yaml" />
         <param name="test_location_file" value="$(arg ground_truth_data).txt"/>
         <param name="groundtruth_measurement_file" value="$(arg ground_truth_data).txt"/>
     </node>
