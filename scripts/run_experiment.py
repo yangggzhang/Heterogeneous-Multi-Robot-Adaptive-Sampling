@@ -13,7 +13,7 @@ from roslaunch.parent import ROSLaunchParent
 
 experiment_type = "hetero"  #hetero
 bag_folder = "./" + experiment_type + "/"
-experiment_num = 15 # num of trials to play in each scenario
+experiment_num = 5 # num of trials to play in each scenario
 task_time = 400
 scenario_num = 3
 
