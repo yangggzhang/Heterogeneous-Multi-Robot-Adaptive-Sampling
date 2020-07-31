@@ -12,7 +12,7 @@ model_update_frequency_count: 1
 # partition parameters
 HeterogeneousProperty:
   - heterogenities: ["DISTANCE", "SPEED", "BATTERY_LIFE", "TRAVERSABILITY"]
-    weight_factor: [0.5, 1.0, 0.5, 1000.0]
+    weight_factor: [0.75, 1.0, 0.5, 1000.0]
   - agent_id: "hector0"
     heterogeneity_primitive: [1.0, 0.5, 1.0, 1.0]
     number_control_area: 0
@@ -20,20 +20,20 @@ HeterogeneousProperty:
     heterogeneity_primitive: [1.0, 1.0, 0.75, 1.0]
     number_control_area: 3
     control_area_center_0: [7.5, 8.5]
-    control_area_radius_0: 2.2
+    control_area_radius_0: 2.25
     control_area_center_1: [2.0, 6.5]
-    control_area_radius_1: 1.5
+    control_area_radius_1: 1.55
     control_area_center_2: [4.5, 0.5]
-    control_area_radius_2: 1.0
+    control_area_radius_2: 1.05
   - agent_id: "jackal1"
     heterogeneity_primitive: [1.0, 1.0, 0.75, 1.0]
     number_control_area: 3
     control_area_center_0: [7.5, 8.5]
-    control_area_radius_0: 2.2
+    control_area_radius_0: 2.25
     control_area_center_1: [2.0, 6.5]
-    control_area_radius_1: 1.5
+    control_area_radius_1: 1.55
     control_area_center_2: [4.5, 0.5]
-    control_area_radius_2: 1.0
+    control_area_radius_2: 1.05
 
 #Online Learning Handler
 learning_type: "GREEDY"
