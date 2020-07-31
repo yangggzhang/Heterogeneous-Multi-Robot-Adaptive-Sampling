@@ -44,7 +44,7 @@ if __name__ == '__main__':
 			rosbag_proc = subprocess.Popen(command)
 			# launch sampling core
 			launch2 = roslaunch.parent.ROSLaunchParent(uuid, 
-			[(rospack.get_path('sampling_core')+"/launch/heterogeneous_adaptive_sampling.launch", "scenario:="+str(scenario) +" type:="+experiment_type)])
+			[(rospack.get_path('sampling_core')+"/launch/"+experiment_type+"geneous_adaptive_sampling.launch", "scenario:="+str(scenario))])
 			launch2.start()
 			rospy.loginfo("started")
 			# wait for task_time (s)
