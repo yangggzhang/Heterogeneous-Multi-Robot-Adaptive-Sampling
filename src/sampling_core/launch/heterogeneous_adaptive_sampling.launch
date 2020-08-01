@@ -23,8 +23,8 @@
         <rosparam>
             agent_type: "HECTOR"
             agent_id: "hector0"
-            max_speed_ms: 4.0
-            batterylife_ros_sec: 500
+            max_speed_ms: 5.0
+            batterylife_ros_sec: 200
             navigation_height_m: 3.0
             takeoff_distance_m: 0.5
         </rosparam>
@@ -43,7 +43,7 @@
         <rosparam>
             agent_type: "JACKAL"
             agent_id: "jackal1"
-            max_speed_ms: 2.0
+            max_speed_ms: 1.0
             batterylife_ros_sec: 1000
         </rosparam>
     </node>
@@ -57,7 +57,7 @@
     <node pkg="sampling_core" type="heterogeneous_adaptive_sampling_node" name="heterogeneous_adaptive_sampling" output="screen"> 
         <rosparam command="load" file="$(find sampling_core)/config/scenario$(arg scenario)_hetero.yaml" />
         <param name="test_location_file" value="$(arg ground_truth_data).txt"/>
-        <param name="groundtruth_measurement_file" value="$(arg ground_truth_data).txt"/>
+        <param name="groundtruth_measurement_file" value="artificial_$(arg ground_truth_data).txt"/>
     </node>
 
     <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" /> -->

@@ -5,7 +5,6 @@ import rospkg
 import rospy
 from sampling_msgs.srv import RequestMeasurement, RequestMeasurementResponse
 
-
 class MeasurementSimulator(object):
     def __init__(self):
         rospy.init_node('measurement_simulation_node')
@@ -16,6 +15,7 @@ class MeasurementSimulator(object):
         self.position_x, self.position_y = self.loadposition(measurement_trial)
         self.measurement = self.loadmeasurement(measurement_trial)
         self.polyfit_coef = self.polyfit2d(self.position_x, self.position_y, self.measurement, order=self.polyfit_order)
+        self.generateGroundTruth(measurement_trial)
         self.measurement_simulation_server = rospy.Service('measurement_simulation', RequestMeasurement, self.simulatemeasurement)
         rospy.spin()
 
@@ -36,6 +36,14 @@ class MeasurementSimulator(object):
             z += a * x**i * y**j
         return z
     
+    def generateGroundTruth(self, measurement_trail):
+        artifical_ground_truth = self.rospack.get_path('sampling_data') + "/measurement/artificial_" + measurement_trail + ".txt"
+        data_file = open(artifical_ground_truth, "w")
+        for x, y in zip(self.position_x, self.position_y):
+            measurement = self.polyval2d(x, y, self.polyfit_coef)
+            data_file.write("%f\n" %(measurement))
+        data_file.close()
+
     def loadposition(self, measurement_trial):
         position_x = []
         position_y = []

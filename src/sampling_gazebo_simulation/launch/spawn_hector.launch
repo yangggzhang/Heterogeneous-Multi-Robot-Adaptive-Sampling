@@ -5,7 +5,12 @@
     <arg name="y" default="0.0" />
     <arg name="z" default="0.0" />
 
+
+
     <group ns="$(arg ns)">
+
+        <node pkg="tf" type="static_transform_publisher" name="static_map_odom_tf" ns="$(arg ns)"
+            args="$(arg x) $(arg y) $(arg z) 0 0 0 map world 100"/>
 
         <remap from="/forward_camera/depth/points" to="/camera/depth/points"/>
         <remap from="/downward_camera/depth/points" to="/camera/depth/points"/>

@@ -6,13 +6,13 @@
 
   <!-- jackal config -->
   <arg name="jackal_config" default="front_laser" />
-  <arg name="jackal0_position_x" default="5.5" />
+  <arg name="jackal0_position_x" default="8.5" />
   <arg name="jackal0_position_y" default="2.5" />
   <arg name="jackal1_position_x" default="6.5" />
   <arg name="jackal1_position_y" default="6.5" />
   <arg name="hector0_position_x" default="0.0" />
   <arg name="hector0_position_y" default="0.0" />
-  <arg name="hector0_position_z" default="1.2" />
+  <arg name="hector0_position_z" default="0.2" />
 
   <!-- Launch Gazebo with the specified world -->
   <include file="$(find sampling_gazebo_simulation)/launch/sampling_world.launch">
@@ -30,6 +30,7 @@
     <arg name="use_move_base" value="true"/>
     <arg name="x" value="$(arg jackal0_position_x)"/>
     <arg name="y" value="$(arg jackal0_position_y)"/>
+    <arg name="z" value="0.25"/>
   </include>
 
   <!-- Spawn jackal1. -->
@@ -40,6 +41,7 @@
     <arg name="use_move_base" value="true"/>
     <arg name="x" value="$(arg jackal1_position_x)"/>
     <arg name="y" value="$(arg jackal1_position_y)"/>
+    <arg name="z" value="0.25"/>
   </include>
 
   <!-- Spawn Hector0. -->

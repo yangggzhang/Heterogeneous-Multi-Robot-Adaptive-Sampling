@@ -4,7 +4,7 @@ import numpy as np
 import sys
 
 experiment_num = 5
-scenario_num = 3
+scenario_num = 1
 
 def bag_info_to_list(bag, info):
 	info_list=[]

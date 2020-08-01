@@ -1,0 +1,9 @@
+<launch>
+    <arg name="ground_truth_data" default="wifi_3_routers" />
+   
+    <node pkg="sampling_measurement" type="measurement_simulation_server.py" name="measurement_simulation_node" output="screen">
+        <param name="measurement_trial" value="$(arg ground_truth_data)"/>
+        <param name="poly_order" value="5"/>
+        <param name="noise_stdev" value="0.5"/>
+    </node>
+</launch>

@@ -86,10 +86,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>299 312000000</sim_time>
-      <real_time>169 605511044</real_time>
-      <wall_time>1596006877 403317427</wall_time>
-      <iterations>167119</iterations>
+      <sim_time>208 551000000</sim_time>
+      <real_time>143 149070150</real_time>
+      <wall_time>1596266758 149889286</wall_time>
+      <iterations>140836</iterations>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -101,48 +101,31 @@
         </link>
       </model>
       <model name='unit_cylinder'>
-        <pose frame=''>0 0 0.5 0 0 -0</pose>
+        <pose frame=''>4.99995 10.0003 0.5 0 -1e-06 0.0034</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>0 0 0.499997 3e-06 4e-06 -0</pose>
+          <pose frame=''>4.99995 10.0003 0.5 0 -1e-06 0.0034</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -9.8 0 -0 0</acceleration>
-          <wrench>0 0 -9.8 0 -0 0</wrench>
+          <acceleration>5.8137 5.87949 12.9616 -0.711626 0.274778 0.033566</acceleration>
+          <wrench>5.8137 5.87949 12.9616 0 -0 0</wrench>
         </link>
       </model>
       <model name='unit_cylinder_0'>
-        <pose frame=''>2.0 4.5 0.499997 3e-06 4e-06 -0</pose>
+        <pose frame=''>7.00001 2.99999 0.499994 6e-06 -6e-06 0.000778</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>2.0 4.5 0.499997 3e-06 4e-06 -0</pose>
+          <pose frame=''>7.00001 2.99999 0.499994 6e-06 -6e-06 0.000778</pose>
           <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -9.8 0 -0 0</acceleration>
-          <wrench>0 0 -9.8 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='unit_cylinder_1'>
-        <pose frame=''>6.5 9.5 0.5 -3e-06 -4e-06 -0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>6.5 9.5 0.499993 -3e-06 -4e-06 -0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 -9.8 0 -0 0</acceleration>
-          <wrench>0 0 -9.8 0 -0 0</wrench>
+          <acceleration>-8.1882 -8.17715 3.1583 0.647868 0.682401 -3.13771</acceleration>
+          <wrench>-8.1882 -8.17715 3.1583 0 -0 0</wrench>
         </link>
       </model>
       <light name='sun'>
         <pose frame=''>0 0 10 0 -0 0</pose>
       </light>
     </state>
-    <gui fullscreen='0'>
-      <camera name='user_camera'>
-        <pose frame=''>8.63383 -21.2091 23.603 0 0.793797 1.60021</pose>
-        <view_controller>orbit</view_controller>
-        <projection_type>perspective</projection_type>
-      </camera>
-    </gui>
     <model name='unit_cylinder'>
-      <pose frame=''>0.0 0.0 0.5 0 -0 0</pose>
+      <pose frame=''>5 10 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -158,7 +141,7 @@
         <collision name='collision'>
           <geometry>
             <cylinder>
-              <radius>2.2</radius>
+              <radius>1.5</radius>
               <length>1</length>
             </cylinder>
           </geometry>
@@ -179,7 +162,7 @@
         <visual name='visual'>
           <geometry>
             <cylinder>
-              <radius>2.2</radius>
+              <radius>1.5</radius>
               <length>1</length>
             </cylinder>
           </geometry>
@@ -196,7 +179,7 @@
       </link>
     </model>
     <model name='unit_cylinder_0'>
-      <pose frame=''>2.0 4.5 0.5 0 -0 0</pose>
+      <pose frame=''>7 9 0.5 0 -0 0</pose>
       <link name='link'>
         <inertial>
           <mass>1</mass>
@@ -212,7 +195,7 @@
         <collision name='collision'>
           <geometry>
             <cylinder>
-              <radius>2.5</radius>
+              <radius>1</radius>
               <length>1</length>
             </cylinder>
           </geometry>
@@ -233,7 +216,7 @@
         <visual name='visual'>
           <geometry>
             <cylinder>
-              <radius>2.5</radius>
+              <radius>1</radius>
               <length>1</length>
             </cylinder>
           </geometry>
@@ -249,59 +232,12 @@
         <kinematic>0</kinematic>
       </link>
     </model>
-    <model name='unit_cylinder_1'>
-      <pose frame=''>6.5 9.5 0.5 0 -0 0</pose>
-      <link name='link'>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <cylinder>
-              <radius>3.5</radius>
-              <length>1</length>
-            </cylinder>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>3.5</radius>
-              <length>1</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
-          </material>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-    </model>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>21.0306 -7.61458 70.9921 0 1.2404 1.86697</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
   </world>
 </sdf>

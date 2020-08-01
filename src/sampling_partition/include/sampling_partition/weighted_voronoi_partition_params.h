@@ -8,6 +8,8 @@
 namespace sampling {
 namespace partition {
 
+const double KCutOffCost = 100.0;
+
 class WeightedVoronoiPartitionParam {
  public:
   WeightedVoronoiPartitionParam();

@@ -86,10 +86,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>161 310000000</sim_time>
-      <real_time>63 356207750</real_time>
-      <wall_time>1596267821 779180567</wall_time>
-      <iterations>61037</iterations>
+      <sim_time>28 351000000</sim_time>
+      <real_time>28 476593939</real_time>
+      <wall_time>1596233988 470392538</wall_time>
+      <iterations>28351</iterations>
       <model name='ground_plane'>
         <pose frame=''>0 0 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -100,77 +100,13 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='unit_cylinder'>
-        <pose frame=''>0.998611 7.00172 0.499988 7e-06 7e-06 -0.000204</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>0.998611 7.00172 0.499988 7e-06 7e-06 -0.000204</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>6.04326 -6.03226 -3.1791 0.777384 0.788271 -0.075295</acceleration>
-          <wrench>6.04326 -6.03226 -3.1791 0 -0 0</wrench>
-        </link>
-      </model>
       <light name='sun'>
         <pose frame=''>0 0 10 0 -0 0</pose>
       </light>
     </state>
-    <model name='unit_cylinder'>
-      <pose frame=''>4.5 2 0.5 0 -0 0</pose>
-      <link name='link'>
-        <inertial>
-          <mass>1</mass>
-          <inertia>
-            <ixx>0.145833</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.145833</iyy>
-            <iyz>0</iyz>
-            <izz>0.125</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <geometry>
-            <cylinder>
-              <radius>2.5</radius>
-              <length>1</length>
-            </cylinder>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <geometry>
-            <cylinder>
-              <radius>2.5</radius>
-              <length>1</length>
-            </cylinder>
-          </geometry>
-          <material>
-            <script>
-              <name>Gazebo/Grey</name>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-            </script>
-          </material>
-        </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
-      </link>
-    </model>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>17.0895 -35.7368 62.9283 0 0.975644 1.66019</pose>
+        <pose frame=''>5 -5 2 0 0.275643 2.35619</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>

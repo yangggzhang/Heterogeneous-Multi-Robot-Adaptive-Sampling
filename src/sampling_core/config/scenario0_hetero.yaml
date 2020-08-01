@@ -18,18 +18,10 @@ HeterogeneousProperty:
     number_control_area: 0
   - agent_id: "jackal0"
     heterogeneity_primitive: [1.0, 0.75, 0.75, 1.0]
-    number_control_area: 2
-    control_area_center_0: [5.0, 10.0]
-    control_area_radius_0: 1.5
-    control_area_center_1: [7.0, 3.0]
-    control_area_radius_1: 1.0
+    number_control_area: 0
   - agent_id: "jackal1"
     heterogeneity_primitive: [1.0, 1.0, 0.75, 1.0]
-    number_control_area: 2
-    control_area_center_0: [5.0, 10.0]
-    control_area_radius_0: 1.5
-    control_area_center_1: [7.0, 3.0]
-    control_area_radius_1: 1.0
+    number_control_area: 0
 
 #Online Learning Handler
 learning_type: "GREEDY"

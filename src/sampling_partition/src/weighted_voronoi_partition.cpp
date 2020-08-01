@@ -155,7 +155,8 @@ bool WeightedVoronoiPartition::ComputePartitionForAgent(
   for (int i = 0; i < map_.rows(); ++i) {
     Eigen::MatrixXd::Index index;
     cost_map.row(i).minCoeff(&index);
-    if (agent_id.compare(location[(int)index].agent_id) == 0)
+    if (agent_id.compare(location[(int)index].agent_id) == 0 &&
+        cost_map(i, index) < KCutOffCost)
       partition_index.push_back(i);
   }
   return true;
@@ -189,7 +190,10 @@ bool WeightedVoronoiPartition::ComputePartitionForMap(
   for (int i = 0; i < map_.rows(); ++i) {
     Eigen::MatrixXd::Index index;
     cost_map.row(i).minCoeff(&index);
-    index_for_map[i] = (int)index;
+    if (cost_map(i, index) < KCutOffCost)
+      index_for_map[i] = (int)index;
+    else
+      index_for_map[i] = (int)location.size();
   }
   return true;
 }
