@@ -466,9 +466,6 @@ bool SamplingCore::AssignSamplingGoal(
 bool SamplingCore::KillAgent(sampling_msgs::KillAgent::Request &req,
                              sampling_msgs::KillAgent::Response &res) {
   died_agents_.insert(req.agent_id);
-  ROS_INFO_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  ROS_ERROR_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-  ROS_WARN_STREAM("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   agents_locations_.erase(req.agent_id);
   res.success = true;
   return true;
