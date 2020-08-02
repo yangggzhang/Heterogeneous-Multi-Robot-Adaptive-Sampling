@@ -19,7 +19,7 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 ### [Hector Quadrator](http://wiki.ros.org/hector_quadrotor) ###
 
-![Alt text](docs/hector.png?raw=true "Hector")
+![Alt text](docs/hector.png =250x250 "Hector")
 
 # Installation
 First install **Full-Desktop** ROS Melodic by following the instructions : http://wiki.ros.org/melodic/Installation/Ubuntu. <br />
