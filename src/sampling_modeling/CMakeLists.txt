@@ -8,10 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_srvs
 )
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
-# include
   ${catkin_INCLUDE_DIRS}
 )
 
