@@ -39,4 +39,4 @@ roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
 
 <img src="docs/heterogeneous_sampling_simulation.gif?raw=true">
-The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling. The leftmose grid is shwoing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is shouwing the real-time uncertainty for prediction.
+The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling in rviz. The leftmost grid is showing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is showing the real-time uncertainties from prediction.
