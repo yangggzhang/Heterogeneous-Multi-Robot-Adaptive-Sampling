@@ -10,7 +10,7 @@ Multi-robot systems are widely used in environmental exploration and modeling, e
 we present a system archi-tecture  for  heterogeneous  multi-robot  informative  samplingwith a modularized design that allows for flexible scale-upsand  extensions  in  both  robot  characteristics  and  team  size. The current robot platform we support includes:
 
 | Robot Platform | Description | Simulation | Physical Platform|
-| --- | --- | --- | --- |
+| :-: | :-: | :-: | :-: |
 |[Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) | ![Alt text](docs/jackal.jpeg?raw=true "Jackal")|:heavy_check_mark:|:heavy_check_mark:|
 |[Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) | ![Alt text](docs/pelican.jpg?raw=true "Pelican")|:red_circle:|:heavy_check_mark:|
 |[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" width="500">|:heavy_check_mark:|:red_circle:|
