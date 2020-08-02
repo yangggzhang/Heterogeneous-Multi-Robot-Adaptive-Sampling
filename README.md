@@ -1,7 +1,7 @@
 [![ROS Distro: Melodic](https://img.shields.io/badge/ROS-Melodic-blue.svg)](http://wiki.ros.org/melodic)
 [![License: BSD](https://img.shields.io/badge/License-BSD-yellow.svg)](./LICENSE)
-
-We are going to present our paper at IROS 2020. The official paper is comming soon! <br/>
+We are going to present our paper at IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2020. <br/>
+The official paper is comming soon! <br/>
 Check video first [here](https://drive.google.com/file/d/1uPgnyV66UEWomSi_KKH2vZLEvRN9gDTj/view?usp=sharing)
 
 # Adaptive Informative Sampling with Environment Partitioning for Heterogeneous Multi-Robot Systems #
