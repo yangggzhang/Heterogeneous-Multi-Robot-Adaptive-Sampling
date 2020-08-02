@@ -72,5 +72,5 @@ year = {2020}
 }
 ```
 
-## Acknowledge ##
+## Acknowledgement ##
 This work is primarity from [Team SAMP](https://mrsdprojects.ri.cmu.edu/2018teamg/)'s (Yunfei Shi, Ning Wang, Jianmin Zheng and Yang Zhang) capstone project when they were pursing their masters' degrees in [Robotic Systems Development (MRSD)](https://mrsd.ri.cmu.edu/) at Carnegie Mellon University the Robotics Institute. Special thanks to [John M. Dolan](https://www.ri.cmu.edu/ri-faculty/john-m-dolan/), [Dimitrios (Dimi) Apostolopoulos](https://www.ri.cmu.edu/ri-faculty/dimitrios-dimi-apostolopoulos/) and [Sarah Conte](https://www.ri.cmu.edu/ri-people/sarah-conte/) for the support and advice.
