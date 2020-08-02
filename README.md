@@ -6,6 +6,14 @@ We are going to present our paper at IROS 2020. The official paper is comming so
 # Adaptive Informative Sampling with Environment Partitioning for Heterogeneous Multi-Robot Systems
 Multi-robot systems are widely used in environmental exploration and modeling, especially in hazardous environments. However, different types of robots are limited by different mobility, battery life, sensor type, etc. Heterogeneous robot systems are able to utilize various types of robots and provide solutions where robots are able to compensate each other with their different capabilities. In this paper, we consider the problem of sampling and modeling environmental characteristics with a heterogeneous team of robots. To utilize heterogeneity of the system while remaining computationally tractable, we propose an environmental partitioning approach that leverages various robot capabilities by forming a uniformly defined heterogeneity cost space. We combine with the mixture of Gaussian Processes model-learning framework to adaptively sample and model the environment in an efficient and scalable manner. We demonstrate our algorithm in field experiments with ground and aerial vehicles.
 
+#Support Platform
+we present a system archi-tecture  for  heterogeneous  multi-robot  informative  samplingwith a modularized design that allows for flexible scale-upsand  extensions  in  both  robot  characteristics  and  team  size. The current robot platform we support includes:
+
+##Clearpath Jackal UGV(https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability)
+
+<img src="docs/jackal.jepg?raw=true" width="450">
+
+
 # Installation
 First install **Full-Desktop** ROS Melodic by following the instructions : http://wiki.ros.org/melodic/Installation/Ubuntu. <br />
 To install all additional ROS packages, dependencies and python packages. Please run the following command in terminal first.
