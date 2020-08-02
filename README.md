@@ -13,6 +13,14 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 ![Alt text](docs/jackal.jpeg?raw=true "Jackal")
 
+### [Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) ###
+
+![Alt text](docs/pelican.jpg?raw=true "Pelican")
+
+### [Hector Quadrator](http://wiki.ros.org/hector_quadrotor) ###
+
+![Alt text](docs/hector.png?raw=true "Hector")
+
 # Installation
 First install **Full-Desktop** ROS Melodic by following the instructions : http://wiki.ros.org/melodic/Installation/Ubuntu. <br />
 To install all additional ROS packages, dependencies and python packages. Please run the following command in terminal first.
