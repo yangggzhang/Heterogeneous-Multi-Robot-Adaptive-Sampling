@@ -39,16 +39,14 @@ Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the 
 ```bat
 roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
-
-<br />
-<img src="docs/heterogeneous_sampling_simulation.gif?raw=true">
-The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling in rviz. The leftmost grid is showing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is showing the real-time uncertainties from prediction.
-
-<br />
 You can also directly monitor the sampling performance by listenting to the `var example = true` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
 ```bat
 rostopic echo /sampling_performance
 ```
+
+<br />
+<img src="docs/heterogeneous_sampling_simulation.gif?raw=true">
+The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling in rviz. The leftmost grid is showing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is showing the real-time uncertainties from prediction.
 
 
 ## Results ##
