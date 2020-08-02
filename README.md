@@ -11,8 +11,7 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 ##Clearpath Jackal UGV(https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability)
 
-<img src="docs/jackal.jepg?raw=true" width="450">
-
+![Alt text](docs/jackal.jepg?raw=true "Jackal")
 
 # Installation
 First install **Full-Desktop** ROS Melodic by following the instructions : http://wiki.ros.org/melodic/Installation/Ubuntu. <br />
