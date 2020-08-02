@@ -15,19 +15,17 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 |[Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) |<img src="docs/pelican.jpg?raw=true" height="200">|:red_circle:|:heavy_check_mark:|
 |[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" height="200"> |:heavy_check_mark:|:red_circle:|
 
-
-
-# Installation
+## Installation ##
 First install **Full-Desktop** ROS Melodic by the [instructions](http://wiki.ros.org/melodic/Installation/Ubuntu). <br />
 To install all additional ROS packages, dependencies and python packages. Please run the following command in terminal first.
 ```bat
 ./setup.sh
 ```
-# Build the project
+## Build the project ##
 ```
 catkin build
 ```
-# Run the project
+## Run the project ##
 ```bat
 roslaunch sampling_core centralized_sampling.launch
 ```
