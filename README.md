@@ -37,3 +37,4 @@ Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the 
 ```bat
 roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
+<img src="docs/heterogeneous_sampling_simulation.gif?raw=true">
