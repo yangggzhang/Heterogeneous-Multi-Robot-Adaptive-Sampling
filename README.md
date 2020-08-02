@@ -11,7 +11,7 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 ### [Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) ###
 
-<img src="docs/jackal.jpeg?raw=true" width="450" height="450">
+<img src="docs/jackal.jpeg?raw=true" width="450">
 
 
 ### [Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) ###
