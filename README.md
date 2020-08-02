@@ -45,7 +45,7 @@ roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling in rviz. The leftmost grid is showing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is showing the real-time uncertainties from prediction.
 
 <br />
-You can also directly monitor the sampling performance by listenting to the `sampling_performance` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
+You can also directly monitor the sampling performance by listenting to the `var example = true` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
 ```bat
 rostopic echo /sampling_performance
 ```
