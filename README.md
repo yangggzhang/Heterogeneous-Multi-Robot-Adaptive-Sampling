@@ -47,7 +47,7 @@ The left window is the simulation running in Gazebo. The right one is the visual
 <br />
 You can also directly monitor the sampling performance by listenting to the `sampling_performance` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
 ```bat
-rostopic echo /sampling_performance 
+rostopic echo /sampling_performance
 ```
 
 
