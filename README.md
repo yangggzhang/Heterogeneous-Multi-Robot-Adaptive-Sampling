@@ -50,6 +50,7 @@ You can also directly monitor the sampling performance by listenting to the `sam
 rostopic echo /sampling_performance 
 ```
 
+
 ## Results ##
 The robots in our simulation are different in speed, battery life and traversability. 
 
