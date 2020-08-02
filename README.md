@@ -53,9 +53,11 @@ rostopic echo /sampling_performance
 
 ## Results ##
 The robots in our simulation are different in speed, battery life and traversability. 
+
 ### Environment Partition using Heterogeneity Primitives ###
 <img src="docs/partition.png?raw=true">
 The red, blue and green dots represent the current locations of the ground robot 1, 2 and the aerial robot respectively. The corresponding shallow areas are their responsible regions. The black circle denotes an obstacle that the robot 1 and 2 need to avoid. The first partition from left uses normal Voronoi Diagram; the second adds speed heterogeneity; the third adds battery life, and the last adds traversability.
+
 ### Heterogeneous Informative Sampling ###
 <img src="docs/result_fig4.png?raw=true">
 Informative sampling performance comparison between heterogeneous and homogeneous multi-robot sampling algorithms. We run each algorithm on the same dataset 45 times with random robot initial locations and obstacle positions. The shallow areas represent the variance range. The red vertical line indicates the time when the aerial robot stopped operation.
