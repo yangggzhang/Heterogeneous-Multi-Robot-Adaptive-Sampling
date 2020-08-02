@@ -21,7 +21,7 @@ To install all additional ROS packages, dependencies and python packages. Please
 ```bat
 ./setup.sh
 ```
-## Build the project ##
+## Build the package ##
 ```
 catkin build
 ```
