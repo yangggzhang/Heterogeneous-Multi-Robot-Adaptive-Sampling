@@ -18,11 +18,12 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 ## Installation ##
 First install **Full-Desktop** ROS Melodic by the [instructions](http://wiki.ros.org/melodic/Installation/Ubuntu). <br />
-To install all additional ROS packages, dependencies and python packages. Please run the following command in terminal first.
+To install all additional ROS packages, dependencies and python packages. Please run the setup script.
 ```bat
 ./setup.sh
 ```
 ## Build the package ##
+The project depends on multi ROS pacakgaes for robot simulation/deployment, it may take up to 5 minutes to build ths project.
 ```
 catkin build
 ```
