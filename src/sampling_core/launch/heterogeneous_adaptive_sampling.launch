@@ -60,5 +60,5 @@
         <param name="groundtruth_measurement_file" value="artificial_$(arg ground_truth_data).txt"/>
     </node>
 
-    <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" /> -->
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find sampling_gazebo_simulation)/rviz/samlping_visualization.rviz" />
 </launch>
