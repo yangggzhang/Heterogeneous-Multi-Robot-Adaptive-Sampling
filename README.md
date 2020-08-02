@@ -33,7 +33,7 @@ First, launch the simulation environment in Gazebo in one terminal. Check or add
 ```bat
 roslaunch sampling_gazebo_simulation two_ugv_one_uav_simulation.launch
 ```
-Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the second terminal. Please make sure the agent information fed to the sampling algorithim is consistent with the gazebo simulation by checking the ros parameters [here](src/sampling_core/launch/heterogeneous_adaptive_sampling.launch). User can also adjust or add heterogeneous primitives according to their robot systems [here](src/sampling_core/config) <br/>
+Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the second terminal. Please make sure the agent information fed to the sampling algorithim is consistent with the gazebo simulation by checking the [ros parameters](src/sampling_core/launch/heterogeneous_adaptive_sampling.launch). Users can also adjust or add heterogeneous primitives according to their robot systems [here](src/sampling_core/config) <br/>
 ```bat
 roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
