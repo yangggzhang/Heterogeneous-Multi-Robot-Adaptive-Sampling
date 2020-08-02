@@ -13,8 +13,8 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 | Robot Platform | Description | Simulation | Physical Platform|
 | :-: | :-: | :-: | :-: |
 |[Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) | <img src="docs/jackal.jpeg?raw=true" height="200"> |:heavy_check_mark:|:heavy_check_mark:|
-|[Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) |<img src="docs/pelican.jpg?raw=true" height="200">|:red_circle:|:heavy_check_mark:|
-|[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" height="200"> |:heavy_check_mark:|:red_circle:|
+|[Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) |<img src="docs/pelican.jpg?raw=true" height="200">|:interrobang:|:heavy_check_mark:|
+|[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" height="200"> |:heavy_check_mark:|:interrobang:|
 
 ## Installation ##
 First install **Full-Desktop** ROS Melodic by the [instructions](http://wiki.ros.org/melodic/Installation/Ubuntu). <br />
@@ -38,5 +38,6 @@ Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the 
 roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
 
+<br />
 <img src="docs/heterogeneous_sampling_simulation.gif?raw=true">
 The left window is the simulation running in Gazebo. The right one is the visualization of heterogeneous multi-robot adaptive sampling in rviz. The leftmost grid is showing the heterogeneous environment partition and agents' locations, the middle one is showing the real-time model prediction, and the rightmost one is showing the real-time uncertainties from prediction.
