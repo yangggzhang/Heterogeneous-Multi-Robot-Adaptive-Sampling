@@ -39,7 +39,7 @@ Second, launch the heterogeneous multi-robot adaptive sampling algorithm in the 
 ```bat
 roslaunch sampling_core heterogeneous_adaptive_sampling.launch
 ```
-You can also directly monitor the sampling performance by listenting to the `var example = true` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
+You can also directly monitor the sampling performance by listenting to the `/sampling_performance` channel, which includes the number of samples collected, root mean square error for prediction, and average variance from prediction.<br />
 ```bat
 rostopic echo /sampling_performance
 ```
