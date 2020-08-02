@@ -23,11 +23,13 @@ To install all additional ROS packages, dependencies and python packages. Please
 ./setup.sh
 ```
 ## Build the package ##
-The project depends on multi ROS pacakgaes for robot simulation/deployment, it may take up to 5 minutes to build ths project.
+This work depends on multi ROS pacakgaes for robot simulation/deployment, it may take up to 5 minutes to build ths project.
 ```
 catkin build
 ```
-## Run the project ##
+## Run the simulation ##
+Don't forget to `source devel/setup.bash` before launch any files.
+First, launch the simulation environment in Gazebo in one terminal. Check or add customer simulation environments [here](src/sampling_gazebo_simulation/worlds).
 ```bat
-roslaunch sampling_core centralized_sampling.launch
+roslaunch sampling_gazebo_simulation two_ugv_one_uav_simulation.launch
 ```
