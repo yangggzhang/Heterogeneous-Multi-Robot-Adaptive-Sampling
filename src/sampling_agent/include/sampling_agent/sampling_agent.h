@@ -76,7 +76,7 @@ class SamplingAgent {
 
   boost::optional<double> measurement_;
 
-  ros::Time start_time_;
+  boost::optional<ros::Time> start_time_;
 
   bool IsAgentAlive();
 

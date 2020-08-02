@@ -43,8 +43,6 @@ SamplingAgent::SamplingAgent(ros::NodeHandle &nh,
                                       &SamplingAgent::CheckService, this);
 
   agent_state_ = IDLE;
-
-  start_time_ = ros::Time::now();
 }
 
 std::unique_ptr<SamplingAgent> SamplingAgent::MakeUniqueFromROS(
@@ -182,6 +180,9 @@ bool SamplingAgent::Run() {
           ROS_INFO_STREAM("Retrying ... ... ...");
           break;
         } else {
+          if (!start_time_.is_initialized()) {
+            start_time_ = boost::make_optional(ros::Time::now());
+          }
           ROS_INFO_STREAM("Robot : " << params_.agent_id
                                      << " succeeded in receiving "
                                         "target from master "
@@ -284,8 +285,11 @@ bool SamplingAgent::Run() {
 }  // namespace agent
 
 bool SamplingAgent::IsAgentAlive() {
-  return (ros::Time::now() - start_time_) <=
-         ros::Duration(params_.batterylife_ros_sec);
+  if (!start_time_.is_initialized())
+    return true;
+  else
+    return (ros::Time::now() - start_time_.get()) <=
+           ros::Duration(params_.batterylife_ros_sec);
 }
 bool SamplingAgent::StartRetreat() {
   sampling_msgs::KillAgent srv;
