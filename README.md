@@ -63,6 +63,7 @@ The red, blue and green dots represent the current locations of the ground robot
 Informative sampling performance comparison between heterogeneous and homogeneous multi-robot sampling algorithms. We run each algorithm on the same dataset 45 times with random robot initial locations and obstacle positions. The shallow areas represent the variance range. The red vertical line indicates the time when the aerial robot stopped operation.
 
 ## Citation ##
+If you find this work or code helpful, please cite:
 ```
 @InProceedings{hetero_sampling,
 author = {Yunfei Shi, Ning Wang, Jianmin Zheng, Yang Zhang, Sha Yi, Wenhao Luo, and Katia Sycara},
