@@ -6,3 +6,4 @@
 *.pyc
 logs/
 *.bag
+.catkin_workspace
