@@ -11,12 +11,9 @@ we present a system archi-tecture  for  heterogeneous  multi-robot  informative 
 
 | Robot Platform | Description |
 | --- | --- |
-| [Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) | ![Alt text](docs/jackal.jpeg?raw=true "Jackal")
- |
-| [Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) | ![Alt text](docs/pelican.jpg?raw=true "Pelican")
- |
-| [[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" width="500">
- |
+| [Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) | ![Alt text](docs/jackal.jpeg?raw=true "Jackal")|
+| [Asctec Pelican UAV](https://mrsdprojects.ri.cmu.edu/2018teamg/documentation/asctec-pelican-uav-setup-guidance/) | ![Alt text](docs/pelican.jpg?raw=true "Pelican")|
+| [[Hector Quadrator](http://wiki.ros.org/hector_quadrotor) | <img src="docs/hector.png?raw=true" width="500">|
 
 
 
