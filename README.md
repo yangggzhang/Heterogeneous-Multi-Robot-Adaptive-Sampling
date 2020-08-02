@@ -9,7 +9,7 @@ Multi-robot systems are widely used in environmental exploration and modeling, e
 # Support Platform
 we present a system archi-tecture  for  heterogeneous  multi-robot  informative  samplingwith a modularized design that allows for flexible scale-upsand  extensions  in  both  robot  characteristics  and  team  size. The current robot platform we support includes:
 
-## [Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability)
+## [Clearpath Jackal UGV](https://clearpathrobotics.com/jackal-small-unmanned-ground-vehicle/#:~:text=UNMANNED%20GROUND%20VEHICLE,%2Dthe%2Dbox%20autonomous%20capability) ##
 
 ![Alt text](docs/jackal.jpeg?raw=true "Jackal")
 
