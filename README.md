@@ -2,7 +2,7 @@
 [![License: BSD](https://img.shields.io/badge/License-BSD-yellow.svg)](./LICENSE) <br/>
 
 # Adaptive Informative Sampling with Environment Partitioning for Heterogeneous Multi-Robot Systems #
-by Yunfei Shi ((Linkedin[https://www.linkedin.com/in/shi-yunfei/]/Google Scholar[https://scholar.google.com/citations?user=lU47d44AAAAJ&hl=en]), [Ning Wang*](https://www.linkedin.com/in/ning-wang-cmu/), [Jianmin Zheng*](https://www.linkedin.com/in/jianmimzheng/), [Yang Zhang*](https://www.linkedin.com/in/yang-zhang-cmu/), [Sha Yi](https://www.ri.cmu.edu/ri-people/yisha-sha-yi/), [Wenhao Luo](http://www.contrib.andrew.cmu.edu/~wenhaol/), and [Katia Sycara](https://www.ri.cmu.edu/ri-faculty/katia-sycara/) <br/>
+by Yunfei Shi ((Linkedin)[https://www.linkedin.com/in/shi-yunfei/]/(Google Scholar)[https://scholar.google.com/citations?user=lU47d44AAAAJ&hl=en]), [Ning Wang*](https://www.linkedin.com/in/ning-wang-cmu/), [Jianmin Zheng*](https://www.linkedin.com/in/jianmimzheng/), [Yang Zhang*](https://www.linkedin.com/in/yang-zhang-cmu/), [Sha Yi](https://www.ri.cmu.edu/ri-people/yisha-sha-yi/), [Wenhao Luo](http://www.contrib.andrew.cmu.edu/~wenhaol/), and [Katia Sycara](https://www.ri.cmu.edu/ri-faculty/katia-sycara/) <br/>
 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2020. <br/>
 The final submission version [pdf](docs/AdaptiveInformativeSamplingwithEnvironmentPartitioningforHeterogeneousMulti-RobotSystems.pdf), and also video [here](https://drive.google.com/file/d/1uPgnyV66UEWomSi_KKH2vZLEvRN9gDTj/view?usp=sharing).
 
